@@ -1,3 +1,0 @@
-C:/Users/mgola/projects/c++/matamatyka_dyskretna/project1/main/out/build/x64-debug/CMakeFiles/main.dir
-C:/Users/mgola/projects/c++/matamatyka_dyskretna/project1/main/out/build/x64-debug/CMakeFiles/edit_cache.dir
-C:/Users/mgola/projects/c++/matamatyka_dyskretna/project1/main/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
