@@ -1,260 +1,168 @@
+#pragma once
 #include <iostream>
 #include <concepts>
-#include <variant>
-#include <expected>
-#include <variant>
+#include <format>
 #include <vector>
 #include <string>
-#include <expected>
-#include <ranges>
-#include <algorithm>
-#include <cstdlib>
-#include <print>
+
+namespace representation {
+    template <std::integral I>
+    struct fraction {
+        I numerator{ 0 };
+        I denominator{ 1 };
+
+        /*spawdŸ sobie operator overloading na cppreferecne*/
+        constexpr fraction<I>& operator-=(I i) {
+            numerator -= i * denominator;
+            return *this;
+        }
+    };
+
+    template <std::integral I>
+    constexpr fraction<I> operator+(fraction<I> f, fraction<I> g) {
+        fraction<I> result{};
+        result.numerator =
+            f.numerator * g.denominator + g.numerator * f.denominator;
+        result.denominator = f.denominator * g.denominator;
+        return result;
+    }
+
+} // namespace representation
+
+template <std::integral I>
+struct std::formatter<representation::fraction<I>> {
+
+    constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
+
+    auto format(const representation::fraction<I>& f,
+        std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}/{}", f.numerator, f.denominator);
+    }
+};
+
+namespace representation {
+    template <std::uint8_t base>
+    struct expansion {
+        std::string whole{};
+        std::string fractial{};
+        std::string period{};
+    };
+}  // namespace representation
+
+template <std::uint8_t base>
+struct std::formatter<representation::expansion<base>> {
+
+    constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
+
+    auto format(const representation::expansion<base>& exp,
+        std::format_context& ctx) const {
+        return std::format_to(
+            ctx.out(), "{}.{}({})", exp.whole, exp.fractial, exp.period);
+    }
+};
 
 namespace representation {
 
-	template <std::integral I>
-	struct fraction {
-		I numerator;
-		I denominator;
+    template <std::uint8_t base>
+    inline auto expand_whole(std::integral auto i) -> expansion<base> {
+        expansion<base> expan{};
+        const std::size_t max_integer_string_length{ 129 };
+        auto& whole = expan.whole;
+        whole.resize(max_integer_string_length); /*rezerwacja miejsca*/
+        auto result =
+            std::to_chars(whole.data(), whole.data() + whole.size(), i, base);
+        /*co jest w result - za pomoc¹ tego zmodyfikowaæ whole*/
+        /*skorzystaj z result.ptr*/
+        const std::size_t used_bytes{ /*ile dana liczba zajê³a miejsca*/ };
+        whole.resize(used_bytes);
 
-		std::string plus_or_minus(fraction<I>);
-	};
+        return expan;
+    }
+    // przyk³ad representation::expand<2>(1), sprawdŸ czy dosta³eœ string "1"
+    // przyk³ad representation::expand<10>(1111), sprawdŸ czy dosta³eœ string
+    // "1111"
 
-	template <std::uint8_t base>
-	struct expansion {
-		std::string whole;
-		std::string fractial;
-		std::string period;
-	};
+    template <std::uint8_t base, std::integral I>
+    inline auto expand_period_part(expansion<base>& expan, fraction<I> frac, I rest, std::vector<I> rs, std::string result)
+        -> void {
+        int index = std::ranges::distance(rs.begin(), std::ranges::find(rs, rest));
+        expan.period = result.substr(index, result.size() - index);
+        expan.fractial = result.substr(0, index);
+    }
 
-	template <std::integral I, std::uint8_t base>
-	expansion<base> expand(fraction<I>, expansion<base>);
+    template <std::uint8_t base, std::integral I>
+    inline auto expand_fractional_part(expansion<base>& expan, fraction<I> frac)
+        -> void {
+        const int ascii_table_chars_start = 55;
+        std::string result = "";
+        I rest = frac.numerator% frac.denominator;
+        auto num = frac.numerator;
+        auto den = frac.denominator;
 
-	template <std::integral I, std::uint8_t base>
-	std::string integral_number(fraction<I>, expansion<base>);
+        std::vector<I> rs;
 
-	template <std::integral I, std::uint8_t base>
-	std::string fractional_number(fraction<I>, expansion<base>&);
+        while (rest != 0 && std::find(rs.begin(), rs.end(), rest) == rs.end()) {
+            rs.push_back(rest);
+            frac.numerator = rest * base;
+            if (frac.numerator / frac.denominator < 10) {
+                result += std::to_string(frac.numerator / frac.denominator);
+            }
+            else {
+                result += static_cast<char>(frac.numerator / frac.denominator + ascii_table_chars_start);
+            }
+            rest = frac.numerator % frac.denominator;
+        }
 
-	template <std::integral I, std::uint8_t base>
-	std::vector<I> set_of_rest(std::string&, fraction<I>, I&, expansion<base>&);
+        if (rest != 0) {
+            expand_period_part(expan, frac, rest, rs, result);
+        }
+        else {
+            expan.fractial = result;
+            expan.period = "";
+        }
+        
+    }
 
-	template <std::integral I, std::uint8_t base>
-	std::string periodic(std::vector<I>, std::string, I, expansion<base>&);
+    template <std::uint8_t base, std::integral I>
+    inline auto expand(fraction<I> frac) -> expansion<base> {
+        expansion<base> expan{};
+        auto whole = frac.numerator / frac.denominator;
+        expan = expand_whole<base>(whole);
 
-	template <std::integral I, std::uint8_t base>
-	fraction<I> dexpand(fraction<I>, expansion<base>);
+        frac -= whole;
+        
+        expand_fractional_part(expan ,frac);
 
-	int gcd(int, int);
-	
-	int lcm2(int, int);
+        return expan;
+    }
+    template <std::uint8_t base, std::integral I>
+    inline I dexpand_h(std::string whole) {
+        I integer{};
+        auto result = std::from_chars(
+            whole.data(), whole.data() + whole.size(), integer, base);
+        return integer;
+    }
 
-	int lcm3(int, int, int);
 
-	template <std::integral I, std::uint8_t base>
-	void n_d_whole(I&, I&, expansion<base>);
+    inline auto pow(std::integral auto i, std::integral auto exponent) {
+        return std::pow(i, exponent);
+    }
 
-	template <std::integral I, std::uint8_t base>
-	void n_d_fractial(I&, I&, expansion<base>);
+    template <std::uint8_t base, std::integral I>
+    inline auto dexpand(expansion<base> expan) -> fraction<I> {
+        /*masz liczbê postaci whole.fraction(period)*/
+        fraction<I> whole{ .numerator{0}, .denominator{1} };
+        whole.numerator = dexpand_h<base, I>(expan.whole);
+        fraction<I> fractional{};
+        fractional.numerator = dexpand_h<base, I>(expan.fractial);
+        fractional.denominator = dexpand_h<base, I>(
+            std::string("1") + std::string(expan.fractial.size(), '0')); 
 
-	template <std::integral I, std::uint8_t base>
-	void n_d_period(I&, I&, expansion<base>);
+        fraction<I> period{};
+        period.numerator = dexpand_h<base, I>(expan.period);
+        period.denominator = pow(base, expan.fractial.size() + expan.period.size()) - pow(base, expan.period.size());
 
-	template <std::integral I>
-	void sum_fraction(I&, I&, I, I, I, I, I, I);
+        return whole + fractional + period;
+    }
 
-	template <std::integral I>
-	void reduce_fraction(I&, I&);
-
-	template<std::integral I, std::uint8_t base>
-	expansion<base> expand(fraction<I> my_fraction, expansion<base> my_expansion){
-		my_expansion.whole = my_fraction.plus_or_minus(my_fraction) + integral_number(my_fraction, my_expansion);
-		my_expansion.fractial = fractional_number(my_fraction, my_expansion);
-
-		return my_expansion;
-	}
-
-	template<std::integral I, std::uint8_t base>
-	std::string integral_number(fraction<I> my_fraction, expansion<base> my_expansion){
-		std::string result = "";
-		const int ascii_table_chars_start = 55;
-		I rest, integral = my_fraction.numerator / my_fraction.denominator;
-
-		if (integral > 0) {
-			while (integral > 0) {
-				rest = integral % base;
-				if (rest < 10) {
-					result = std::to_string(rest) + result;
-				}
-				else {
-					result = static_cast<char>(rest + ascii_table_chars_start) + result;
-				}
-				integral /= base;
-			}
-		}
-		else {
-			result = "0";
-		}
-		
-		return result;
-	}
-
-	template<std::integral I, std::uint8_t base>
-	std::string fractional_number(fraction<I> my_fraction, expansion<base>& my_expansion){
-		std::string result = "";
-		I rest = my_fraction.numerator % my_fraction.denominator;
-		std::vector<I> rs = set_of_rest(result, my_fraction, rest, my_expansion);
-
-		if (rest != 0) {
-			result = periodic(rs, result, rest, my_expansion);
-		}
-
-		return result;
-	}
-
-	template<std::integral I, std::uint8_t base>
-	std::vector<I> set_of_rest(std::string& result1, fraction<I> my_fraction, I& rest, expansion<base>& my_expansion){
-		const int ascii_table_chars_start = 55;
-		std::vector<I> rs;
-
-		while (rest != 0 && std::find(rs.begin(), rs.end(), rest) == rs.end()) {
-			rs.push_back(rest);
-			my_fraction.numerator = rest * base;
-			if (my_fraction.numerator / my_fraction.denominator < 10) {
-				result1 += std::to_string(my_fraction.numerator / my_fraction.denominator);
-			}
-			else {
-				result1 += static_cast<char>(my_fraction.numerator / my_fraction.denominator + ascii_table_chars_start);
-			}
-			rest = my_fraction.numerator % my_fraction.denominator;
-		}
-
-		return rs;;
-	}
-
-	template<std::integral I, std::uint8_t base>
-	std::string periodic(std::vector<I> rs, std::string result, I rest, expansion<base>& my_expansion){
-		int index = std::ranges::distance(rs.begin(), std::ranges::find(rs, rest));
-		my_expansion.period = result.substr(index, result.size() - index); 
-		result = result.substr(0, index);
-
-		return result;
-	}
-
-	template<std::integral I, std::uint8_t base>
-	fraction<I> dexpand(fraction<I> my_fraction, expansion<base> my_expansion){
-		I numerator = 0, denominator = 1;
-		I n_whole, d_whole, n_fractial, d_fractial, n_period, d_period;
-
-		n_d_whole(n_whole, d_whole, my_expansion);
-		n_d_fractial(n_fractial, d_fractial, my_expansion);
-		n_d_period(n_period, d_period, my_expansion);
-
-		sum_fraction(numerator, denominator, n_whole, n_fractial, n_period, d_whole, d_fractial, d_period);
-		reduce_fraction(numerator, denominator);
-
-		my_fraction.numerator = numerator;
-		my_fraction.denominator = denominator;
-
-		return my_fraction;
-	}
-
-	template<std::integral I, std::uint8_t base>
-	void n_d_whole(I& numerator, I& denominator, expansion<base> my_expansion) {
-		const int ascii_table_chars_start = 7;
-		I j = my_expansion.whole.length() - 1;
-
-		denominator = 1;
-		numerator = 0;
-
-		for (char c : my_expansion.whole) {
-			if (c - '0' < 10) {
-				numerator += (c - '0') * std::pow(base, j);
-			}
-			else {
-				numerator += (c - '0' - 7) * std::pow(base, j);
-			}
-		}
-	}
-
-	template<std::integral I, std::uint8_t base>
-	void n_d_fractial(I& numerator, I& denominator, expansion<base> my_expansion) {
-		const int ascii_table_chars_start = 7;
-		I j = my_expansion.fractial.length() - 1;
-
-		denominator = std::pow(base, j + 1);
-		numerator = 0;
-
-		for (char c : my_expansion.fractial) {
-			if (c - '0' < 10) {
-				numerator += (c - '0') * std::pow(base, j);
-			}
-			else {
-				numerator += (c - '0' - 7) * std::pow(base, j);
-			}
-		}
-	}
-
-	template<std::integral I, std::uint8_t base>
-	void n_d_period(I& numerator, I& denominator, expansion<base> my_expansion) {
-		const int ascii_table_chars_start = 7;
-		I j = my_expansion.period.length() - 1;
-
-		denominator = std::pow(base, my_expansion.period.length() + my_expansion.fractial.length()) - std::pow(base, my_expansion.fractial.length());
-		numerator = 0;
-
-		for (char c : my_expansion.period) {
-			if (c - '0' < 10) {
-				numerator += (c - '0') * std::pow(base, j);
-			}
-			else {
-				numerator += (c - '0' - 7) * std::pow(base, j);
-			}
-		}
-	}
-
-	template <std::integral I>
-	void sum_fraction(I& numerator, I& denominator, I n_whole, I n_fractial, I n_period, I d_whole, I d_fractial, I d_period) {
-		denominator = lcm3(d_whole, d_fractial, d_period);
-		I help_variable = denominator / d_whole;
-		n_whole *= help_variable;
-		help_variable = denominator / d_fractial;
-		n_fractial *= help_variable;
-		help_variable = denominator / d_period;
-		n_period *= help_variable;
-		numerator = n_whole + n_fractial + n_period;
-	}
-
-	template <std::integral I>
-	void reduce_fraction(I& numerator, I& denominator) {
-		I help_variable = gcd(numerator, denominator);
-		numerator /= help_variable;
-		denominator /= help_variable;
-	}
-
-	template<std::integral I>
-	std::string fraction<I>::plus_or_minus(fraction<I> my_fraction){
-		if ((my_fraction.numerator > 0 && my_fraction.denominator > 0) || (my_fraction.numerator < 0 && my_fraction.denominator < 0)) {
-			return  "";
-		}
-		else {
-			return "-";
-		}
-	}
-
-	int gcd(int a, int b) {
-		if (b == 0)
-			return a;
-		return gcd(b, a % b);
-	}
-
-	int lcm2(int a, int b) {
-		int wynik_nwd = gcd(a, b);
-		return (a * b) / wynik_nwd;
-	}
-
-	int lcm3(int a, int b, int c) {
-		return lcm2(lcm2(a, b), c);
-	}
-}
+}  // namespace representation

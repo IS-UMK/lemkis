@@ -1,18 +1,17 @@
-﻿#include "representation.hpp"
+﻿#include <iostream>
+#include "representation.hpp"
 
-int main() {
+int main(){
     using namespace representation;
 
-    fraction<int> my_fraction(47, 45);
-    expansion<10> my_expansion = expansion<10>();
+    representation::fraction<int> my_fraction{ 64, 30 };
+    representation::expansion<10> expand = representation::expand<10>(my_fraction);
+    std::cout << std::format("Expansion format: {}", expand);
+    
 
-    my_expansion = expand(my_fraction, my_expansion);
-    std::print("\nUłamek: {}.{}({})", my_expansion.whole, my_expansion.fractial, my_expansion.period);
-
-    expansion<16> my_expansion2 = expansion<16>("A", "B", "0");
-    fraction<int> my_fraction2 = fraction<int>();
-    my_fraction2 = dexpand(my_fraction2, my_expansion2);
-    std::print("\nLicznik: {}\nMianownik: {}", my_fraction2.numerator, my_fraction2.denominator);
+    representation::expansion<10> expan{ "1", "0", "1" };
+    representation::fraction<int> fraction2 = representation::dexpand<10, int>(expan);
+    std::cout << std::format("\nFraction format: {}", fraction2);
 
     return 0;
 }
