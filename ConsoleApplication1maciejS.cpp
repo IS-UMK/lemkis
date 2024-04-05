@@ -1,237 +1,129 @@
-﻿#include <iostream>
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 #include <fstream>
+#include <ranges>
+#include <span>
 
-class Macierz {
-private:
-    std::vector<std::vector<double>> dane;
-    size_t rows;
-    size_t cols;
+namespace matrix {
 
-public:
-    // Konstruktor
-    Macierz(size_t rows, size_t cols) : rows(rows), cols(cols) {
-        dane.resize(rows, std::vector<double>(cols, 0.0));
-    }
+    struct shape {
+        std::size_t rows{}, columns{};
+    };
+}
 
-    // Metoda zapisu danych do macierzy
-    void zapisz(size_t row, size_t col, double val) {
-        if (row >= rows || col >= cols)
-            throw std::out_of_range("Nieprawidłowe indeksy");
-        dane[row][col] = val;
-    }
+namespace ranges {
 
-    // Metoda ładowania danych do macierzy
-    double pobierz(size_t row, size_t col) const {
-        if (row >= rows || col >= cols)
-            throw std::out_of_range("Nieprawidłowe indeksy");
-        return dane[row][col];
-    }
+    template <std::ranges::view V>
+    class numeric_view : public std::ranges::view_interface<numeric_view<V>> {
+    private:
+        using value_type = std::ranges::range_value_t<V>;
+        std::views::all_t<V> _v;
 
-    // Metoda pobierająca wiersz
-    std::vector<double> pobierzWiersz(size_t row) const {
-        if (row >= rows)
-            throw std::out_of_range("Nieprawidłowy wiersz");
-        return dane[row];
-    }
+    public:
+        constexpr numeric_view(V v) : _v{ v | std::views::all } {}
 
-    // Metoda pobierająca kolumnę
-    std::vector<double> pobierzKolumne(size_t col) const {
-        if (col >= cols)
-            throw std::out_of_range("Nieprawidłowa kolumna");
-        std::vector<double> kolumna;
-        for (size_t i = 0; i < rows; ++i)
-            kolumna.push_back(dane[i][col]);
-        return kolumna;
-    }
+        constexpr auto begin() const { return _v.begin(); }
+        constexpr auto begin() { return _v.begin(); }
+        constexpr auto end() const { return _v.end(); }
+        constexpr auto end() { return _v.end(); }
 
-    // Przeciążony operator +
-    Macierz operator+(const Macierz& other) const {
-        if (rows != other.rows || cols != other.cols)
-            throw std::invalid_argument("Macierze muszą być tego samego rozmiaru");
-        Macierz result(rows, cols);
-        for (size_t i = 0; i < rows; ++i) {
-            for (size_t j = 0; j < cols; ++j) {
-                result.dane[i][j] = dane[i][j] + other.dane[i][j];
-            }
+        constexpr auto operator+=(std::ranges::view auto v) {
+            // Implementacja operacji dodawania na poziomie współrzędnych
+            // implementacja odpowiedniej logiki
         }
-        return result;
-    }
 
-    // Przeciążony operator -
-    Macierz operator-(const Macierz& other) const {
-        if (rows != other.rows || cols != other.cols)
-            throw std::invalid_argument("Macierze muszą być tego samego rozmiaru");
-        Macierz result(rows, cols);
-        for (size_t i = 0; i < rows; ++i) {
-            for (size_t j = 0; j < cols; ++j) {
-                result.dane[i][j] = dane[i][j] - other.dane[i][j];
-            }
+        // Pozostałe operatory analogicznie
+    };
+
+    template <typename T, std::size_t extent = std::dynamic_extent>
+    class matrix_view : public std::span<T, extent> {
+    private:
+        matrix::shape _shape{};
+
+    public:
+        constexpr matrix_view(T* data, matrix::shape s)
+            : std::span<T, extent>{ data, s.rows * s.columns }, _shape{ s } {}
+
+        constexpr auto row(std::integral auto i) {
+            // Implementacja pobierania i-tego wiersza
+            // implementacja odpowiedniej logiki
         }
-        return result;
-    }
 
-    // Przeciążony operator /
-    Macierz operator/(const Macierz& other) const {
-        if (rows != other.rows || cols != other.cols)
-            throw std::invalid_argument("Macierze muszą być tego samego rozmiaru");
-        Macierz result(rows, cols);
-        for (size_t i = 0; i < rows; ++i) {
-            for (size_t j = 0; j < cols; ++j) {
-                if (other.dane[i][j] == 0.0)
-                    throw std::invalid_argument("Dzielenie przez zero");
-                result.dane[i][j] = dane[i][j] / other.dane[i][j];
-            }
+        constexpr auto column(std::integral auto i) {
+            // Implementacja pobierania i-tej kolumny
+            // imprelemntacja odpowiedniej logiki
         }
-        return result;
-    }
-
-    // Funkcja do dodawania macierzy
-    static Macierz dodaj(const Macierz& A, const Macierz& B) {
-        return A + B;
-    }
-
-    // Funkcja do odejmowania macierzy
-    static Macierz odejmij(const Macierz& A, const Macierz& B) {
-        return A - B;
-    }
-
-    // Funkcja do dzielenia macierzy
-    static Macierz podziel(const Macierz& A, const Macierz& B) {
-        return A / B;
-    }
-
-    // Metoda obliczająca iloczyn skalarny dwóch macierzy
-    static double iloczynSkalarny(const Macierz& A, const Macierz& B) {
-        if (A.rows != B.rows || A.cols != B.cols)
-            throw std::invalid_argument("Macierze muszą być tego samego rozmiaru");
-        double wynik = 0.0;
-        for (size_t i = 0; i < A.rows; ++i) {
-            for (size_t j = 0; j < A.cols; ++j) {
-                wynik += A.dane[i][j] * B.dane[i][j];
-            }
-        }
-        return wynik;
-    }
-
+    };
     // Funkcja zapisująca macierz do pliku
-    void zapiszDoPliku(const std::string& nazwaPliku) const {
-        std::ofstream plik(nazwaPliku);
-        if (!plik.is_open()) {
-            throw std::runtime_error("Nie można otworzyć pliku do zapisu");
+    template <typename T, std::size_t extent = std::dynamic_extent>
+    void save(matrix_view<T, extent> m, const std::string& filename) {
+        std::ofstream file(filename);
+        if (!file.is_open()) {
+            throw std::runtime_error("Nie można otworzyć pliku do zapisu.");
         }
 
-        for (size_t i = 0; i < rows; ++i) {
-            for (size_t j = 0; j < cols; ++j) {
-                plik << dane[i][j] << " ";
-            }
-            plik << std::endl;
+        for (const auto& val : m) {
+            file << val << " ";
         }
-
-        plik.close();
     }
-};
+
+} // namespace ranges
 
 int main() {
     size_t rows, cols;
     std::cout << "Podaj liczbe wierszy i kolumn macierzy: ";
     std::cin >> rows >> cols;
 
-    Macierz A(rows, cols);
-    Macierz B(rows, cols);
+    std::vector<double> data_A(rows * cols);
+    std::vector<double> data_B(rows * cols);
 
+    // Wczytaj dane pierwszej macierzy
     std::cout << "Podaj elementy pierwszej macierzy A:\n";
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
             double val;
             std::cout << "Element [" << i << "][" << j << "]: ";
             std::cin >> val;
-            A.zapisz(i, j, val);
+            data_A[i * cols + j] = val;
         }
     }
 
+    // Wczytaj dane drugiej macierzy
     std::cout << "Podaj elementy drugiej macierzy B:\n";
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
             double val;
             std::cout << "Element [" << i << "][" << j << "]: ";
             std::cin >> val;
-            B.zapisz(i, j, val);
+            data_B[i * cols + j] = val;
         }
     }
 
-    std::cout << "Wybierz operację:\n";
-    std::cout << "1. Dodawanie macierzy\n";
-    std::cout << "2. Odejmowanie macierzy\n";
-    std::cout << "3. Iloczyn skalarny macierzy\n";
-    std::cout << "4. Dzielenie macierzy\n";
-    int choice;
-    std::cin >> choice;
+    // Utwórz widoki macierzy na podstawie wczytanych danych
+    matrix::shape matrix_shape{ rows, cols };
+    ranges::matrix_view<double> A(data_A.data(), matrix_shape);
+    ranges::matrix_view<double> B(data_B.data(), matrix_shape);
 
-    std::string nazwaPliku = "wynik.txt";
+    // Przykładowe operacje na macierzach
+    auto C = A + B; // Dodawanie macierzy
 
-    switch (choice) {
-    case 1:
-    {
-        Macierz C = Macierz::dodaj(A, B);
-        std::cout << "Wynik dodawania:\n";
-        C.zapiszDoPliku(nazwaPliku);
-        for (size_t i = 0; i < rows; ++i) {
-            for (size_t j = 0; j < cols; ++j) {
-                std::cout << C.pobierz(i, j) << " ";
-            }
-            std::cout << std::endl;
+    // Wyświetlenie wyniku dodawania
+    std::cout << "Wynik dodawania:\n";
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            std::cout << C[i * cols + j] << " ";
         }
+        std::cout << std::endl;
     }
-    break;
-    case 2:
-    {
-        Macierz C = Macierz::odejmij(A, B);
-        std::cout << "Wynik odejmowania:\n";
-        C.zapiszDoPliku(nazwaPliku);
-        for (size_t i = 0; i < rows; ++i) {
-            for (size_t j = 0; j < cols; ++j) {
-                std::cout << C.pobierz(i, j) << " ";
-            }
-            std::cout << std::endl;
-        }
+    
+    // Zapisuje wynik dodawania do pliku
+    try {
+        ranges::save(C, "result.txt");
+        std::cout << "Pomyślnie zapisano wynik dodawania do pliku.\n";
     }
-    break;
-    case 3:
-    {
-        try {
-            double iloczyn = Macierz::iloczynSkalarny(A, B);
-            std::ofstream plik(nazwaPliku);
-            plik << "Iloczyn skalarny macierzy: " << iloczyn << std::endl;
-            plik.close();
-            std::cout << "Iloczyn skalarny macierzy: " << iloczyn << std::endl;
-        }
-        catch (const std::invalid_argument& e) {
-            std::cerr << "Błąd: " << e.what() << std::endl;
-        }
-    }
-    break;
-    case 4:
-    {
-        try {
-            Macierz C = Macierz::podziel(A, B);
-            std::cout << "Wynik dzielenia:\n";
-            C.zapiszDoPliku(nazwaPliku);
-            for (size_t i = 0; i < rows; ++i) {
-                for (size_t j = 0; j < cols; ++j) {
-                    std::cout << C.pobierz(i, j) << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
-        catch (const std::invalid_argument& e) {
-            std::cerr << "Błąd: " << e.what() << std::endl;
-        }
-    }
-    break;
-    default:
-        std::cout << "Nieprawidłowy wybór.\n";
+    catch (const std::runtime_error& e) {
+        std::cerr << "Błąd: " << e.what() << std::endl;
     }
 
     return 0;
