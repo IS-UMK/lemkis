@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <cmath>
 
 namespace polynomial {
 
@@ -113,7 +114,13 @@ namespace polynomial {
 
       public:
         // evaluates this polynomial on the given value - Horner's algorithm
-        auto operator()(T value);
+        auto operator()(T value) {
+        	T result = 0;
+            for (int i = this->degree; i >= 0; --i) {
+                result = result * value + this->coefficients[i];
+            }
+            return result;
+        }
 
 
     };
@@ -127,21 +134,31 @@ namespace polynomial {
 
 
     template <typename T>
-    inline auto operator-(polynomial<T> p, polynomial<T> q){
-           p -= q;
-        return p;
+    inline auto operator-(polynomial<T> p, polynomial<T> q) {
+    	p -= q;
+    	return p;
     }
 
-    template <typename T>
-    inline auto operator*(polynomial<T> p, polynomial<T> q);
-
 
     template <typename T>
-    inline auto operator/(polynomial<T> p, polynomial<T> q);
+    inline auto operator*(polynomial<T> p, polynomial<T> q) {
+    	p *= q;
+    	return p;
+    }
 
 
     template <typename T>
-    inline auto operator%(polynomial<T> p, polynomial<T> q);
+    inline auto operator/(polynomial<T> p, polynomial<T> q) {
+    	p /= q;
+    	return p;
+    }
+
+
+    template <typename T>
+    inline auto operator%(polynomial<T> p, polynomial<T> q) {
+    	p %= q;
+    	return p;
+    }
     /*returns quotient and remainder when dividing *this by p*/
 
 
