@@ -1,8 +1,6 @@
-#pragma once
-
 #include <algorithm>
-#include <charconv>
 #include <cstdio>
+#include <charconv>
 #include <expected>
 #include <filesystem>
 #include <format>
@@ -10,7 +8,6 @@
 #include <iomanip>
 #include <iostream>
 #include <mdspan>
-#include <numeric>
 #include <print>
 #include <ranges>
 #include <sstream>
@@ -122,113 +119,6 @@ namespace layout {
 
 
 namespace ranges {
-    /*
-		description:
-			defines the fraction structure to represent
-			a fraction with integer numerator and denominator.
-		members:
-			I numerator - integer numerator of the fraction
-			I denominator - integer denominator of the fraction
-		methods:
-			operator-= - subtracts an integer value from the fraction
-	*/
-    template <std::integral I>
-    class fraction {
-    public:
-        I numerator{ 0 };
-        I denominator{ 1 };
-
-        constexpr fraction<I>& operator-=(I i) {
-            numerator -= i * denominator;
-            return *this;
-        }
-        /*
-        description:
-            reduce fraction
-        */
-        void reduce() {
-            I divider = std::gcd(numerator, denominator);
-            numerator /= divider;
-            denominator /= divider;
-        }
-
-    };
-
-/*
-description:
-    Operations on fractions
-*/
-    template <std::integral I>
-    constexpr fraction<I> operator+(fraction<I> f, fraction<I> g) {
-        fraction<I> result{};
-        result.numerator =
-                f.numerator * g.denominator + g.numerator * f.denominator;
-        result.denominator = f.denominator * g.denominator;
-        result.reduce();
-        return result;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator+=(fraction<I>& f, fraction<I> g) {
-        f.numerator =
-                f.numerator * g.denominator + g.numerator * f.denominator;
-        f.denominator = f.denominator * g.denominator;
-        f.reduce();
-        return f;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator-(fraction<I> f, fraction<I> g){
-        fraction<I> result;
-        result.numerator = f.numerator * g.denominator - g.numerator * f.denominator;
-        result.denominator = f.denominator * g.denominator;
-        result.reduce();
-        return result;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator-=(fraction<I>& f, fraction<I> g){
-        f.numerator = f.numerator * g.denominator - g.numerator * f.denominator;
-        f.denominator = f.denominator * g.denominator;
-        f.reduce();
-        return f;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator*(fraction<I> f, fraction<I> g){
-        fraction<I> result;
-        result.numerator = f.numerator * g.numerator;
-        result.denominator = f.denominator * g.denominator;
-        result.reduce();
-        return result;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator*=(fraction<I>& f, fraction<I> g){
-        f.numerator = f.numerator * g.numerator;
-        f.denominator = f.denominator * g.denominator;
-        f.reduce();
-        return f;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator/(fraction<I> f, fraction<I> g){
-        fraction<I> result;
-        result.numerator = f.numerator * g.denominator;
-        result.denominator = f.denominator * g.numerator;
-        result.reduce();
-        return result;
-    }
-
-    template <std::integral I>
-    constexpr fraction<I> operator/=(fraction<I>& f, fraction<I> g){
-        fraction<I> result;
-        f.numerator = f.numerator * g.denominator;
-        f.denominator = f.denominator * g.numerator;
-        f.reduce();
-        return f;
-    }
-
 
     /*this is a matrix view which reinterprets a contiguous range as matrix*/
     template <typename T, typename LP>
@@ -315,24 +205,6 @@ description:
 
 }  // namespace ranges
 
-/*
-		description:
-			enables formatting of output data
-			for representation::fraction<I>
-	*/
-template <std::integral I>
-struct std::formatter<ranges::fraction<I>> {
-
-template <typename FormatParseContext>
-constexpr auto parse(FormatParseContext& ctx) { return ctx.begin(); }
-
-
-template <typename FormatContext>
-auto format(const ::ranges::fraction<I>& f, FormatContext& ctx) const {
-    return std::format_to(ctx.out(), "{}/{}", f.numerator, f.denominator);
-}
-};
-
 
 /*Finds the maximum width of column when it is converted to string*/
 template <typename T, typename LP>
@@ -354,46 +226,6 @@ and rows by row_separator. If column_padding == 0 no additional white spaces are
 added. Otherwise matrix is prettily printed, that is columns are aligned and
 padded left and right using std::string(column_padding, ' '). In particular,
 when you save to file use column_padding = 0*/
-template <std::integral T, typename LP> //typename changed to std::integral before T template to work on fractions <std::integral T, typename LP> doesn't produce expected result
-requires(std::same_as<LP, std::layout_right> ||
-         std::same_as<LP, std::layout_left>)
-auto to_string(::ranges::matrix_view<ranges::fraction<T>, LP> m,
-               char column_separator,
-               char row_separator,
-               std::size_t column_padding = 1) {
-    // if constexpr (std::same_as<LP, std::layout_right>) {
-
-    std::string out{(column_padding > 0) ? "\n" : ""};
-    const auto cols_widths{column_widths(m)};
-    for (std::size_t i = 0; i < m.extent(0); ++i) {
-        for (std::size_t j = 0; j < m.extent(1); ++j) {
-            if (j + 1 < m.extent(1)) {
-                out += (column_padding > 0)
-                           ? std::format("{0}/{1}{3} ",
-                                         m[i, j].numerator,
-                                         m[i, j].denominator,
-                                         cols_widths[j] + 2 * column_padding,
-                                         column_separator)
-                           : std::format("{0}/{1}{2}", m[i, j].numerator, m[i, j].denominator, column_separator);
-            } else {
-                out += (column_padding > 0)
-                           ? std::format("{}/{}",
-                                         m[i, j].numerator,
-                                         m[i, j].denominator,
-                                         cols_widths[j] + 2 * column_padding)
-                           : std::format("{}/{}", m[i, j].numerator, m[i, j].denominator);
-            }
-        }
-        if (i + 1 < m.extent(0)) { out += row_separator; }
-    }
-    return out;
-}
-
-/*converts a matrix into a string, columns are separated by column_separator,
-and rows by row_separator. If column_padding == 0 no additional white spaces are
-added. Otherwise matrix is prettily printed, that is columns are aligned and
-padded left and right using std::string(column_padding, ' '). In particular,
-when you save to file use column_padding = 0*/
 template <typename T, typename LP>
 auto to_string(::ranges::matrix_view<T, LP> m,
                char column_separator,
@@ -404,19 +236,20 @@ auto to_string(::ranges::matrix_view<T, LP> m,
     const auto cols_widths{column_widths(m)};
     for (std::size_t i = 0; i < m.extent(0); ++i) {
         for (std::size_t j = 0; j < m.extent(1); ++j) {
+            std::string str{std::format("{}", m[i, j])};
             if (j + 1 < m.extent(1)) {
                 out += (column_padding > 0)
-                       ? std::format("{: ^{}}{}",
-                                     m[i, j],
-                                     cols_widths[j] + 2 * column_padding,
-                                     column_separator)
-                       : std::format("{}{}", m[i, j], column_separator);
+                           ? std::format("{: ^{}}{}",
+                                         str,
+                                         cols_widths[j] + 2 * column_padding,
+                                         column_separator)
+                           : std::format("{}{}", m[i, j], column_separator);
             } else {
                 out += (column_padding > 0)
-                       ? std::format("{: ^{}}",
-                                     m[i, j],
-                                     cols_widths[j] + 2 * column_padding)
-                       : std::format("{}", m[i, j]);
+                           ? std::format("{: ^{}}",
+                                         str,
+                                         cols_widths[j] + 2 * column_padding)
+                           : std::format("{}", m[i, j]);
             }
         }
         if (i + 1 < m.extent(0)) { out += row_separator; }
@@ -440,51 +273,20 @@ struct std::formatter<::ranges::matrix_view<T, LP>, char> {
             if (i == 1) { row_separator = *pos; }
             if (i == 2) {
                 column_padding =
-                        std::min(static_cast<std::size_t>(*pos - '0'), 4zu);
-            }
-            ++i;
-            ++pos;
-        }
-        return pos;
-    }
-
-    template <class FmtContext>
-    FmtContext::iterator format(::ranges::matrix_view<T, LP> m,
-                                FmtContext& ctx) const {
-        return std::format_to(
-                ctx.out(), "{}", ::to_string(m, column_separator, row_separator));
-    }
-};
-
-/*formatter for matrix of the form
- * {:<column_separator><row_separator><column_padding_value>}*/
-template <std::integral T, typename LP> //typename changed to std::integral before T template to work on fractions <std::integral T, typename LP> doesn't produce expected result
-struct std::formatter<::ranges::matrix_view<::ranges::fraction<T>, LP>, char> {
-    char column_separator{','};
-    char row_separator{'\n'};
-    std::size_t column_padding{1zu};
-    template <class ParseContext>
-    constexpr ParseContext::iterator parse(ParseContext& ctx) {
-        auto pos = ctx.begin();
-        std::size_t i{0};
-        while (pos != ctx.end() && *pos != '}') {
-            if (i == 0) { column_separator = *pos; }
-            if (i == 1) { row_separator = *pos; }
-            if (i == 2) {
-                column_padding =
                     std::min(static_cast<std::size_t>(*pos - '0'), 4zu);
             }
             ++i;
             ++pos;
         }
         return pos;
+        //return ctx.begin();
     }
 
     template <class FmtContext>
-    FmtContext::iterator format(::ranges::matrix_view<::ranges::fraction<T>, LP> m,
+    FmtContext::iterator format(::ranges::matrix_view<T, LP> m,
                                 FmtContext& ctx) const {
         return std::format_to(
-            ctx.out(), "{}", ::to_string<T, LP>(m, column_separator, row_separator));
+            ctx.out(), "{}", ::to_string(m, column_separator, row_separator));
     }
 };
 
@@ -521,33 +323,14 @@ namespace utils {
 
 namespace matrix {
 
-    /*saves a matrix m to a file, using column_separator and
+    /*saves a matrix m to a file file, using column_spearator and
      * row_separator*/
     template <char column_separator = ',',
               char row_separator = '\n',
               typename T,
               typename LP>
-    inline auto save(ranges::matrix_view<ranges::fraction<T>, LP> m, std::filesystem::path file)
-        -> void {
-        std::filesystem::create_directories(file.parent_path());
-        if (std::FILE * stream{std::fopen(file.c_str(), "w")}) {
-            std::print(stream,
-                       "{}",
-                       ::to_string(m, column_separator, row_separator, 0));
-            std::fclose(stream);
-        } else {
-            std::print("failed to create file {}, reason = {}\n",
-                       file.string(),
-                       std::strerror(errno));
-        }
-    }
-
-    template <char column_separator = ',',
-            char row_separator = '\n',
-            typename T,
-            typename LP>
     inline auto save(ranges::matrix_view<T, LP> m, std::filesystem::path file)
-    -> void {
+        -> void {
         std::filesystem::create_directories(file.parent_path());
         if (std::FILE * stream{std::fopen(file.c_str(), "w")}) {
             std::print(stream,
@@ -662,7 +445,7 @@ void matrix_view_save_load_example() {
 }
 
 /*adds to row_i row_j multiplied by alpha*/
-template <typename T, typename LP, typename R> //added typename R to enable working on doubles
+template <typename T, typename LP, typename R>
 requires(std::same_as<LP, std::layout_right>)
 inline auto add(ranges::matrix_view<T, LP> m,
                 std::size_t row_i,
@@ -673,7 +456,8 @@ inline auto add(ranges::matrix_view<T, LP> m,
     m[row_j] /= alpha;
 }
 
-template <typename T, typename LP, typename R> //added typename R to enable working on doubles
+/*subtracts row_j multiplied by alpha from row_i*/
+template <typename T, typename LP, typename R>
 requires(std::same_as<LP, std::layout_right>)
 inline auto subtract(ranges::matrix_view<T, LP> m,
                 std::size_t row_i,
@@ -707,4 +491,6 @@ void operations_on_matrix_rows() {
     std::println("after swapping of rows 0 and 1, m = {}\n", m);
     m[0] *= 10;
     std::println("after multiplication of first row by 10, m = {}\n", m);
+
+    ;
 }

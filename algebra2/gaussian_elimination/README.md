@@ -7,17 +7,17 @@ To compile the code on your computer, navigate to the build directory and use th
 
 clang++-18 -stdlib=libc++ -std=c++23 ./main.cpp -o main
 
-**NOTE**: Ensure that the files `gaussian_elimination.h`, `matrix.hpp`, and `main.cpp` are in the same directory.
+**NOTE**: Ensure that the files `gaussian_elimination.hpp` and `matrix.hpp` are in the same directory.
 
 ## Functions
 
-- `fraction()` allows performing tasks on fractions, e.g., `1/8`.
+- `fraction` struct representing fractions.
 - `run()` utilizes the three operations mentioned in the Project Description.
 - `show_steps()` prints out the matrix between using two operations.
 - `determinant()` calculates the determinant of the matrix if the matrix is square.
 - `inverse()` calculates the inverse matrix of matrix `m` if the matrix is square and invertible.
 
-You can look at `gaussian_elimination_examples()` and `gaussian_elimination_examples_fractions()` to understand how to declare matrices and call functions depending on if you need to operate on fractions or floating point numbers
+You can run `examples()` to understand the implementation of each function.
 
 ## Questions
 If there's a part of the code not mentioned in this document that needs explanation, please refer to the source code or ask the authors.
@@ -26,5 +26,3 @@ If there's a part of the code not mentioned in this document that needs explanat
 - Andrii Bryliant
 - Alan Czerski
 - Radosław Gawryszewski
-
-
