@@ -1,220 +1,249 @@
 #pragma once
-#include <iostream>
 #include <stdio.h>
-#include <vector>
-#include <utility>
+
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <print>
+#include <set>
 #include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace polynomial {
-    template <typename T>
-    struct polynomial {
-      public:
-        std::vector<T> coefficients{};
-        std::size_t degree{0};
-      public:
-        auto operator+=(const polynomial &p) -> polynomial & {
-            if (p.degree > degree) { coefficients.resize(p.degree + 1, T{0}); }
-            for (std::size_t i = 0; i <= p.degree; ++i) {
-                coefficients[i] += p.coefficients[i];
-                if (coefficients[i] != 0) { degree = i; }
-            }
-            return *this;
-        }
-        auto operator-() const {
-            auto copy{*this};
-            for (auto &c : copy.coefficients) { c *= -1; }
-            return copy;
-        }       
-        auto operator-=(const polynomial &p) -> polynomial & {
-            return operator+=(-p);
-        }
-        auto operator*=(const polynomial &p) -> polynomial &{
-            coefficients.resize(p.degree + degree + 1, T{0});
-            for (std::size_t i = 0; i < degree; ++i)
-            {
-                for (std::size_t j = 0; j < p.degree; ++j)
-                {
-                    coefficients[i+j] += coefficients[i] * p.coefficients[j];
-                }
-            }
-            degree += p.degree;
-            return *this;            
-        }
-        auto operator/=(const polynomial &p) -> polynomial & {
-            if (p.degree == 0 && p.coefficients[0] == T{0}) {
-                throw std::invalid_argument("Division by zero polynomial");
-            }else if(p.degree > 1){
-                throw std::invalid_argument("Division by invalid polynomial");
-            }
-            coefficients.resize(degree, T{0});
-            degree -= 1;
-            for(std::size_t i; i <= degree; i++){
-                coefficients[i] /= p.coefficients[0];
-                if( i+1 <= degree){
-                    coefficients[i+1] -= coefficients[i] * p.coefficients[1];
-                }
-            }
-            return *this;
-        }
-        auto operator%=(const polynomial &p) -> polynomial & {
-            if (p.degree == 0 && p.coefficients[0] == T{0}) {
-                throw std::invalid_argument("Division by zero polynomial");
-            }
-            polynomial quotient;
-            polynomial remainder = *this;
-            quotient = *this / p;
-            remainder -= quotient * p;
-            *this = remainder;
-            return *this;
-        }
-      public:
-        auto operator()(T value) {
-        	T result = 0;
-            for (int i = this->degree; i >= 0; --i) {
-                result = result * value + this->coefficients[i];
-            }
-            return result;
-        }
-    };
-    template <typename T>
-    inline auto operator+(polynomial<T> p, polynomial<T> q) {
-        p += q;
-        return p;
+template <typename T>
+struct polynomial {
+ public:
+  std::vector<T> coefficients{};
+  std::size_t degree{};
+
+ public:
+  auto operator+=(const polynomial &p) -> polynomial & {
+    if (p.degree > degree) {
+      coefficients.resize(p.degree + 1, T{0});
     }
-    template <typename T>
-    inline auto operator-(polynomial<T> p, polynomial<T> q) {
-    	p -= q;
-    	return p;
+    for (std::size_t i = 0; i <= p.degree; ++i) {
+      coefficients[i] += p.coefficients[i];
+      if (coefficients[i] != 0) {
+        degree = i;
+      }
     }
-    template <typename T>
-    inline auto operator*(polynomial<T> p, polynomial<T> q) {
-    	p *= q;
-    	return p;
+    return *this;
+  }
+  
+  auto operator-() const {
+    auto copy{*this};
+    for (auto &c : copy.coefficients) {
+      c *= -1;
     }
-    template <typename T>
-    inline auto operator/(polynomial<T> p, polynomial<T> q) {
-    	p /= q;
-    	return p;
+    return copy;
+  }
+  
+  auto operator-=(const polynomial &p) -> polynomial & {
+    return operator+=(-p);
+  }
+  
+  auto operator*=(const polynomial &p) -> polynomial & {
+    std::vector<T> multiplication_vector{};
+    multiplication_vector.resize(p.degree + degree + 1, T{0});
+    coefficients.resize(p.degree + degree + 1, T{0});
+    for (std::size_t i = degree + 1; i > 0; i--) {
+      for (std::size_t j = p.degree + 1; j > 0; j--) {
+        multiplication_vector[i + j - 2] +=
+            coefficients[i - 1] * p.coefficients[j - 1];
+      }
     }
-    template <typename T>
-    inline auto operator%(polynomial<T> p, polynomial<T> q) {
-    	p %= q;
-    	return p;
+    coefficients = multiplication_vector;
+    degree += p.degree;
+    return *this;
+  }
+  
+  auto operator/=(const polynomial &p) -> polynomial & {
+    if (p.degree == 0 && p.coefficients[0] == T{0}) {
+      throw std::invalid_argument("Division by zero polynomial");
+    } else if (p.degree > degree) {
+      throw std::invalid_argument("Division by invalid polynomial");
     }
-    template <typename T>
-    inline auto divide(polynomial<T> p, polynomial<T> q)
-    ->std::pair<polynomial<T>, polynomial<T>> {
-    	polynomial<T> quotient, remainder;
-        quotient = p / q;
-        remainder = p % q;
-        return std::make_pair(quotient, remainder);
-    }
-    template <typename T>
-    inline auto root_rational_candidates(polynomial<T> p) -> std::vector<T>{
-        size_t P = p.coefficients[p.degree];
-        size_t Q = p.coefficients[0];
-        std::vector<T> factors_of_P{};
-        std::vector<T> factors_of_Q{};
-        std::vector<T> factors{};
-        for(std::size_t i = 1; i < P; i++){
-            if(P % i == 0){
-                factors_of_P.push_back(i);
-            }
+    std::vector<T> division_vector{};
+    division_vector.resize(degree - p.degree + 1, T{0});
+    for (std::size_t i = degree; i > p.degree - 1; i--) {
+      division_vector[i - p.degree] =
+          coefficients[i] / p.coefficients[p.degree];
+      if (i - 1 > 0) {
+        for (std::size_t j = p.degree + 1; j > 0; j--) {
+          coefficients[j + i - p.degree - 1] -=
+              division_vector[i - p.degree] * p.coefficients[j - 1];
         }
-        for(std::size_t i = 1; i < Q; i++){
-            if(Q % i == 0){
-                factors_of_Q.push_back(i);
-            }
-        }
-        size_t duplicates = 0;
-        for(std::size_t i = 0; i < factors_of_P.size; i++){
-            for(std::size_t j = 0; j < factors_of_Q.size; j++){
-                for(std::size_t k = 0; k < factors.size; k++){
-                    if(factors_of_P[i] / factors_of_Q[j] == factors[k]){
-                        duplicates = 1;
-                        break;
-                    }
-                }
-                if(duplicates == 0){
-                    factors.push_back(factors_of_P[i] / factors_of_Q[j]);
-                }
-                duplicates = 0;
-            }
-        }
-        size_t results_positive = 0;
-        size_t results_negative = 0;
-        for(std::size_t i = 0; i < factors.size; i++){
-            for(std::size_t j = 0; j < p.degree; j++){
-                results_positive += p.coefficients[j] * factors[i];
-                results_negative += p.coefficients[j] * -factors[i];
-            }
-            if(results_positive == 0){
-                return factors[i];
-            }else if(results_negative == 0){
-                return -factors[i];
-            }
-            results_positive = 0;
-            results_negative = 0;
-        }
-        throw std::invalid_argument("Polynomial has no rational roots");
+      }
     }
-    template <typename T>
-    inline auto gcd(polynomial<T> p, polynomial<T> q) -> std::pair<polynomial<T>, std::vector<T>>
-    {
-	std::pair<polynomial<T>, std::vector<T>> result;
-	polynomial<T> x_prev{1}, y_prev{0}, x{0}, y{1};
-	std::vector<T> results;
-    while (q.degree >= 0)
-    {
-        auto quotient = divide(p, q).first;
-        p -= quotient * q;
-        auto temp = std::move(x);
-        x = x_prev - quotient * x;
-        x_prev = std::move(temp);
-        temp = std::move(y);
-        y = y_prev - quotient * y;
-        y_prev = std::move(temp);
-        results.push_back(x_prev);
-        results.push_back(y_prev);
+    coefficients.resize(degree - p.degree + 1, T{0});
+    degree -= p.degree;
+    coefficients = division_vector;
+    return *this;
+  }
+  
+  auto operator%=(const polynomial &p) -> polynomial & {
+    if (p.degree == 0 && p.coefficients[0] == T{0}) {
+      throw std::invalid_argument("Division by zero polynomial");
     }
-    result.first = x_prev; 
-    result.second = std::move(results); 
+    polynomial quotient;
+    polynomial remainder = *this;
+    quotient = *this / p;
+    remainder -= quotient * p;
+    *this = remainder;
+    return *this;
+  }
+
+ public:
+  auto operator()(T value) {
+    T result = 0;
+    for (int i = this->degree; i >= 0; --i) {
+      result = result * value + this->coefficients[i];
+    }
     return result;
-    }
+  }
+};
+
+template <typename T>
+inline auto operator+(polynomial<T> p, polynomial<T> q) {
+  p += q;
+  return p;
 }
-void test() {
-    polynomial::polynomial<double> p1{{1, 2, 3}};
-    polynomial::polynomial<double> p2{{1, 1}};
-    polynomial::polynomial<double> result_addition = p1 + p2;
-    std::cout << "Addition result: ";
-    for (auto coeff : result_addition.coefficients) {
-        std::cout << coeff << " ";
+template <typename T>
+inline auto operator-(polynomial<T> p, polynomial<T> q) {
+  p -= q;
+  return p;
+}
+template <typename T>
+inline auto operator*(polynomial<T> p, polynomial<T> q) {
+  p *= q;
+  return p;
+}
+template <typename T>
+inline auto operator/(polynomial<T> p, polynomial<T> q) {
+  p /= q;
+  return p;
+}
+template <typename T>
+inline auto operator%(polynomial<T> p, polynomial<T> q) {
+  p %= q;
+  return p;
+}
+template <typename T>
+inline auto divide(polynomial<T> p, polynomial<T> q)
+    -> std::pair<polynomial<T>, polynomial<T>> {
+  return {p / q, p % q};
+}
+
+template <typename T>
+inline auto root_rational_candidates(polynomial<T> p) -> std::set<T> {
+  size_t leading_quotient = p.coefficients[p.degree];
+  std::vector<T> factor_of_last_term{};
+  std::vector<T> factor_of_first_term{};
+  std::set<T> factors{};
+  for (std::size_t i = 1; i <= leading_quotient; i++) {
+    if (leading_quotient % i == 0) {
+      factor_of_last_term.push_back(i);
     }
-    std::cout << std::endl;
-    polynomial::polynomial<double> result_subtraction = p1 - p2;
-    std::cout << "Subtraction result: ";
-    for (auto coeff : result_subtraction.coefficients) {
-        std::cout << coeff << " ";
+  }
+  for (std::size_t i = 1; i <= static_cast<std::size_t>(p.coefficients[0]);
+       i++) {
+    if (static_cast<int>(p.coefficients[0]) % static_cast<int>(i) == 0) {
+      factor_of_first_term.push_back(i);
     }
-    std::cout << std::endl;
-    polynomial::polynomial<double> result_multiplication = p1 * p2;
-    std::cout << "Multiplication result: ";
-    for (auto coeff : result_multiplication.coefficients) {
-        std::cout << coeff << " ";
+  }
+  for (std::size_t i = 0; i < factor_of_first_term.size(); i++) {
+    for (std::size_t j = 0; j < factor_of_last_term.size(); j++) {
+      factors.emplace(factor_of_first_term[i] / factor_of_last_term[j]);
     }
+  }
+  return factors;
+}
+
+template <typename T>
+auto gcd(polynomial<T> p, polynomial<T> q)
+    -> std::pair<polynomial<T>, std::vector<T>> {
+  std::vector<T> steps;
+  while (q.degree < p.degree) {
+    auto [quotient, remainder] = divide(p, q);
+    p = q;
+    q = remainder;
+    steps.push_back(p.degree);
+  }
+  return {p, steps};
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const polynomial<T> &p) {
+  for (std::size_t i = p.degree; i > 0; --i) {
+    os << p.coefficients[i] << "x^" << i << " + ";
+  }
+  os << p.coefficients[0];
+  return os;
+}
+}
+
+template <typename T>
+void performoperation(const polynomial::polynomial<T> &p1,
+                      const polynomial::polynomial<T> &p2,
+                      const std::string &operation) {
+  polynomial::polynomial<T> result;
+  switch (operation[0]) {
+    case '+':
+      result = p1 + p2;
+      break;
+    case '-':
+      result = p1 - p2;
+      break;
+    case '*':
+      result = p1 * p2;
+      break;
+    case '/':
+      result = p1 / p2;
+      break;
+    case '%':
+      result = p1 % p2;
+      break;
+    default:
+      std::cerr << "Unsupported operation: " << operation << std::endl;
+      return;
+  }
+  std::cout << operation << " result: ";
+  for (auto coeff : result.coefficients) {
+    std::cout << coeff << " ";
+  }
+  std::cout << std::endl;
+}
+
+void example() {
+  polynomial::polynomial<double> p1{{3, 5, 4}}, p2{{1, 1}};
+  p1.degree = 2;
+  p2.degree = 1;
+  std::cout << "This program performs operations on two polynomials" << std::endl;
+  std::cout << "Polynomial p = " << p1 << ", polynomial q = " << p2
+            << std::endl;
+  performoperation(p1, p2, "+");
+  performoperation(p1, p2, "-");
+  performoperation(p1, p2, "*");
+  performoperation(p1, p2, "/");
+  performoperation(p1, p2, "%");
+  auto [quotient, remainder] = polynomial::divide(p1, p2);
+  auto print_coeffs = [](const auto &coeffs) {
+    for (auto coeff : coeffs) std::cout << coeff << " ";
     std::cout << std::endl;
-    polynomial::polynomial<double> result_division = p1 / p2;
-    std::cout << "Division result: ";
-    for (auto coeff : result_division.coefficients) {
-        std::cout << coeff << " ";
-    }
-    std::cout << std::endl;
-    polynomial::polynomial<double> result_modulus = p1 % p2;
-    std::cout << "Modulus result: ";
-    for (auto coeff : result_modulus.coefficients) {
-        std::cout << coeff << " ";
-    }
-    std::cout << std::endl;
+  };
+  std::cout << "Division result (Quotient): ";
+  print_coeffs(quotient.coefficients);
+  std::cout << "Division result (Remainder): ";
+  print_coeffs(remainder.coefficients);
+  double value = 2.0;
+  std::cout << "Evaluation at x = " << value << ": " << p1(value) << std::endl;
+  std::cout << "Root rational candidates: ";
+  for (auto root : polynomial::root_rational_candidates(p1))
+    std::cout << root << " ";
+  std::cout << std::endl
+            << "GCD: " << polynomial::gcd(p1, p2).first << std::endl;
+  std::cout << "Extended Euclidean Algorithm steps: ";
+  for (auto &val : polynomial::gcd(p1, p2).second) std::cout << val << " ";
+  std::cout << std::endl;
 }
