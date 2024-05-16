@@ -2,7 +2,7 @@
 #include "polynomial.hpp"
 
 int main() {
-   	using namespace polynomial;
-   	test();
-   	return 0;
+   using namespace polynomial;
+   example();
+   return 0;
 }
