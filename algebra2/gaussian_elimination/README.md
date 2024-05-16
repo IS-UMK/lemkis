@@ -7,7 +7,7 @@ To compile the code on your computer, navigate to the build directory and use th
 
 clang++-18 -stdlib=libc++ -std=c++23 ./main.cpp -o main
 
-**NOTE**: Ensure that the files `gaussian_elimination.hpp` and `matrix.hpp` are in the same directory.
+**NOTE**: Ensure that you have both projects `gaussian_elimination` and `matrix` on your local computer as this project depends on `matrix` project
 
 ## Functions
 
@@ -18,6 +18,7 @@ clang++-18 -stdlib=libc++ -std=c++23 ./main.cpp -o main
 - `inverse()` calculates the inverse matrix of matrix `m` if the matrix is square and invertible.
 
 You can run `examples()` to understand the implementation of each function.
+And by running `tests()` you can make sure that everything works and behaves how it should
 
 ## Questions
 If there's a part of the code not mentioned in this document that needs explanation, please refer to the source code or ask the authors.
