@@ -35,8 +35,10 @@ namespace algorithms::gaussian_elimination {
     */
         void reduce() {
             I divider = std::gcd(numerator, denominator);
-            numerator /= divider;
-            denominator /= divider;
+            if(divider != 0){
+                numerator /= divider;
+                denominator /= divider;
+            }
         }
 
     };
@@ -369,9 +371,11 @@ namespace algorithms::gaussian_elimination {
         for(int i = 0;  i < rows; i++){
                 if(m[i, i].numerator != 0){
                     for(int k = i+1; k < rows; k++){
-                        factor = m[i, k]/m[k, k];
-                        if(factor.numerator != 0){
-                            subtract(m, i, k, factor);
+                        if(m[k, k].numerator != 0){
+                            factor = m[i, k]/m[k, k];
+                            if(factor.numerator != 0){
+                                subtract(m, i, k, factor);
+                            }
                         }
                     }
                 }
