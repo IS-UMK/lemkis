@@ -1,7 +1,6 @@
-﻿
+
 #include <iostream>
-#include "Number_theory.hpp"
-#include "Testy.hpp"
+#include "number_theory.hpp"
 
 int main()
 {
