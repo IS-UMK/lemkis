@@ -1,58 +1,69 @@
-Biblioteka Number Theory
-Wstęp
-Biblioteka Number Theory jest zestawem funkcji i algorytmów związanych z teorią liczb, zaprojektowanym do użytku w programach C++.
 
-Spis treści
-Instalacja
-Funkcje
-Przykłady użycia
-Zalecenia
+# Number Theory Library
 
+This is a C++ library providing various functions and algorithms related to number theory.
 
-Instalacja
-Aby używać tej biblioteki, dołącz pliki nagłówkowe do swojego projektu C++.
+## Features
 
-Funkcje
-Biblioteka zawiera następujące funkcje:
+- **Pairwise Coprime Check:** Function to check if a vector of numbers are pairwise coprime.
+- **Modular Exponentiation:** Compute `num^exponent % mod` efficiently.
+- **Modular Inverse:** Find the modular inverse of a number.
+- **Linear Congruence Solver:** Solve linear congruences.
+- **Sieve of Eratosthenes:** Generate prime numbers efficiently using the Sieve of Eratosthenes algorithm.
+- **Prime Factor Decomposition:** Decompose a number into its prime factors.
+- **Euler's Totient Function:** Calculate Euler’s Totient Function.
+- **Largest Power of Prime Dividing Factorial:** Find the largest power of a prime that divides a factorial.
+- **Linear Congruence Solver for Multiple Equations:** Solve a system of linear congruences.
 
-Sprawdzanie, czy zestaw liczb jest względnie pierwszy (co-prime).
-Obliczanie potęgi modularnej liczby.
-Obliczanie odwrotności modularnej liczby.
-Rozwiązywanie równań kongruencji liniowej.
-Implementacja Sita Eratostenesa do generowania liczb pierwszych.
-Rozkładanie liczby na czynniki pierwsze.
-Obliczanie funkcji Eulera phi (funkcji totient).
-Obliczanie największej potęgi liczby pierwszej dzielącej silnię danej liczby.
-Rozwiązywanie układów równań kongruencji liniowych.
+## Usage
 
-Przykłady użycia
+To use this library, include the necessary header files and link with the compiled library. For example:
+
+```cpp
 #include "number_theory.hpp"
 #include <iostream>
 
 int main() {
-    // Obliczanie największego wspólnego dzielnika
-    std::cout << number_theory::gcd(24, 36) << std::endl; // Wypisze: 12
-
-    // Sprawdzanie czy zestaw liczb jest względnie pierwszy
-    std::vector<std::size_t> numbers = {15, 28, 37};
-    std::cout << std::boolalpha << number_theory::are_coprime(numbers) << std::endl; // Wypisze: true
-
-    // Obliczanie potęgi modularnej liczby
-    std::cout << number_theory::modular_pow<10>(2, 3) << std::endl; // Wypisze: 8
-
-    // Rozwiązywanie równań kongruencji liniowej
-    std::cout << number_theory::linear_congruence_solver<13>(3, 5) << std::endl; // Wypisze: 8
-
-    // Generowanie liczb pierwszych za pomocą Sita Eratostenesa
-    auto primes = number_theory::sieve_of_eratosthenes(50);
+    // Example usage
+    std::vector<size_t> primes = number_theory::sieve_of_eratosthenes(100);
     for (auto prime : primes) {
         std::cout << prime << " ";
     }
-    // Wypisze: 2 3 5 7 11 13 17 19 23 29 31 37 41 43 47
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+## Compilation
+
+### Using g++
+To compile your program using `g++`, you can use the following command:
+```bash
+g++ -std=c++17 -o main main.cpp
+```
+Replace `main.cpp` with the name of your source file.
+### Using clang
+To compile your program using `clang`, you can use the following command:
+```bash
+clang++ -std=c++17 -o main main.cpp
+```
+Replace `main.cpp` with the name of your source file.
+## Testing
+The library includes a set of test cases to ensure the correctness of its functions. To run the tests, compile and execute the test() function in the tests namespace.
+```cpp
+#include "number_theory.hpp"
+#include "tests.hpp"
+
+int main() {
+    // Run tests
+    tests::test();
 
     return 0;
 }
 
-Zalecenia
-Przed użyciem funkcji upewnij się, że Twoje liczby są typu całkowitego.
-W przypadku funkcji operujących na liczbach modulo, zadbaj o przekazanie odpowiednich wartości dla parametrów.
+```
+
+## License
+This project is licensed under the MIT License 
+
