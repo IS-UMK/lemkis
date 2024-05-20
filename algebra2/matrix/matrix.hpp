@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdio>
+#include <charconv>
 #include <expected>
 #include <filesystem>
 #include <format>
@@ -235,17 +236,18 @@ auto to_string(::ranges::matrix_view<T, LP> m,
     const auto cols_widths{column_widths(m)};
     for (std::size_t i = 0; i < m.extent(0); ++i) {
         for (std::size_t j = 0; j < m.extent(1); ++j) {
+            std::string str{std::format("{}", m[i, j])};
             if (j + 1 < m.extent(1)) {
                 out += (column_padding > 0)
                            ? std::format("{: ^{}}{}",
-                                         m[i, j],
+                                         str,
                                          cols_widths[j] + 2 * column_padding,
                                          column_separator)
                            : std::format("{}{}", m[i, j], column_separator);
             } else {
                 out += (column_padding > 0)
                            ? std::format("{: ^{}}",
-                                         m[i, j],
+                                         str,
                                          cols_widths[j] + 2 * column_padding)
                            : std::format("{}", m[i, j]);
             }
@@ -277,6 +279,7 @@ struct std::formatter<::ranges::matrix_view<T, LP>, char> {
             ++pos;
         }
         return pos;
+        //return ctx.begin();
     }
 
     template <class FmtContext>
@@ -442,12 +445,12 @@ void matrix_view_save_load_example() {
 }
 
 /*adds to row_i row_j multiplied by alpha*/
-template <typename T, typename LP>
+template <typename T, typename LP, typename R>
 requires(std::same_as<LP, std::layout_right>)
 inline auto add(ranges::matrix_view<T, LP> m,
                 std::size_t row_i,
                 std::size_t row_j,
-                T alpha) -> void {
+                R alpha) -> void {
     m[row_j] *= alpha;
     m[row_i] += m[row_j];
     m[row_j] /= alpha;
