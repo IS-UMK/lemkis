@@ -22,7 +22,7 @@ Non-exhausting list of requirements (note that some problems are detected by cla
 - functions/classes/methods should be separated by at least two empty lines
  # Other requirements
 You must
- -  provide FULLY implemented api (which is given to you when you are attached to a project)
+ -  provide FULLY implemented api (which is given to you when you are attached to a project). If you do not do so it might result in zero points outcome.
  - provide examples demonstrating basic usage of your api
  - you must provide tests (simple `assert()` tests suffice). In function in your api should have at least one corresponding test. Moreprecisely, each api function should be tested in every possible configuration (here configuration means usually `different set of input parameters`)
  - put your solution in a file  respecting the following pattern `<name_of_classes>/<name_of_project>/<name_of_your_solution.hpp>`
