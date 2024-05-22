@@ -2,8 +2,10 @@
 
 You must meet the following conditions:
 
-- you code compiles using ```clang++-18 -std=gnu++26 -stdlib=libc++ -Wall -Wextra -Wpedantic -Werror <your_cpp_file> -o <your_output_file>```
-- your code is formatted according to `.clang-format`, so always run (in the root of this repository or use `--style` flag with appropriate value of `file:<format_file_path>` to set path to `.clang-format` file) ```clang-format -i <file_to_be_formatted>```
+- you code compiles using
+  ```clang++-18 -std=gnu++26 -stdlib=libc++ -Wall -Wextra -Wpedantic -Werror <your_cpp_file> -o <your_output_file>```
+- your code is formatted according to `.clang-format`, so always run (in the root of this repository or use `--style` flag with appropriate value of `file:<format_file_path>` to set path to `.clang-format` file)
+  ```clang-format -i <file_to_be_formatted>```
 - your code should generate no errors as it comes to clang-tidy requirements, so always run (in the root of this repository or use `--config-file` flag to set path to `.clang-tidy` file) ``` clang-tidy-18 <path_to_your_header_solution>  -- -std=gnu++26 -stdlib=libc++```
 - you implementation of an api must be contained in one header (single-header solution)
 
