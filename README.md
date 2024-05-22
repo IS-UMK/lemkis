@@ -28,7 +28,7 @@ You must
  - put your solution in a file  respecting the following pattern `<name_of_classes>/<name_of_project>/<name_of_your_solution.hpp>`
  - use exceptions only in exceptional cases, instead take advantage of `std::expected` or `std::optional` (depending on your needs)
  - use `const` as frequently as possible
--provide `README.md` file in `<name_of_classes>/<name_of_project>/` subdirectory which explains how to compile you code, how to run examples, some description of project (what it is about), some api summary. Beware, depending on a project It might be required of you to provide additional information in `README.md` e.g. description of an algorithm you use, or a proof of a fact/facts you use etc.
+ - provide `README.md` file in `<name_of_classes>/<name_of_project>/` subdirectory which explains how to compile you code, how to run examples, some description of project (what it is about), some api summary. Beware, depending on a project It might be required of you to provide additional information in `README.md` e.g. description of an algorithm you use, or a proof of a fact/facts you use etc.
 
 # Some notes
 
