@@ -14,7 +14,7 @@ You must meet the following conditions:
   ```bash
   clang-tidy-18 <path_to_your_header_solution>  -- -std=gnu++26 -stdlib=libc++
   ```
-- you implementation of an api must be contained in one header (single-header solution)
+- you implementation of an api must be contained in one header (single-header solution). However, to avoid annoying clang-format warnings (like magic constant warning in examples) you can provide two additional headers containing examples and tests. These files are NOT checked by clang-tidy but should follow all rules mentioned in this README (you can always run clang-tidy just to see what warnings it produces or (additionally) turn off some clang-tidy flags e.g add `-readability-magic-numbers` to the `Checks:` list and then run clang-tidy).
 
 
 # Style requirements of code
