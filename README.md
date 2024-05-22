@@ -22,9 +22,10 @@ You must meet the following conditions:
 Non-exhausting list of requirements (note that some problems are detected by clang-tidy)
 
 - use English only
+- avoid magic constants (note that clang-tidy does not catch all magic constants)
 - style is consistent - if you use a convention stick to it
 - no inline comments. On the other hand documentation of each function is required (at least provide some brief description in a form of a comment). Make sure that documentation is not sloppy and explains any behaviour which might suprise a user.
-- not too long functions - if you have complex logic in your function split it using helper functions.
+- not too long functions - if you have complex logic in your function split it using helper functions. Note that clang-tidy is lenient (it allows to use up to about 15 lines of code) - however you should avoid more than +-seven statemets in the body of the function.
 - do not use std::cout or c-style prints, take advantage of `std::format` and `std::print` (in particular overload `std::formatter` if you need to print some new structure)
 - make sure your code is user-friendly and easy-to-read. In particular use descriptive names for functions, variable, concepts, etc.
 - avoid code repetition - use auxiliary functions
