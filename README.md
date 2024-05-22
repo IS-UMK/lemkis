@@ -43,3 +43,5 @@ You must
 
 - If your code breaks many of above rules It might result in immediate 0pt result.
 - Beware that I might test your program to check if it is correct.
+- In case of trouble contact me as soos as possible - let me know that you encountered some problems - otherwise I will NOT accept your explanation of a kind "I could not run this command", "I did not know how to do this and that".
+- Clang tidy can sometimes be irritating - in case you cannot cope with some warnings it might be the case that a flag should be turned off. Make sure you inform me if such a case occurs.
