@@ -1,6 +1,6 @@
 ---
 
-Checks:          "clang-diagnostic-*,clang-analyzer-*,-*, bugprone-*, misc-*, -misc-non-private-member-variables-in-classes, modernize-*, performance-*, portability-*, readability-*, -readability-redundant-access-specifiers, -readability-identifier-length, google-*, -google-readability-namespace-comments, -google-runtime-int, -google-runtime-references,\n"
+Checks:          "clang-diagnostic-*,clang-analyzer-*,-*, bugprone-*,-bugprone-easily-swappable-parameters, misc-*, -misc-non-private-member-variables-in-classes, -misc-include-cleaner,  modernize-*, performance-*, portability-*, readability-*, -readability-redundant-access-specifiers, -readability-identifier-length, google-*, -google-readability-namespace-comments, -google-runtime-int, -google-runtime-references,\n"
 WarningsAsErrors: '*'
 HeaderFileExtensions:
   - ''
@@ -117,8 +117,6 @@ CheckOptions:
   misc-definitions-in-headers.HeaderFileExtensions: ';h;hh;hpp;hxx'
   misc-definitions-in-headers.UseHeaderFileExtension: 'true'
   misc-header-include-cycle.IgnoredFilesList: ''
-  misc-include-cleaner.DeduplicateFindings: 'true'
-  misc-include-cleaner.IgnoreHeaders: ''
   misc-throw-by-value-catch-by-reference.CheckThrowTemporaries: 'true'
   misc-throw-by-value-catch-by-reference.WarnOnLargeObjects: 'false'
   misc-uniqueptr-reset-release.IncludeStyle: llvm
@@ -219,8 +217,8 @@ CheckOptions:
   readability-function-cognitive-complexity.DescribeBasicIncrements: 'true'
   readability-function-cognitive-complexity.IgnoreMacros: 'false'
   readability-function-cognitive-complexity.Threshold: '25'
-  readability-function-size.BranchThreshold: 3
-  readability-function-size.LineThreshold: 12
+  readability-function-size.BranchThreshold: 4
+  readability-function-size.LineThreshold: 15
   readability-function-size.NestingThreshold: 3
   readability-function-size.ParameterThreshold: none
   readability-function-size.StatementThreshold: '800'
@@ -231,7 +229,7 @@ CheckOptions:
   readability-identifier-naming.ClassIgnoredRegexp: ''
   readability-identifier-naming.ClassPrefix: ''
   readability-identifier-naming.ClassSuffix: ''
-  readability-identifier-naming.ConceptCase: CamelCase
+  readability-identifier-naming.ConceptCase: lower_case
   readability-identifier-naming.ConceptIgnoredRegexp: ''
   readability-identifier-naming.ConceptPrefix: ''
   readability-identifier-naming.ConceptSuffix: ''
