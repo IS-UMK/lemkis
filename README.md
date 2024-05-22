@@ -4,8 +4,8 @@ You must meet the following conditions:
 
 - you code compiles using ```clang++-18 -std=gnu++26 -stdlib=libc++ -Wall -Wextra -Wpedantic -Werror <your_cpp_file> -o <your_output_file>```
 - it is formatted according to `.clang-format`, so always run ```clang-format -i <file_to_be_formatted>```
-- should generate no errors as it comes to clang-tidy requirements, so always run ``` clang-tidy-18 ./polynomial.hpp  -- -std=gnu++26 -stdlib=libc++```
-  
+- should generate no errors as it comes to clang-tidy requirements, so always run ``` clang-tidy-18 <path_to_your_header_solution>  -- -std=gnu++26 -stdlib=libc++```
+- you implementation of an api must be contained in one header (single-header solution)
 
 
 # Style requirements of code
