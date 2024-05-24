@@ -18,7 +18,7 @@ jobs:
         id: linter
         continue-on-error: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CLANGTIDYFORMAT }}
         with:
           style: file
           files-changed-only: false
