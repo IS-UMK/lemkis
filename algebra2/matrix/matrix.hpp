@@ -22,7 +22,6 @@
 
 namespace ranges {
 
-
     /*this class will be used to modify rows columns of a matrix. It vectorizes
      * operations on ranges*/
     template <std::ranges::viewable_range R>
