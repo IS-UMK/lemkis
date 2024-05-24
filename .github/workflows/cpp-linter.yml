@@ -20,12 +20,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CLANGTIDYFORMAT }}
         with:
           style: file
-          files-changed-only: false
+          files-changed-only: true
           thread-comments: false
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed != 0
         run: |
-          echo "some linter checks failed. ${{ steps.linter.outputs.checks-failed }}"
-        # for actual deployment
-        # run: exit 1
+          echo "some linter checks failed. ${{ steps.linter.outputs.checks-failed }}" 
+          exit 1
