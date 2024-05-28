@@ -17,7 +17,7 @@ jobs:
       - name: Install llvm
         run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
       - name: Install standard library headers for clang
-        run: sudo apt install libc++
+        run: apt install libc++-18
 
       # ... optionally setup build env to create a compilation database
 
