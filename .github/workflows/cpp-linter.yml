@@ -14,6 +14,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+      - name: Install xmllint
+        run: sudo apt install libc++
 
       # ... optionally setup build env to create a compilation database
 
