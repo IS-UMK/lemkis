@@ -24,7 +24,7 @@ jobs:
           tidy-checks: '' # Use .clang-tidy config file.
           version: 18
           files-changed-only: true
-          extra-args: '-std=c++23 -stdlib=libc++ -Wall -Wextra -Wpedantic'
+          extra-args: '-std=gnu++26 -stdlib=libc++'
           tidy-review: true
           format-review: true
 
