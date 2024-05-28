@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - name: Install xmllint
+      - name: Install standard library headers for clang
         run: sudo apt install libc++
 
       # ... optionally setup build env to create a compilation database
