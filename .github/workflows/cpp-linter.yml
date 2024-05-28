@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install standard library headers for clang
-        run: sudo apt install libc++
+        run: apt install libc++
 
       # ... optionally setup build env to create a compilation database
 
