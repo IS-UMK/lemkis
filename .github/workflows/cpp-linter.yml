@@ -14,6 +14,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+      - name: Install llvm
+        run: bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
       - name: Install standard library headers for clang
         run: apt install libc++
 
