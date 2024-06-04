@@ -1,4 +1,4 @@
-#include "gaussian_elimination_main.hpp"
+#include "gaussian_elimination.hpp"
 
 namespace algorithms::gaussian_elimination {
 
