@@ -27,7 +27,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           style: 'file'  # disable clang-format checks. 
-          tidy-checks: '' # Use .clang-tidy config file.
           version: 18
           files-changed-only: true
           extra-args: '-std=gnu++26 -stdlib=libc++'
