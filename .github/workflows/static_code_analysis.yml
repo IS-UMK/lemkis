@@ -34,6 +34,7 @@ jobs:
           tidy-review: false
           format-review: false
           file-annotations: true
+          thread-comments¶: true
 
 
       - name: Fail fast?!
