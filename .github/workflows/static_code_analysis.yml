@@ -1,4 +1,4 @@
-name: cpp-linter
+name: static-code-analysis
 on:
   pull_request:
     branches: [main, master, develop]
@@ -11,7 +11,7 @@ jobs:
   cpp-linter:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
       - name: Install llvm
@@ -31,8 +31,9 @@ jobs:
           version: 18
           files-changed-only: true
           extra-args: '-std=gnu++26 -stdlib=libc++'
-          tidy-review: true
-          format-review: true
+          tidy-review: false
+          format-review: false
+          file-annotations: true
 
 
       - name: Fail fast?!
