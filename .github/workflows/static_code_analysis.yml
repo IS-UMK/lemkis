@@ -33,8 +33,7 @@ jobs:
           extra-args: '-std=gnu++26 -stdlib=libc++'
           tidy-review: false
           format-review: false
-          file-annotations: true
-          thread-comments: true
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
 
 
       - name: Fail fast?!
