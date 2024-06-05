@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "matrix.hpp"
+#include "../matrix/matrix.hpp"
 
 
 namespace algorithms::gaussian_elimination {
