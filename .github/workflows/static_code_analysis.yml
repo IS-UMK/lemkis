@@ -10,7 +10,9 @@ on:
 jobs:
   cpp-linter:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions: 
+      pull-requests: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Install llvm
