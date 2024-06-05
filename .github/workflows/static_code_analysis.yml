@@ -1,10 +1,10 @@
 name: static-code-analysis
 on:
   pull_request:
-    branches: [main, master, develop]
+    branches: [main]
     paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
   push:
-    branches: [main, master, develop]
+    branches: [main]
     paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
 
 jobs:
