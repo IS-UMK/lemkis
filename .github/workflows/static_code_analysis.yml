@@ -31,10 +31,7 @@ jobs:
           version: 18
           files-changed-only: true
           extra-args: '-std=gnu++26 -stdlib=libc++'
-          tidy-review: false
-          format-review: false
-          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
-
+          tidy-review: true
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0
