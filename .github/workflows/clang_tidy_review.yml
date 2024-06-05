@@ -18,6 +18,8 @@ jobs:
 
     # Uploads an artefact containing clang_fixes.json
     - uses: ZedThree/clang-tidy-review/upload@v0.14.0
+      with:
+        split_workflow: true
       id: upload-review
 
     # If there are any comments, fail the check
