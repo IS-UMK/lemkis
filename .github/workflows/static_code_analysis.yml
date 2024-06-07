@@ -1,4 +1,7 @@
 name: static-code-analysis
+permissions: 
+  pull-requests: write
+  contents: read
 on:
   pull_request:
     branches: [main]
@@ -10,9 +13,7 @@ on:
 jobs:
   cpp-linter:
     runs-on: ubuntu-latest
-    permissions: 
-      pull-requests: write
-      contents: read
+
     steps:
       - uses: actions/checkout@v4
       - name: Install llvm
