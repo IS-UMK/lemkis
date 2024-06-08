@@ -4,10 +4,10 @@ permissions:
   contents: read
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
     paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
   push:
-    branches: [main]
+    branches: [master]
     paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
 
 jobs:
