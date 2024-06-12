@@ -20,6 +20,19 @@ class matrix : public std::valarray<T> {
         : base_t(initial_value, rows * cols), _rows{rows}, _cols{cols} {}
 
   public:
+    auto begin() { return std::begin(static_cast<base_t&>(*this)); }
+
+
+    auto begin() const { return std::begin(static_cast<const base_t&>(*this)); }
+
+
+    auto end() { return std::end(static_cast<base_t&>(*this)); }
+
+
+    auto end() const { return std::end(static_cast<const base_t&>(*this)); }
+
+
+  public:
     [[nodiscard]] auto number_of_rows() const -> std::size_t { return _rows; }
 
 
@@ -34,18 +47,17 @@ class matrix : public std::valarray<T> {
 
   public:
     auto operator[](std::size_t row, std::size_t col) -> T& {
-        return base_t::operator[](row * _cols + col);
+        return base_t::operator[](row* _cols + col);
     }
 
 
     auto operator[](std::size_t row, std::size_t col) const -> const T& {
-        return base_t::operator[](row * _cols + col);
+        return base_t::operator[](row* _cols + col);
     }
 
 
-    auto operator[](std::size_t start,
-                    std::size_t size,
-                    std::size_t stride) -> std::slice_array<T> {
+    auto operator[](std::size_t start, std::size_t size, std::size_t stride)
+        -> std::slice_array<T> {
         return base_t::operator[](std::slice(start, size, stride));
     }
 
