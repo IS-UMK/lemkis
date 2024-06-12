@@ -2,7 +2,7 @@
 
 You must meet the following conditions:
 
-- In short you must pass github actions requierements (see the mark on the right to your PR - if it is &#x274c; then sth is wrong).
+- In short you must pass github actions requierements (see the mark on the right to your PR - if it is &#x274c; then sth is wrong; in such a case you can click on &#x274c; to check exactly what failed).
 - On your local machine you should be able to compile your library (in fact whole project) using
   ```bash
   clear && ./scripts/make_debug.sh && ./scripts/run_debug.sh  && ./scripts/run_tests.sh
