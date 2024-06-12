@@ -47,17 +47,18 @@ class matrix : public std::valarray<T> {
 
   public:
     auto operator[](std::size_t row, std::size_t col) -> T& {
-        return base_t::operator[](row* _cols + col);
+        return base_t::operator[](row * _cols + col);
     }
 
 
     auto operator[](std::size_t row, std::size_t col) const -> const T& {
-        return base_t::operator[](row* _cols + col);
+        return base_t::operator[](row * _cols + col);
     }
 
 
-    auto operator[](std::size_t start, std::size_t size, std::size_t stride)
-        -> std::slice_array<T> {
+    auto operator[](std::size_t start,
+                    std::size_t size,
+                    std::size_t stride) -> std::slice_array<T> {
         return base_t::operator[](std::slice(start, size, stride));
     }
 
