@@ -1,10 +1,10 @@
-import matrix;
-import expect;
-
 #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <vector>
+
+import matrix;
+import expect;
 
 
 auto test_shape() -> bool {
