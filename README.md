@@ -9,9 +9,8 @@ You must meet the following conditions:
   Note that `make_debug.sh` compiles project (the executable is build using `./main.cxx` file), `run_debug.sh` runs the executive and the `run_tests.sh` runs the tests from the `tests` subdirectory. Remember that you should provide tests for each function you provide. These tests should be added to appropriated subdirectory of `./tests/`.
 - when your project is already built then it should pass the following check 
   ```bash
-  find ./algebra2 -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26
+  find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26
   ```
-  (if you participate in discrete math project change `./algebra` to `./discrete_math` directory).
 - your code is formatted according to `.clang-format`, so always run (in the root of this repository or use `--style` flag with appropriate value of `file:<format_file_path>` to set path to `.clang-format` file)
   ```bash
   clang-format -i <file_to_be_formatted>
