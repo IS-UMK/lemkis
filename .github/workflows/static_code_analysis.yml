@@ -1,42 +1,69 @@
-name: static-code-analysis
-permissions: 
-  pull-requests: write
-  contents: read
+name: cpp-static-analysis
+
 on:
   pull_request:
-    branches: [master]
-    paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
   push:
-    branches: [master]
-    paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
+    branches: [main, master]
+    # paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc']
+env:
+  DAY_OF_WEEK: Monday
 
 jobs:
-  cpp-linter:
+  pre-commit:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-      - name: Install llvm
-        run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
-      - name: Install standard library headers for clang
-        run: sudo apt install libc++-18-dev
-
-      # ... optionally setup build env to create a compilation database
-
-      - uses: cpp-linter/cpp-linter-action@v2
-        id: linter
-        env:
-          GITHUB_TOKEN: ${{ secrets.CLANGTIDYFORMAT }}
-        with:
-          style: 'file'  # disable clang-format checks. 
-          version: 18
-          files-changed-only: true
-          extra-args: '-std=gnu++26 -stdlib=libc++'
-          tidy-review: true
-
-      - name: Fail fast?!
-        if: steps.linter.outputs.checks-failed > 0
-        run: exit 1
-        
-        
-        
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install cppcheck
+      run: sudo apt install cppcheck
+    - name: Install llvm
+      run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+    - name: Install standard library headers for clang and clang tools
+      run: sudo apt install clang-tidy-18 clang-format-18 clang-tidy clang-format libc++-18-dev
+    - name: Install the newest ninja
+      run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
+    - name: Configure
+      run: pip install pre-commit cpplint && pre-commit install && pre-commit autoupdate --bleeding-edge
+    - name: Build project
+      run: ./scripts/make_debug.sh
+    - name: Run clang-format on all module files
+      run: |
+        if find . -maxdepth 1 -iname '*.cxx' -o -iname '*.ixx' | xargs clang-format-18 --Werror --dry-run; then  
+          echo "clang-format-result=0" >>  $GITHUB_OUTPUT 
+        else 
+          echo "clang-format-result=1" >>  $GITHUB_OUTPUT 
+        fi;
+      shell: bash
+      id: run_clang_format
+    - name: Run clang-tidy on all module files
+      run: |
+        if find . -maxdepth 1 -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18 --extra-arg=-stdlib=libc++ -p build/debug/ -header-filter=.*; then  
+          echo "clang-tidy-result=0" >>  $GITHUB_OUTPUT 
+        else 
+          echo "clang-tidy-result=1" >>  $GITHUB_OUTPUT 
+        fi;
+      shell: bash
+      id: run_clang_tidy
+    - name: Run cppcheck on all module files
+      run: |
+        mkdir -p ./build/debug/cppcheck && cd ./external/cppcheck && mkdir -p build && cd build && cmake .. && make -j8 && cd ../../..
+        if find . -maxdepth 1 -iname '*.cxx' -o -iname '*.ixx' | xargs ./external/cppcheck/build/bin/cppcheck  --cppcheck-build-dir=./build/debug/cppcheck --enable=all --suppress=missingIncludeSystem --check-level=exhaustive --std=c++26 -j5; then  
+          echo "cppcheck-result=0" >>  $GITHUB_OUTPUT 
+        else 
+          echo "cppcheck-result=1" >>  $GITHUB_OUTPUT 
+        fi;
+      shell: bash
+      id: run_cppcheck
+    - name: clang-format check
+      if: steps.run_clang_format.outputs.clang-format-result > 0
+      run: echo "Some of your c++ files are not formatted according to the .clang-format file" && exit 1
+    - name: clang-tidy check
+      if: steps.run_clang_tidy.outputs.clang-tidy-result > 0
+      run: echo "You failed to fulfill some of requirements posed in the .clang-tidy file" && exit 1
+    - name: cppcheck check
+      if: steps.run_cppcheck.outputs.cppcheck-result > 0
+      run: echo "You failed to fulfill some of requirements posed by cppcheck" && exit 1
