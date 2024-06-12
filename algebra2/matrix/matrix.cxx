@@ -1,4 +1,5 @@
 module;
+#include <cassert>
 #include <iostream>
 #include <valarray>
 #include <vector>
@@ -19,53 +20,68 @@ class matrix : public std::valarray<T> {
         : base_t(initial_value, rows * cols), _rows{rows}, _cols{cols} {}
 
   public:
-    auto number_of_rows() const { return _rows; }
+    [[nodiscard]] auto number_of_rows() const -> std::size_t { return _rows; }
 
 
-    auto number_of_columns() const { return _cols; }
+    [[nodiscard]] auto number_of_columns() const -> std::size_t {
+        return _cols;
+    }
 
 
-    auto shape() const {
-        return std::pair{number_of_rows(), number_of_columns()};
+    [[nodiscard]] auto shape() const -> std::pair<std::size_t, std::size_t> {
+        return {number_of_rows(), number_of_columns()};
     }
 
   public:
-    auto operator[](std::size_t row, std::size_t col) -> T&{
+    auto operator[](std::size_t row, std::size_t col) -> T& {
         return base_t::operator[](row * _cols + col);
     }
 
 
-    auto operator[](std::size_t row, std::size_t col) const -> const T&{
+    auto operator[](std::size_t row, std::size_t col) const -> const T& {
         return base_t::operator[](row * _cols + col);
     }
 
 
-    auto row(std::size_t row) {
+    auto operator[](std::size_t start,
+                    std::size_t size,
+                    std::size_t stride) -> std::slice_array<T> {
+        return base_t::operator[](std::slice(start, size, stride));
+    }
+
+
+    auto operator[](std::size_t start,
+                    std::size_t size,
+                    std::size_t stride) const -> std::valarray<T> {
+        return base_t::operator[](std::slice(start, size, stride));
+    }
+
+    auto row(std::size_t row) -> std::slice_array<T> {
         return base_t::operator[](std::slice(row * _cols, _cols, 1));
     }
 
 
-    auto row(std::size_t row) const {
+    auto row(std::size_t row) const -> std::valarray<T> {
         return base_t::operator[](std::slice(row * _cols, _cols, 1));
     }
 
 
-    auto column(std::size_t col) {
+    auto column(std::size_t col) -> std::slice_array<T> {
         return base_t::operator[](std::slice(col, _rows, _cols));
     }
 
 
-    auto column(std::size_t col) const {
+    auto column(std::size_t col) const -> std::valarray<T> {
         return base_t::operator[](std::slice(col, _rows, _cols));
     }
 
 
-    auto diagonal() {
+    auto diagonal() -> std::slice_array<T> {
         return base_t::operator[](std::slice(0, _rows, _cols + 1));
     }
 
 
-    auto diagonal() const {
+    auto diagonal() const -> std::valarray<T> {
         return base_t::operator[](std::slice(0, _rows, _cols + 1));
     }
 
@@ -81,21 +97,60 @@ class matrix : public std::valarray<T> {
         base_t::operator+=(static_cast<const base_t&>(m));
         return *this;
     }
-    // template <unsigned, unsigned>
-    // friend class matrixStack;
+
+
+    auto operator-=(const T& val) -> matrix<T>& {
+        base_t::operator-=(val);
+        return *this;
+    }
+
+
+    auto operator-=(const matrix<T>& m) -> matrix<T>& {
+        assert(m.shape() == shape());
+        base_t::operator-=(static_cast<const base_t&>(m));
+        return *this;
+    }
+
+
+    auto operator*=(const T& val) -> matrix<T>& {
+        base_t::operator*=(val);
+        return *this;
+    }
+
+
+    auto operator*=(const matrix<T>& m) -> matrix<T>& {
+        assert(m.shape() == shape());
+        base_t::operator*=(static_cast<const base_t&>(m));
+        return *this;
+    }
+
+
+    auto operator/=(const T& val) -> matrix<T>& {
+        base_t::operator/=(val);
+        return *this;
+    }
+
+
+    auto operator/=(const matrix<T>& m) -> matrix<T>& {
+        assert(m.shape() == shape());
+        base_t::operator/=(static_cast<const base_t&>(m));
+        return *this;
+    }
+
+  public:
+    friend auto operator+(matrix<T> m1, matrix<T> m2) -> matrix<T> {
+        assert(m1.shape() == m2.shape());
+        m1 += m2;
+        return m1;
+    }
+
+    template <std::convertible_to<T> S>
+    friend auto operator+(matrix<T> m, const S& val) -> matrix<T> {
+        m += T{val};
+        return m;
+    }
 };
 
-// template <typename ...>
-// struct first_type;
-// template <typename T, typename ...Ts>
-// struct first_type<T, Ts...> {
-//     using type = T;
-// };
-// template <typename ...Ts>
-// using first_t = first_type<Ts...>::type;
-
-// template <typename ...Ts>
-// concept AllSame = (std::same_as<first_t<Ts...>, Ts> && ...);
 
 export namespace utils::matrix {
 
@@ -138,43 +193,10 @@ export namespace utils::matrix {
     template <typename... Ts>
     requires(sizeof...(Ts) > 0)
     inline auto eye(Ts... diagonal) -> ::matrix<std::common_type_t<Ts...>> {
-        using T = std::common_type_t<Ts...>;
-        constexpr auto dimension{sizeof...(Ts)};
-        ::matrix<T> m{dimension, dimension, T{0}};
-        m.diagonal() = std::valarray{diagonal...};
-        return m;
+        return eye(std::valarray<std::common_type_t<Ts...>>{diagonal...});
     }
 
 }  // namespace utils::matrix
-
-// template <unsigned dim = 3, unsigned max = 8>
-// class matrixStack {
-//     std::valarray<T> stack;
-//     unsigned count = 0;
-
-//   public:
-//     matrixStack() : stack(dim * dim * max) {}
-//     void prT_all() const {
-//         std::valarray<T> row(dim * count);
-//         for (unsigned r = 0; r != dim; ++r)  // screen row
-//         {
-//             row = stack[std::gslice(r * dim, {count, dim}, {dim * dim, 1})];
-//             for (unsigned i = 0; i != row.size(); ++i)
-//                 std::cout << row[i] << ((i + 1) % dim ? " " : " │ ");
-//             std::cout << '\n';
-//         }
-//     }
-//     void push_back(matrix const& m) {
-//         if (count < max) {
-//             stack[std::slice(count * dim * dim, dim * dim, 1)] =
-//                 m.data[std::slice(0, dim * dim, 1)];
-//             ++count;
-//         }
-//     }
-// };
-
-
-// namespace ranges {}
 
 
 /*Finds the maximum width of column when it is converted to string*/

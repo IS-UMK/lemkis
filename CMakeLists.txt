@@ -25,7 +25,7 @@ add_subdirectory(./tests)
 # Create an executable
 add_executable(${PROJECT_NAME} main.cxx)
 # Link to the library foo
-target_link_libraries(${PROJECT_NAME} libmatrix)
+target_link_libraries(${PROJECT_NAME} libmatrix libexpect)
 
 
 # add_executable(matrix_test matrix_test.cxx)
