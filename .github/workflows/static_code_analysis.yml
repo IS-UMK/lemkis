@@ -27,7 +27,7 @@ jobs:
       with:
         python-version: '3.12' 
     - name: Configure
-      run: pip install pre-commit cpplint && pre-commit install && pre-commit autoupdate --bleeding-edge
+      run: pip install cpplint 
     - name: Build project
       run: ./scripts/make_debug.sh
     - name: Run clang-format on all module files
