@@ -2,7 +2,8 @@
 
 You must meet the following conditions:
 
-- In short you should be able to compile your library using
+- In short you must pass github actions requierements (see the mark on the right to your PR - if it is &#x274c; then sth is wrong).
+- On your local machine you should be able to compile your library (in fact whole project) using
   ```bash
   clear && ./scripts/make_debug.sh && ./scripts/run_debug.sh  && ./scripts/run_tests.sh
   ```
@@ -15,7 +16,7 @@ You must meet the following conditions:
   ```bash
   clang-format -i <file_to_be_formatted>
   ```
-
+- Note that modern c++20 modules must be used. In particular you should use one of extensions `.cxx` or `.ixx` for your cpp files.
 
 # Style requirements of code
 
