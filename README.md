@@ -3,10 +3,10 @@
 You must meet the following conditions:
 
 - In short you should be able to compile your library using
-```bash
-clear && ./scripts/make_debug.sh && ./scripts/run_debug.sh  && ./scripts/run_tests.sh
-```
-Note that `make_debug.sh` compiles project (the executable is build using `./main.cxx` file), `run_debug.sh` runs the executive and the `run_tests.sh` runs the tests from the `tests` subdirectory. Remember that you should provide tests for each function you provide. These tests should be added to appropriated subdirectory of `./tests/`.
+  ```bash
+  clear && ./scripts/make_debug.sh && ./scripts/run_debug.sh  && ./scripts/run_tests.sh
+  ```
+  Note that `make_debug.sh` compiles project (the executable is build using `./main.cxx` file), `run_debug.sh` runs the executive and the `run_tests.sh` runs the tests from the `tests` subdirectory. Remember that you should provide tests for each function you provide. These tests should be added to appropriated subdirectory of `./tests/`.
 - when your project is already built then it should pass the following check 
   ```bash
   find ./algebra2 -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26
