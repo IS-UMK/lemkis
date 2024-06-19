@@ -1,0 +1,57 @@
+name: cpp-static-analysis
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+    # paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc']
+env:
+  DAY_OF_WEEK: Monday
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install cppcheck
+      run: sudo apt install cppcheck
+    - name: Install llvm
+      run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+    - name: Install standard library headers for clang and clang tools
+      run: sudo apt install clang-tidy-18 clang-format-18 clang-tidy clang-format libc++-18-dev
+    - name: Install the newest ninja
+      run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
+    - name: Configure
+      run: pip install cpplint 
+    - name: Build project
+      run: ./scripts/make_debug.sh
+    - name: Run clang-format on all module files
+      run: |
+        if find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-format-18 --Werror --dry-run; then  
+          echo "clang-format-result=0" >>  $GITHUB_OUTPUT 
+        else 
+          echo "clang-format-result=1" >>  $GITHUB_OUTPUT 
+        fi;
+      shell: bash
+      id: run_clang_format
+    - name: Run clang-tidy on all module files
+      run: |
+        if find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26; then  
+          echo "clang-tidy-result=0" >>  $GITHUB_OUTPUT 
+        else 
+          echo "clang-tidy-result=1" >>  $GITHUB_OUTPUT 
+        fi;
+      shell: bash
+      id: run_clang_tidy
+    - name: clang-format check
+      if: steps.run_clang_format.outputs.clang-format-result > 0
+      run: echo "Some of your c++ files are not formatted according to the .clang-format file" && exit 1
+    - name: clang-tidy check
+      if: steps.run_clang_tidy.outputs.clang-tidy-result > 0
+      run: echo "You failed to fulfill some of requirements posed in the .clang-tidy file" && exit 1
+    
