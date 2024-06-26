@@ -7,71 +7,110 @@ import polynomial;
 import expect;
 
 auto test_addition() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
-    return testing::expect_equal((p1 + p2).coefficients,
-                                 std::vector{4, 5, 4}) &&
-           testing::expect_equal((p1 + p2).degree, 2);
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
+    return testing::expect_equal((p1 + p2), std::vector{4, 5, 4}) &&
+           testing::expect_equal((p1 + p2).degree(), 2);
 };
 
 auto test_subtraction() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
-    return testing::expect_equal((p1 - p2).coefficients,
-                                 std::vector{2, 3, 4}) &&
-           testing::expect_equal((p1 - p2).degree, 2);
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
+    return testing::expect_equal((p1 - p2), std::vector{2, 3, 4}) &&
+           testing::expect_equal((p1 - p2).degree(), 2);
 };
 
 auto test_multiplication() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
-    return testing::expect_equal((p1 * p2).coefficients,
-                                 std::vector{3, 7, 8, 4}) &&
-           testing::expect_equal((p1 * p2).degree, 3);
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
+    return testing::expect_equal((p1 * p2), std::vector{3, 7, 8, 4}) &&
+           testing::expect_equal((p1 * p2).degree(), 3);
 };
 
 auto test_quotient() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
-    return testing::expect_equal((p1 / p2).coefficients, std::vector{0, 4}) &&
-           testing::expect_equal((p1 / p2).degree, 1);
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
+    return testing::expect_equal((p1 / p2), std::vector{0, 4}) &&
+           testing::expect_equal((p1 / p2).degree(), 1);
 };
 
 auto test_remainder() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
-    return testing::expect_equal((p1 % p2).coefficients, std::vector{3}) &&
-           testing::expect_equal((p1 % p2).degree, 0);
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
+    return testing::expect_equal((p1 % p2), std::vector{3}) &&
+           testing::expect_equal((p1 % p2).degree(), 0);
 };
 
 auto test_divide() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
     auto [quo, rem] = divide(p1, p2);
-    return testing::expect_equal(quo.coefficients, std::vector{0, 4}) &&
-           testing::expect_equal(quo.degree, 1) &&
-           testing::expect_equal(rem.coefficients, std::vector{3}) &&
-           testing::expect_equal(rem.degree, 0);
+    return testing::expect_equal(quo, std::vector{0, 4}) &&
+           testing::expect_equal(quo.degree(), 1) &&
+           testing::expect_equal(rem, std::vector{3}) &&
+           testing::expect_equal(rem.degree(), 0);
 };
 
 auto test_evaluation() -> bool {
-    polynomial::polynomial<int> p{{3, 4, 4}, 2};
+    polynomial<int> p{2};
+    p[0] = 3;
+    p[1] = 4;
+    p[2] = 4;
     const int value = 3;
     return testing::expect_equal(p(value), 51);
 };
 
 auto test_root_rational_candidates() -> bool {
-    const polynomial::polynomial<int> p{{3, 4, 4}, 2};
-    return testing::expect_equal(root_rational_candidates(p),
+    const polynomial<int> p{2};
+    p[0] = 3;
+    p[1] = 4;
+    p[2] = 4;
+    return testing::expect_equal(utils::polynomial::root_rational_candidates(p),
                                  std::set{0, 1, 3});
 };
 
 auto test_gcd() -> bool {
-    const polynomial::polynomial<int> p1{{3, 4, 4}, 2};
-    const polynomial::polynomial<int> p2{{1, 1}, 1};
-    return testing::expect_equal(gcd(p1, p2).first.coefficients,
+    polynomial<int> p1{2};
+    p1[0] = 3;
+    p1[1] = 4;
+    p1[2] = 4;
+    polynomial<int> p2{1};
+    p2[0] = 1;
+    p2[1] = 1;
+    return testing::expect_equal(utils::polynomial::gcd(p1, p2).first,
                                  std::vector{1, 1}) &&
-           testing::expect_equal(gcd(p1, p2).second, std::vector{1});
+           testing::expect_equal(utils::polynomial::gcd(p1, p2).second,
+                                 std::vector{1});
 };
 
 int main(int argc, char const *argv[]) {
