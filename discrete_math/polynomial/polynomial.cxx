@@ -216,11 +216,11 @@ inline auto divide(const ::polynomial<T> &p1, const ::polynomial<T> &p2)
 // Find the factors of a specific term in a polynomial.
 template <typename T>
 inline auto factors_of_term(::polynomial<T> &p,
-                            std::size_t term) -> std::vector<T> {
-  assert(0 <= term && term <= p.degree());
+                            std::size_t degree) -> std::vector<T> {
+  assert(0 <= degree && degree <= p.degree());
   std::vector<T> factors;
-  for (std::size_t i = 1; i <= p[term]; i++) {
-    if (static_cast<int>(p[term]) % static_cast<int>(i) == 0) {
+  for (std::size_t i = 1; i <= p[degree]; i++) {
+    if (static_cast<int>(p[degree]) % static_cast<int>(i) == 0) {
       factors.push_back(i);
     }
   }
