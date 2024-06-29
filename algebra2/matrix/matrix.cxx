@@ -162,6 +162,42 @@ class matrix : public std::valarray<T> {
         m += T{val};
         return m;
     }
+
+    friend auto operator-(matrix<T> m1, matrix<T> m2) -> matrix<T> {
+        assert(m1.shape() == m2.shape());
+        m1 -= m2;
+        return m1;
+    }
+
+    template <std::convertible_to<T> S>
+    friend auto operator-(matrix<T> m, const S& val) -> matrix<T> {
+        m -= T{val};
+        return m;
+    }
+
+    friend auto operator*(matrix<T> m1, matrix<T> m2) -> matrix<T> {
+        assert(m1.shape() == m2.shape());
+        m1 *= m2;
+        return m1;
+    }
+
+    template <std::convertible_to<T> S>
+    friend auto operator*(matrix<T> m, const S& val) -> matrix<T> {
+        m *= T{val};
+        return m;
+    }
+
+    friend auto operator/(matrix<T> m1, matrix<T> m2) -> matrix<T> {
+        assert(m1.shape() == m2.shape());
+        m1 /= m2;
+        return m1;
+    }
+
+    template <std::convertible_to<T> S>
+    friend auto operator/(matrix<T> m, const S& val) -> matrix<T> {
+        m /= T{val};
+        return m;
+    }
 };
 
 
