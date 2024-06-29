@@ -19,6 +19,8 @@ jobs:
       run: sudo apt install cppcheck
     # - name: Install llvm
     #   run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+    - name: Install  g++
+      run: sudo apt install g++-14
     - name: Install standard library headers for clang and clang tools
       run: sudo apt install clang-tidy clang-format libc++-dev
     - name: Install the newest ninja
