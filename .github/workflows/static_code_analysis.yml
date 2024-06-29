@@ -20,7 +20,7 @@ jobs:
     # - name: Install llvm
     #   run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
     - name: Install  g++
-      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y && sudo apt update && sudo apt install g++-14 gcc-14
+      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y && sudo apt update && sudo apt install g++ gcc
     - name: Install standard library headers for clang and clang tools
       run: sudo apt install clang-tidy clang-format libc++-dev
     - name: Install the newest ninja
