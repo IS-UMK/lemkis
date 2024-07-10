@@ -216,6 +216,25 @@ public:
   }
 };
 
+// Check if given value is factor of term.
+template <typename T>
+inline auto check_if_factor(T term, auto value) -> bool {
+    return static_cast<bool>(fmod(term, term / value) == 0);
+};
+
+// Find the factors of a specific term.
+// Accepts double values.
+template <typename T>
+inline auto factors_of_term(T term) -> std::vector<T> {
+    assert(0 <= term);
+    std::vector<T> factors;
+    for (std::size_t i = 1; i <= round(term / 2); i++) {
+        if (check_if_factor(term, i)) { factors.push_back(i); }
+    }
+    factors.push_back(term);
+    return factors;
+};
+
 // Namespace for utility functions related to polynomials.
 export namespace utils::polynomial {
 
@@ -226,26 +245,13 @@ inline auto divide(const ::polynomial<T> &p1, const ::polynomial<T> &p2)
   return {p1 / p2, p1 % p2};
 }
 
-// Find the factors of a specific term in a polynomial.
-template <typename T>
-inline auto factors_of_term(::polynomial<T> &p,
-                            std::size_t degree) -> std::vector<T> {
-  assert(0 <= degree && degree <= p.degree());
-  std::vector<T> factors;
-  for (std::size_t i = 1; i <= p[degree]; i++) {
-    if (static_cast<int>(p[degree]) % static_cast<int>(i) == 0) {
-      factors.push_back(i);
-    }
-  }
-  return factors;
-}
-
 // Get the rational root candidates for a polynomial.
-// Candidates should be read as +/- as in each value can be positive or negative.
+// Candidates should be read as +/- as in each value
+// can be positive or negative.
 template <typename T>
 inline auto root_rational_candidates(::polynomial<T> p) -> std::set<T> {
-  std::vector<T> factors_of_last{factors_of_term(p, 0)};
-  std::vector<T> factors_of_first{factors_of_term(p, p.degree())};
+  std::vector<T> factors_of_last{factors_of_term(p[0])};
+  std::vector<T> factors_of_first{factors_of_term(p[p.degree()])};
   std::set<T> candidates{};
   for (std::size_t i = 0; i < factors_of_last.size(); i++) {
     for (std::size_t j = 0; j < factors_of_first.size(); j++) {
