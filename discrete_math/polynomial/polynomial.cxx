@@ -241,6 +241,7 @@ inline auto factors_of_term(::polynomial<T> &p,
 }
 
 // Get the rational root candidates for a polynomial.
+// Candidates should be read as +/- as in each value can be positive or negative.
 template <typename T>
 inline auto root_rational_candidates(::polynomial<T> p) -> std::set<T> {
   std::vector<T> factors_of_last{factors_of_term(p, 0)};
