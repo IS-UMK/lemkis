@@ -28,6 +28,14 @@ public:
   // with all coefficients set to zero.
   explicit polynomial(std::size_t degree) : base_t(degree + 1, T{0}) {}
 
+  // Constructor: Initialize a polynomial of a given coefficients
+  // where polynomial{{a, b, c}} is read as a ax^2 + bx + c
+  explicit polynomial(const std::vector<T> &v) : base_t(v.size()) {
+    for (std::size_t i = 0; i < v.size(); i++) {
+      (*this)[i] = v[v.size() - 1 - i];
+    }
+  }
+
 private:
   // Trim leading zeros from the polynomial.
   auto trim_polynomial(polynomial<T> &p) -> polynomial<T> & {
@@ -49,7 +57,12 @@ private:
 
 public:
   // Get the degree of the polynomial.
-  [[nodiscard]] auto degree() const -> std::size_t { return this->size() - 1; }
+  [[nodiscard]] auto degree() const -> std::size_t {
+    for (std::size_t i = this->size() - 1; i > 0; i--) {
+      if ((*this)[i] != 0) { return i; }
+    }
+    return 0;
+  }
 
 public:
   // Add a scalar value to the polynomial.
