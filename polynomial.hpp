@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+
 namespace polynomial {
 template <typename T>
 struct polynomial {

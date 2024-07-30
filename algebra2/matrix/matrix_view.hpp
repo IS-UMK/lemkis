@@ -20,101 +20,6 @@
 #include <vector>
 
 
-namespace ranges {
-
-    /*this class will be used to modify rows columns of a matrix. It vectorizes
-     * operations on ranges*/
-    template <std::ranges::viewable_range R>
-    class numeric_view
-        : public std::ranges::subrange<std::ranges::iterator_t<R>,
-                                       std::ranges::sentinel_t<R>> {
-
-      private:
-        using value_type = std::ranges::range_value_t<R>;
-        using base_type = std::ranges::subrange<std::ranges::iterator_t<R>,
-                                                std::ranges::sentinel_t<R>>;
-
-      public:
-        constexpr explicit numeric_view(R&& v) : base_type{v} {}
-        constexpr explicit numeric_view(R& v) : base_type{v} {}
-
-
-      public:
-        template <std::ranges::viewable_range Range>
-        requires(
-            std::convertible_to<std::ranges::range_value_t<Range>, value_type>)
-        constexpr auto operator+=(const Range& v) -> auto& {
-            for (auto&& [a, b] : std::views::zip(*this, v)) { a += b; }
-            return *this;
-        }
-
-        // Coordinate-wise subtraction
-        template <std::ranges::viewable_range Range>
-        requires(
-            std::convertible_to<std::ranges::range_value_t<Range>, value_type>)
-        constexpr auto operator-=(const Range& v) -> auto& {
-            for (auto&& [a, b] : std::views::zip(*this, v)) { a -= b; }
-            return *this;
-        }
-
-        // Coordinate-wise multiplication
-        template <std::ranges::viewable_range Range>
-        requires(
-            std::convertible_to<std::ranges::range_value_t<Range>, value_type>)
-        constexpr auto operator*=(const Range& v) -> auto& {
-            for (auto&& [a, b] : std::views::zip(*this, v)) { a *= b; }
-            return *this;
-        }
-
-        // Coordinate-wise division
-        template <std::ranges::viewable_range Range>
-        requires(
-            std::convertible_to<std::ranges::range_value_t<Range>, value_type>)
-        constexpr auto operator/=(const Range& v) -> auto& {
-            for (auto&& [a, b] : std::views::zip(*this, v)) { a /= b; }
-            return *this;
-        }
-
-        // Scalar addition to each coordinate
-        constexpr auto operator+=(std::convertible_to<value_type> auto scalar)
-            -> auto& {
-            std::ranges::transform(*this, this->begin(), [scalar](auto val) {
-                return val + scalar;
-            });
-            return *this;
-        }
-
-        // Scalar subtraction from each coordinate
-        constexpr auto operator-=(std::convertible_to<value_type> auto scalar)
-            -> auto& {
-            std::ranges::transform(*this, this->begin(), [scalar](auto val) {
-                return val - scalar;
-            });
-            return *this;
-        }
-
-        // Scalar multiplication to each coordinate
-        constexpr auto operator*=(std::convertible_to<value_type> auto scalar)
-            -> auto& {
-            std::ranges::transform(*this, this->begin(), [scalar](auto val) {
-                return val * scalar;
-            });
-            return *this;
-        }
-
-        // Scalar division from each coordinate
-        constexpr auto operator/=(std::convertible_to<value_type> auto scalar)
-            -> auto& {
-            std::ranges::transform(*this, this->begin(), [scalar](auto val) {
-                return val / scalar;
-            });
-            return *this;
-        }
-    };
-
-}  // namespace ranges
-
-
 namespace layout {
     /*given a sequence of number you can create a matrix from it filling it with
      * this sequence either row-wise or column-wise*/
@@ -138,8 +43,7 @@ namespace ranges {
         : public std::mdspan<T,
                              std::dextents<std::size_t, matrix_dextents>,
                              LP,
-                             std::default_accessor<T>>,
-          public std::span<T, std::dynamic_extent> {
+                             std::default_accessor<T>> {
 
       private:
         using mdspan_type =
@@ -147,7 +51,6 @@ namespace ranges {
                         std::dextents<std::size_t, matrix_dextents>,
                         LP,
                         std::default_accessor<T>>;
-        using span_type = std::span<T, std::dynamic_extent>;
         using data_handle_type = typename mdspan_type::data_handle_type;
 
       public:
@@ -155,8 +58,7 @@ namespace ranges {
                               std::size_t rows,
                               std::size_t columns,
                               LP /*layout*/)
-            : mdspan_type{data, rows, columns},
-              span_type{data, rows * columns} {};
+            : mdspan_type{data, rows, columns}{};
 
 
         template <std::ranges::contiguous_range R, typename Layout>
@@ -164,8 +66,7 @@ namespace ranges {
                               std::size_t rows,
                               std::size_t columns,
                               Layout /*layout*/)
-            : mdspan_type{data.data(), rows, columns},
-              span_type{data.data(), rows * columns} {};
+            : mdspan_type{data.data(), rows, columns} {};
 
 
       public:
@@ -192,16 +93,6 @@ namespace ranges {
       public:
         using mdspan_type::operator[];
 
-
-        // depending on layout returns ith row (layout::row) or ith column
-        // (layout::column)
-        constexpr auto operator[](std::size_t i) {
-            auto dim{this->extent(std::same_as<LP, std::layout_right>
-                                      ? column_extent
-                                      : row_extent)};
-            return numeric_view{std::ranges::subrange{
-                this->begin() + i * dim, this->begin() + (i + 1) * dim}};
-        }
     };
 
     template <typename T, typename LP>

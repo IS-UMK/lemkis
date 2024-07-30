@@ -2,20 +2,21 @@
 
 You must meet the following conditions:
 
-- you code compiles using
+- In short you must pass github actions requierements (see the mark on the right to your PR - if it is &#x274c; then sth is wrong; in such a case you can click on &#x274c; to check exactly what failed).
+- On your local machine you should be able to compile your library (in fact whole project) using
   ```bash
-  clang++-18 -std=gnu++26 -stdlib=libc++ -Wall -Wextra -Wpedantic -Werror <your_cpp_file> -o <your_output_file>
+  clear && ./scripts/make_debug.sh && ./scripts/run_debug.sh  && ./scripts/run_tests.sh
+  ```
+  Note that `make_debug.sh` compiles project (the executable is build using `./main.cxx` file), `run_debug.sh` runs the executive and the `run_tests.sh` runs the tests from the `tests` subdirectory. Remember that you should provide tests for each function you provide. These tests should be added to appropriated subdirectory of `./tests/`.
+- when your project is already built then it should pass the following check 
+  ```bash
+  find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26
   ```
 - your code is formatted according to `.clang-format`, so always run (in the root of this repository or use `--style` flag with appropriate value of `file:<format_file_path>` to set path to `.clang-format` file)
   ```bash
   clang-format -i <file_to_be_formatted>
   ```
-- your code should generate no errors as it comes to clang-tidy requirements, so always run (in the root of this repository or use `--config-file` flag to set path to `.clang-tidy` file)
-  ```bash
-  clang-tidy-18 <path_to_your_header_solution>  -- -std=gnu++26 -stdlib=libc++
-  ```
-- you implementation of an api must be contained in one header (single-header solution). However, to avoid annoying clang-format warnings (like magic constant warning in examples) you can provide two additional headers containing examples and tests. These files are NOT checked by clang-tidy but should follow all rules mentioned in this README (you can always run clang-tidy just to see what warnings it produces; you can also  turn off some clang-tidy flags e.g add `-readability-magic-numbers` to the `Checks:` list and then run clang-tidy).
-
+- Note that modern c++20 modules must be used. In particular you should use one of extensions `.cxx` or `.ixx` for your cpp files.
 
 # Style requirements of code
 
