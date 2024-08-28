@@ -21,8 +21,8 @@ export inline auto queens(int n) -> void {
         return;
     }
 
-    std::vector<std::vector<int>> solutions;
-    std::vector<int> board(n, -1);
+    const std::vector<std::vector<int>> solutions;
+    const std::vector<int> board(n, -1);
 
     solve_n_queens_util(n, 0, board, solutions);
     print_solutions(solutions, n);
@@ -31,13 +31,14 @@ export inline auto queens(int n) -> void {
 
 /*
     description:
-        Solves the following problem. You have your_money money and you want to eat
-        as many chocolates as possible. Price of one chocolate is price_of_chocolate.
-        Additionally for wrap number of wrappers you can obtain one chocolate.
+        Solves the following problem. You have your_money money and you want to
+   eat as many chocolates as possible. Price of one chocolate is
+   price_of_chocolate. Additionally for wrap number of wrappers you can obtain
+   one chocolate.
 */
 export inline auto chocolates(std::size_t your_money,
-                       std::size_t price_of_chocolate,
-                       std::size_t wrap) -> std::size_t {
+                              std::size_t price_of_chocolate,
+                              std::size_t wrap) -> std::size_t {
     const std::size_t initial_chocolates = your_money / price_of_chocolate;
     return initial_chocolates + get_max_chocolates(initial_chocolates, wrap);
 }
@@ -83,7 +84,7 @@ export inline auto product(std::int32_t a, std::int32_t b) -> std::int64_t {
         Given number finds all possible solutions to x_1 + x_2 + ... +
 */
 export inline auto sum_decomposition(std::size_t number,
-                              std::uint8_t number_of_factors) {
+                                     std::uint8_t number_of_factors) {
     std::vector<std::vector<std::size_t>> all_combinations;
     std::vector<std::size_t> current_combination;
     find_combinations(
@@ -134,7 +135,8 @@ export inline auto iota_sum(std::uint32_t up_to) -> std::uint64_t {
         Given a area of size rows x columns find minimum number of tiles
         need to cover this area.
 */
-export inline auto tiles(std::uint32_t rows, std::uint32_t columns) -> std::uint32_t {
+export inline auto tiles(std::uint32_t rows,
+                         std::uint32_t columns) -> std::uint32_t {
     if (rows == 0 || columns == 0) { return 0; }
 
     const std::uint32_t largest_tile =
@@ -167,7 +169,7 @@ export inline auto tower_of_hanoi(std::size_t discs) {
         length smaller or equal to maximal_length.
 */
 export inline auto sequences_from_a_set(const std::set<char>& letters,
-                                 std::uint8_t maximal_length)
+                                        std::uint8_t maximal_length)
     -> std::vector<std::string> {
     std::vector<std::string> result;
     generate_sequences(letters, "", maximal_length, result);
@@ -181,7 +183,8 @@ export inline auto sequences_from_a_set(const std::set<char>& letters,
         which satisfy the following condition: each prefix of n contains more
         ones than zeros.
 */
-export inline auto more_ones(std::uint8_t number_of_bits) -> std::vector<std::string> {
+export inline auto more_ones(std::uint8_t number_of_bits)
+    -> std::vector<std::string> {
     std::vector<std::string> result;
     generate_bit_representations("", 0, 0, number_of_bits, result);
     return result;
@@ -190,11 +193,11 @@ export inline auto more_ones(std::uint8_t number_of_bits) -> std::vector<std::st
 
 /*
     description:
-        Counts all possible decomposition of number into sum of x's such that each x
-        is of the form x = y ^ power for some y.
+        Counts all possible decomposition of number into sum of x's such that
+   each x is of the form x = y ^ power for some y.
 */
 export inline auto count_decompositions_as_sum_of_powers(double number,
-                                                  std::uint8_t power)
+                                                         std::uint8_t power)
     -> std::size_t {
     std::set<std::vector<int>> decompositions;
     std::vector<int> current_decomposition;
@@ -230,20 +233,17 @@ export inline auto subsets(std::set<std::int32_t> numbers) {
 */
 export inline auto increasing_representations(std::uint8_t number_of_digits) {
     std::vector<int> results;
-    generate_numbers(0,
-                     number_of_digits,
-                     -1,
-                     results);
+    generate_numbers(0, number_of_digits, -1, results);
     return results;
 }
 
 
 /*
     description:
-        Given a number, returns all possible non-increasing sequences which sum up to
-        number.
+        Given a number, returns all possible non-increasing sequences which sum
+   up to number.
 */
-export inline auto non_increasing_decompositions(std::size_t number){
+export inline auto non_increasing_decompositions(std::size_t number) {
     std::vector<std::vector<std::size_t>> result;
     std::vector<std::size_t> current_sequence;
     generate_decompositions(number, number, current_sequence, result);
@@ -275,11 +275,12 @@ export inline auto insertion_sort(std::vector<std::int32_t> v) {
 
 /*
     description:
-        Given two strictly increasing arrays v0 and v1 returns all strictly increasing
-        sequences satisfying the following condition: a[2i] must be drawn from v0 and
-        a[2i + 1] must be drawn from v1 for every integer i
+        Given two strictly increasing arrays v0 and v1 returns all strictly
+   increasing sequences satisfying the following condition: a[2i] must be drawn
+   from v0 and a[2i + 1] must be drawn from v1 for every integer i
 */
-export inline auto alternating(const std::vector<int>& v0, const std::vector<int>& v1) {
+export inline auto alternating(const std::vector<int>& v0,
+                               const std::vector<int>& v1) {
     std::vector<std::vector<int>> sequences;
     std::vector<int> current_sequence;
 
@@ -306,26 +307,20 @@ export inline auto fibonacci(uint8_t nth) {
         checks if there is a path from point (startx, starty) to (endx, endy).
 */
 export inline auto path_in_maze(std::vector<bool> maze,
-                         std::size_t rows,
-                         std::size_t columns,
-                         int startx,
-                         int starty,
-                         int endx,
-                         int endy) -> bool {
-    if (startx == endx && starty == endy) {
-        return true;
-    }
-    if (!is_valid_move(maze, rows, columns, startx, starty)) {
-        return false; 
-    }
-    maze[startx * columns + starty] =
-        true;
-    const bool found_path = path_in_maze(maze, rows, columns, startx + 1, starty, endx, endy) ||
-                            path_in_maze(maze, rows, columns, startx - 1, starty, endx, endy) ||
-                            path_in_maze(maze, rows, columns, startx, starty + 1, endx, endy) ||
-                            path_in_maze(maze, rows, columns, startx, starty - 1, endx, endy);
+                                std::size_t rows,
+                                std::size_t columns,
+                                int startx,
+                                int starty,
+                                int endx,
+                                int endy) -> bool {
+    if (startx == endx && starty == endy) { return true; }
+    if (!is_valid_move(maze, rows, columns, startx, starty)) { return false; }
+    maze[startx * columns + starty] = true;
+    const bool found_path =
+        path_in_maze(maze, rows, columns, startx + 1, starty, endx, endy) ||
+        path_in_maze(maze, rows, columns, startx - 1, starty, endx, endy) ||
+        path_in_maze(maze, rows, columns, startx, starty + 1, endx, endy) ||
+        path_in_maze(maze, rows, columns, startx, starty - 1, endx, endy);
     maze[startx * columns + starty] = false;
     return found_path;
 }
-
-
