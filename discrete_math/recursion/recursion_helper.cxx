@@ -1,5 +1,5 @@
-module;
 // NOLINTBEGIN
+module;
 #include <iostream>
 #include <print>
 #include <set>
