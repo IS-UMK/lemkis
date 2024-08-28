@@ -1,4 +1,5 @@
 module;
+// NOLINTBEGIN
 #include <iostream>
 #include <print>
 #include <set>
@@ -386,7 +387,6 @@ export inline auto is_valid_move(const std::vector<bool>& maze,
 }
 
 
-// NOLINTBEGIN
 export inline auto find_sequences(const std::vector<int>& v0,
                                   const std::vector<int>& v1,
                                   int indexi,
