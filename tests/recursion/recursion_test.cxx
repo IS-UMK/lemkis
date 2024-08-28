@@ -1,3 +1,4 @@
+// NOLINTBEGIN
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -119,3 +120,4 @@ int main() {
                ? 0
                : 1;
 }
+// NOLINTEND
