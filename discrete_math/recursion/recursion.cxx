@@ -21,8 +21,8 @@ export inline auto queens(int n) -> void {
         return;
     }
 
-    const std::vector<std::vector<int>> solutions;
-    const std::vector<int> board(n, -1);
+    std::vector<std::vector<int>> solutions;
+    std::vector<int> board(n, -1);
 
     solve_n_queens_util(n, 0, board, solutions);
     print_solutions(solutions, n);
