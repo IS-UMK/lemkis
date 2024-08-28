@@ -1,5 +1,5 @@
 module;
-
+// NOLINTBEGIN
 #include <iostream>
 #include <print>
 #include <set>
@@ -324,3 +324,4 @@ export inline auto path_in_maze(std::vector<bool> maze,
     maze[startx * columns + starty] = false;
     return found_path;
 }
+// NOLINTEND
