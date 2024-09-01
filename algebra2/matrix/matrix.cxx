@@ -1,7 +1,7 @@
 module;
-#include <valarray>
 #include <cassert>
 #include <iostream>
+#include <valarray>
 #include <vector>
 
 export module matrix;
@@ -169,9 +169,9 @@ export namespace utils::matrix {
 
     template <typename T, typename R>
     inline auto subtract(::matrix<T>& m,
-                  std::size_t row_i,
-                  std::size_t row_j,
-                  R alpha){
+                         std::size_t row_i,
+                         std::size_t row_j,
+                         R alpha) {
         for (std::size_t i = 0; i < m.number_of_columns(); i++) {
             m[row_j, i] = m[row_j, i] * alpha;
             m[row_i, i] -= m[row_j, i];
@@ -181,9 +181,7 @@ export namespace utils::matrix {
 
 
     template <typename T>
-    auto swap(::matrix<T>& m,
-              std::size_t row_i,
-              std::size_t row_j){
+    auto swap(::matrix<T>& m, std::size_t row_i, std::size_t row_j) {
         T temp;
         for (std::size_t i = 0; i < m.number_of_columns(); i++) {
             temp = m[row_i, i];
