@@ -4,7 +4,7 @@ Here are several ideas for large C++ projects that involve a good deal of concur
 
 ## Building an HTTP Server Framework
 
-Building an HTTP server framework be a **great project idea**, especially if you want to deepen your understanding of networking, concurrency, and modern C++ programming. Here’s an analysis of why this could be a good idea, what challenges you might face, and how it compares to existing frameworks like Trantor:
+Building an HTTP server framework could be a **great project idea**, especially if you want to deepen your understanding of networking, concurrency, and modern C++ programming. Here’s an analysis of why this could be a good idea, what challenges you might face, and how it compares to existing frameworks like Trantor:
 
 ### Why It’s a Good Idea
 
