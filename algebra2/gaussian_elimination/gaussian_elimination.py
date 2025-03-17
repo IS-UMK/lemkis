@@ -54,42 +54,41 @@ def zero_rows(m):
     tutaj zakładamy że pivot m[0,0] != 0 i za jego
     pomocą chcemy wyzerować pierwszą kolumnę macierzy m
     """
-    if (m.shape[0] < 2):
+    if m.shape[0] < 2:
         return
     first_row = m[0, :]
     pivot = first_row[0]
-    for (row in m[1:, :]):
+    for row in m[1:, :]:
         row_pivot = row[0]
         row -= row_pivot / pivot * first_row
 
 
 def swap_rows(m, i, j):
-    row = m[i, :]
-    column = m[:, j]
-    row, column = column, row
+    m[[i,j]]  = m[[j,i]]
 
 
 def gaussian_elimination(m: np.ndarray):
-    if (m.shape[0] == 1):
-        return;
+    if m.shape[0] == 1:
+        return
 
-    pivot = m[0, 0];
-    first_column = m[:, 0];
-    if (pivot == 0):
-        non_zero_indeces = np.nonzero(first_column);
-        if (len(non_zero_indeces) == 0):
+    pivot = m[0, 0]
+    first_column = m[:, 0]
+    if pivot == 0:
+        non_zero_indeces = np.nonzero(first_column)
+        if len(non_zero_indeces) == 0:
             gaussian_elimination(m[1:, 1:])
             return
         first_non_zero_index = non_zero_indeces[0]
         swap_rows(m, 0, first_non_zero_index)
-    non_zero_rows_indeces = np.nonzero(first_column)
-    zero_rows(m, non_zero_rows_indeces)
+    zero_rows(m)
     gaussian_elimination(m[1:, 1:])
 
     return m
 
 
 print(f"""
+macierz m = 
+{m}
 zeschodkowana macierz m = 
-{gaussian_elimination(m)}
+{gaussian_elimination(m.astype(np.float64))}
 """)
