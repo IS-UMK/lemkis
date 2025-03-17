@@ -1,3 +1,5 @@
+#pragma once
+
 #include <print>
 
 
@@ -88,7 +90,7 @@ void deadlock_example() {
     t2.join();
 }
 
-// Example of deadlock prevention with std::scoped_lock (C++17)
+
 void safe_example() {
     BankAccount account1(1000);
     BankAccount account2(1000);
@@ -105,9 +107,4 @@ void safe_example() {
     
     t1.join();
     t2.join();
-}
-
-
-int main() {
-    print("Hello, World!");
 }
