@@ -1,0 +1,222 @@
+﻿  program.cpp
+C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(19,29): error C2672: 'make_unique': no matching overloaded function found
+  (compiling source file 'program.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3604,6):
+      could be 'void std::make_unique(_Types ...)'
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(19,41):
+          'std::make_unique': invalid template argument for '_Ty', missing template argument list on class template 'Node'
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3598,57):
+      or       'std::unique_ptr<_Ty,std::default_delete<_Ty>> std::make_unique(const size_t)'
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(19,41):
+          'std::make_unique': invalid template argument for '_Ty', missing template argument list on class template 'Node'
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3593,57):
+      or       'std::unique_ptr<_Ty,std::default_delete<_Ty>> std::make_unique(_Types ...)'
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(19,41):
+          'std::make_unique': invalid template argument for '_Ty', missing template argument list on class template 'Node'
+      C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(19,29):
+      the template instantiation context (the oldest one first) is
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\program.cpp(5,16):
+          see reference to class template instantiation 'Stack<int>' being compiled
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(18,10):
+          while compiling class template member function 'void Stack<int>::push(T)'
+          with
+          [
+              T=int
+          ]
+              C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\program.cpp(7,15):
+              see the first reference to 'Stack<int>::push' in 'main'
+  
+C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(20,9): error C3536: 'newNode': cannot be used before it is initialized
+  (compiling source file 'program.cpp')
+  
+C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,9): error C2679: binary '=': no operator found which takes a right-hand operand of type 'int' (or there is no acceptable conversion)
+  (compiling source file 'program.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3449,17):
+      could be 'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &)'
+          with
+          [
+              T=int
+          ]
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,9):
+          'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &)': cannot convert argument 2 from 'int' to 'const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &'
+          with
+          [
+              T=int
+          ]
+              C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+              Reason: cannot convert from 'int' to 'const std::unique_ptr<Node<T>,std::default_delete<Node<T>>>'
+          with
+          [
+              T=int
+          ]
+              C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+              'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &)': cannot convert argument 1 from 'int' to 'const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &'
+          with
+          [
+              T=int
+          ]
+                  C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+                  Reason: cannot convert from 'int' to 'const std::unique_ptr<Node<T>,std::default_delete<Node<T>>>'
+          with
+          [
+              T=int
+          ]
+                  C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+                  Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3375,5):
+                  could be 'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(std::unique_ptr<_Ux,_Dx> &&) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3367,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &&) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3364,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(Node<T> *,std::default_delete<Node<T>> &&)'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3359,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(Node<T> *,_Dx &&) noexcept'
+          with
+          [
+              T=int,
+              _Dx=std::default_delete<Node<int>>
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3355,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(Node<T> *,const _Dx &) noexcept'
+          with
+          [
+              T=int,
+              _Dx=std::default_delete<Node<int>>
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3342,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(std::nullptr_t) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3339,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(void) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+                  while trying to match the argument list '(int)'
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3344,30):
+      or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(std::nullptr_t) noexcept'
+          with
+          [
+              T=int
+          ]
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,9):
+          'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(std::nullptr_t) noexcept': cannot convert argument 2 from 'int' to 'std::nullptr_t'
+          with
+          [
+              T=int
+          ]
+              C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+              only a null pointer constant can be converted to nullptr_t
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3395,30):
+      or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &&) noexcept'
+          with
+          [
+              T=int
+          ]
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+          'initializing': cannot convert from 'int' to 'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &&'
+          with
+          [
+              T=int
+          ]
+              C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+              Reason: cannot convert from 'int' to 'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>'
+          with
+          [
+              T=int
+          ]
+              C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+              'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &)': cannot convert argument 1 from 'int' to 'const std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &'
+          with
+          [
+              T=int
+          ]
+                  C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+                  Reason: cannot convert from 'int' to 'const std::unique_ptr<Node<T>,std::default_delete<Node<T>>>'
+          with
+          [
+              T=int
+          ]
+                  C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+                  Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3375,5):
+                  could be 'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(std::unique_ptr<_Ux,_Dx> &&) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3367,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &&) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3364,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(Node<T> *,std::default_delete<Node<T>> &&)'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3359,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(Node<T> *,_Dx &&) noexcept'
+          with
+          [
+              T=int,
+              _Dx=std::default_delete<Node<int>>
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3355,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(Node<T> *,const _Dx &) noexcept'
+          with
+          [
+              T=int,
+              _Dx=std::default_delete<Node<int>>
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3342,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(std::nullptr_t) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3339,5):
+                  or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::unique_ptr(void) noexcept'
+          with
+          [
+              T=int
+          ]
+                  C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,28):
+                  while trying to match the argument list '(int)'
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\memory(3388,30):
+      or       'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(std::unique_ptr<_Ux,_Dx> &&) noexcept'
+          with
+          [
+              T=int
+          ]
+          C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,9):
+          'std::unique_ptr<Node<T>,std::default_delete<Node<T>>> &std::unique_ptr<Node<T>,std::default_delete<Node<T>>>::operator =(std::unique_ptr<_Ux,_Dx> &&) noexcept': could not deduce template argument for 'std::unique_ptr<_Ux,_Dx> &&' from 'int'
+          with
+          [
+              T=int
+          ]
+      C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\StackAndQueue\stack.hpp(21,9):
+      while trying to match the argument list '(std::unique_ptr<Node<T>,std::default_delete<Node<T>>>, int)'
+          with
+          [
+              T=int
+          ]
+  

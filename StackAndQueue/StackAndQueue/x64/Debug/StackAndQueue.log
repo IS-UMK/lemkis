@@ -1,2 +1,4 @@
-﻿  program.cpp
+﻿  main.cpp
+  stack_test.cpp
+  Generating Code...
   StackAndQueue.vcxproj -> C:\Users\piotr\Desktop\lemkis-stack-and-queue\StackAndQueue\x64\Debug\StackAndQueue.exe
