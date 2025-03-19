@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\program.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\program.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "program.cpp",
+              "DocumentMoniker": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\program.cpp",
+              "RelativeDocumentMoniker": "StackAndQueue\\program.cpp",
+              "ToolTip": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\program.cpp",
+              "RelativeToolTip": "StackAndQueue\\program.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-03-19T19:03:15.981Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
