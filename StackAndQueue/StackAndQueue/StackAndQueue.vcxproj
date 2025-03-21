@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,10 +130,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="queue_test.cpp" />
     <ClCompile Include="stack_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="node.hpp" />
+    <ClInclude Include="queue.hpp" />
+    <ClInclude Include="queue_test.hpp" />
     <ClInclude Include="stack.hpp" />
     <ClInclude Include="stack_test.hpp" />
   </ItemGroup>

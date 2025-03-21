@@ -1,25 +1,37 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\",
+  "WorkspaceRootPath": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\stack_test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\stack_test.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue_test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\queue_test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\stack_test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue_test.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\queue_test.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\stack_test.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\queue.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\stack.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\node.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\node.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{280F878C-5019-4231-9FC2-227466409E60}|StackAndQueue\\StackAndQueue.vcxproj|solutionrelative:StackAndQueue\\node.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -34,65 +46,102 @@
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "queue_test.hpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue_test.hpp",
+              "RelativeDocumentMoniker": "StackAndQueue\\queue_test.hpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue_test.hpp",
+              "RelativeToolTip": "StackAndQueue\\queue_test.hpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-03-19T20:05:47.936Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "queue_test.cpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue_test.cpp",
+              "RelativeDocumentMoniker": "StackAndQueue\\queue_test.cpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue_test.cpp",
+              "RelativeToolTip": "StackAndQueue\\queue_test.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-03-19T20:04:00.867Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "queue.hpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue.hpp",
+              "RelativeDocumentMoniker": "StackAndQueue\\queue.hpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\queue.hpp",
+              "RelativeToolTip": "StackAndQueue\\queue.hpp",
+              "ViewState": "AgIAAHcAAAAAAAAAAAAAAHcAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-03-19T20:01:06.819Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "stack_test.hpp",
-              "DocumentMoniker": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.hpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.hpp",
               "RelativeDocumentMoniker": "StackAndQueue\\stack_test.hpp",
-              "ToolTip": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.hpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.hpp",
               "RelativeToolTip": "StackAndQueue\\stack_test.hpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-03-19T19:30:07.357Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\main.cpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\main.cpp",
               "RelativeDocumentMoniker": "StackAndQueue\\main.cpp",
-              "ToolTip": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\main.cpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\main.cpp",
               "RelativeToolTip": "StackAndQueue\\main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-03-19T19:28:26.908Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "node.hpp",
-              "DocumentMoniker": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\node.hpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\node.hpp",
               "RelativeDocumentMoniker": "StackAndQueue\\node.hpp",
-              "ToolTip": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\node.hpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\node.hpp",
               "RelativeToolTip": "StackAndQueue\\node.hpp",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-03-19T19:16:46.242Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-19T19:16:46.242Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "stack.hpp",
-              "DocumentMoniker": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack.hpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack.hpp",
               "RelativeDocumentMoniker": "StackAndQueue\\stack.hpp",
-              "ToolTip": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack.hpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack.hpp",
               "RelativeToolTip": "StackAndQueue\\stack.hpp",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-03-19T19:14:04.51Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-19T19:14:04.51Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "stack_test.cpp",
-              "DocumentMoniker": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.cpp",
+              "DocumentMoniker": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.cpp",
               "RelativeDocumentMoniker": "StackAndQueue\\stack_test.cpp",
-              "ToolTip": "C:\\Users\\piotr\\Desktop\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.cpp",
+              "ToolTip": "D:\\studia\\rowno\\lemkis-stack-and-queue\\StackAndQueue\\StackAndQueue\\stack_test.cpp",
               "RelativeToolTip": "StackAndQueue\\stack_test.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAATAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-03-19T19:03:15.981Z",
               "EditorCaption": ""
