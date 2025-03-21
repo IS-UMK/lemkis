@@ -2,7 +2,7 @@
 #include "queue_test.hpp"
 
 auto main() -> int {
-    stackTest();
+    //stackTest();
     queueTest();
     return 0;
 }

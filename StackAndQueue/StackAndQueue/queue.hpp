@@ -1,19 +1,13 @@
 #include <format>
 #include <iostream>
 #include <stdexcept>
+#include "node.hpp"
 
 template <typename T>
 class Queue {
   private:
-    struct Node {
-        T data;
-        Node* next;
-
-        Node(const T& value) : data(value), next(nullptr) {}
-    };
-
-    Node* front_ = nullptr;
-    Node* rear_ = nullptr;
+    std::unique_ptr<Node<T>> front_;
+    Node<T>* rear_ = nullptr;
     std::size_t size_ = 0;
 
   public:
@@ -21,23 +15,22 @@ class Queue {
     Queue() = default;
 
     // Destructor
-    ~Queue() {
-        while (!empty()) { dequeue(); }
-    }
+    ~Queue() = default;
 
     // Copy constructor
     Queue(const Queue& other) {
-        Node* current = other.front_;
+        Node<T>* current = other.front_.get();
         while (current != nullptr) {
-            enqueue(current->data);
-            current = current->next;
+            push(current->data);
+            current = current->next.get();
         }
     }
 
     // Move constructor
     Queue(Queue&& other) noexcept
-        : front_(other.front_), rear_(other.rear_), size_(other.size_) {
-        other.front_ = nullptr;
+        : front_(std::move(other.front_)),
+          rear_(other.rear_),
+          size_(other.size_) {
         other.rear_ = nullptr;
         other.size_ = 0;
     }
@@ -46,13 +39,15 @@ class Queue {
     Queue& operator=(const Queue& other) {
         if (this != &other) {
             // Clear current queue
-            while (!empty()) { dequeue(); }
+            front_.reset();
+            rear_ = nullptr;
+            size_ = 0;
 
             // Copy elements from other queue
-            Node* current = other.front_;
+            Node<T>* current = other.front_.get();
             while (current != nullptr) {
-                enqueue(current->data);
-                current = current->next;
+                push(current->data);
+                current = current->next.get();
             }
         }
         return *this;
@@ -61,14 +56,10 @@ class Queue {
     // Move assignment operator
     Queue& operator=(Queue&& other) noexcept {
         if (this != &other) {
-            // Clear current queue
-            while (!empty()) { dequeue(); }
-
-            front_ = other.front_;
+            front_ = std::move(other.front_);
             rear_ = other.rear_;
             size_ = other.size_;
 
-            other.front_ = nullptr;
             other.rear_ = nullptr;
             other.size_ = 0;
         }
@@ -76,40 +67,57 @@ class Queue {
     }
 
     // Add an element to the queue
-    void enqueue(const T& value) {
-        auto newNode = new Node(value);
+    void push(T value) {
+        auto newNode = std::make_unique<Node<T>>(std::move(value));
 
         if (empty()) {
-            front_ = newNode;
-            rear_ = newNode;
+            front_ = std::move(newNode);
+            rear_ = front_.get();
         } else {
-            rear_->next = newNode;
-            rear_ = newNode;
+            rear_->next = std::move(newNode);
+            rear_ = rear_->next.get();
         }
 
         size_++;
     }
 
-    // Remove and return the front element
-    T dequeue() {
-        if (empty()) { throw std::underflow_error("Queue is empty"); }
+    // Remove the front element
+    void pop() {
+        // Precondition: !empty()
+        // Calling pop() on an empty queue is undefined behavior
 
-        auto temp = front_;
-        T value = temp->data;
+        if (front_.get() == rear_) { rear_ = nullptr; }
 
-        front_ = front_->next;
-        delete temp;
+        front_ = std::move(front_->next);
         size_--;
-
-        if (front_ == nullptr) { rear_ = nullptr; }
-
-        return value;
     }
 
-    // View the front element without removing it
-    const T& peek() const {
-        if (empty()) { throw std::underflow_error("Queue is empty"); }
+    // Access the front element
+    T& front() {
+        // Precondition: !empty()
+        // Calling front() on an empty queue is undefined behavior
         return front_->data;
+    }
+
+    // Const version of front
+    const T& front() const {
+        // Precondition: !empty()
+        // Calling front() on an empty queue is undefined behavior
+        return front_->data;
+    }
+
+    // Access the back element
+    T& back() {
+        // Precondition: !empty()
+        // Calling back() on an empty queue is undefined behavior
+        return rear_->data;
+    }
+
+    // Const version of back
+    const T& back() const {
+        // Precondition: !empty()
+        // Calling back() on an empty queue is undefined behavior
+        return rear_->data;
     }
 
     // Check if the queue is empty
