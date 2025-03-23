@@ -1,7 +1,8 @@
-#include <format>
-#include <iostream>
-#include <stdexcept>
+#pragma once
+
 #include "node.hpp"
+
+#include <memory>
 
 template <typename T>
 class Queue {
@@ -36,7 +37,7 @@ class Queue {
     }
 
     // Copy assignment operator
-    Queue& operator=(const Queue& other) {
+    auto operator=(const Queue& other) -> Queue& {
         if (this != &other) {
             // Clear current queue
             front_.reset();
@@ -54,7 +55,7 @@ class Queue {
     }
 
     // Move assignment operator
-    Queue& operator=(Queue&& other) noexcept {
+    auto operator=(Queue&& other) noexcept -> Queue& {
         if (this != &other) {
             front_ = std::move(other.front_);
             rear_ = other.rear_;
@@ -67,7 +68,7 @@ class Queue {
     }
 
     // Add an element to the queue
-    void push(T value) {
+    auto push(T value) -> void {
         auto newNode = std::make_unique<Node<T>>(std::move(value));
 
         if (empty()) {
@@ -82,7 +83,7 @@ class Queue {
     }
 
     // Remove the front element
-    void pop() {
+    auto pop() -> void {
         // Precondition: !empty()
         // Calling pop() on an empty queue is undefined behavior
 
@@ -93,36 +94,36 @@ class Queue {
     }
 
     // Access the front element
-    T& front() {
+    auto front() -> T& {
         // Precondition: !empty()
         // Calling front() on an empty queue is undefined behavior
         return front_->data;
     }
 
     // Const version of front
-    const T& front() const {
+    auto front() const -> const T& {
         // Precondition: !empty()
         // Calling front() on an empty queue is undefined behavior
         return front_->data;
     }
 
     // Access the back element
-    T& back() {
+    auto back() -> T& {
         // Precondition: !empty()
         // Calling back() on an empty queue is undefined behavior
         return rear_->data;
     }
 
     // Const version of back
-    const T& back() const {
+    auto back() const -> const T& {
         // Precondition: !empty()
         // Calling back() on an empty queue is undefined behavior
         return rear_->data;
     }
 
     // Check if the queue is empty
-    [[nodiscard]] bool empty() const { return front_ == nullptr; }
+    [[nodiscard]] auto empty() const -> bool { return front_ == nullptr; }
 
     // Get the size of the queue
-    [[nodiscard]] std::size_t size() const { return size_; }
+    [[nodiscard]] auto size() const -> std::size_t { return size_; }
 };
