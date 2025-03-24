@@ -1,7 +1,10 @@
+#pragma once
+
+#include "queue_test.hpp"
 #include "queue.hpp"
 #include "con_queue.hpp"
+
 #include <print>
-#include "queue_test.hpp"
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -9,7 +12,7 @@
 #include <chrono>
 
 // Demo of data race with the original Queue
-void demonstrate_data_race() {
+auto QueueTest::demonstrate_data_race() -> void {
     std::println("=== Demonstrating Data Race Issues ===");
 
     Queue<int> unsafe_queue;
@@ -17,7 +20,7 @@ void demonstrate_data_race() {
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::atomic<bool> race_detected(false);
-    
+
     // Producer thread
     std::thread producer([&]() {
         for (int i = 0; i < 10000 && !race_detected; ++i) {
@@ -26,13 +29,12 @@ void demonstrate_data_race() {
             // Yield to increase chance of race condition
             std::this_thread::yield();
         }
-    });
-    
+        });
+
     // Consumer thread
     std::thread consumer([&]() {
         for (int i = 0; i < 10000 && !race_detected; ++i) {
-            // This can crash if queue becomes empty between empty() check and
-            // pop()
+            // This can crash if queue becomes empty between empty() check and pop()
             std::println("got here"); //zakomentuj to zeby wywolac race condition
             try {
                 if (!unsafe_queue.empty()) {
@@ -40,14 +42,15 @@ void demonstrate_data_race() {
                     unsafe_queue.pop();                // Potential race
                     consumer_count++;
                 }
-            } catch (const std::exception& e) {
+            }
+            catch (const std::exception& e) {
                 std::cout << "Race condition detected: " << e.what()
-                          << std::endl;
+                    << std::endl;
                 race_detected = true;
             }
             std::this_thread::yield();
         }
-    });
+        });
 
     // Wait for threads to finish or timeout
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -61,18 +64,19 @@ void demonstrate_data_race() {
 
     if (race_detected) {
         std::cout << "A race condition was detected!" << std::endl;
-    } else {
+    }
+    else {
         std::cout << "No race condition detected in this run, but the code is "
-                     "still unsafe."
-                  << std::endl;
+            "still unsafe."
+            << std::endl;
         std::cout << "The absence of a detected race doesn't mean the code is "
-                     "thread-safe."
-                  << std::endl;
+            "thread-safe."
+            << std::endl;
     }
 }
 
 // Demo of thread-safe queue
-void demonstrate_concurrent_queue() {
+auto QueueTest::demonstrate_concurrent_queue() -> void {
     std::cout << "\n=== Demonstrating Thread-Safe Queue ===" << std::endl;
 
     ConcurrentQueue<int> safe_queue;
@@ -88,7 +92,7 @@ void demonstrate_concurrent_queue() {
             // Yield to increase chance of finding issues if they exist
             std::this_thread::yield();
         }
-    });
+        });
 
     // Consumer thread with blocking operation
     std::thread consumer([&]() {
@@ -97,7 +101,7 @@ void demonstrate_concurrent_queue() {
             if (safe_queue.try_pop(value)) { consumer_count++; }
             std::this_thread::yield();
         }
-    });
+        });
 
     // Let them run for a bit
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -115,9 +119,9 @@ void demonstrate_concurrent_queue() {
 }
 
 // Demo of condition variable for efficient waiting
-void demonstrate_condition_variable() {
+auto QueueTest::demonstrate_condition_variable() -> void {
     std::cout << "\n=== Demonstrating Condition Variable Usage ==="
-              << std::endl;
+        << std::endl;
 
     ConcurrentQueue<int> safe_queue;
     std::atomic<bool> stop_flag(false);
@@ -135,7 +139,7 @@ void demonstrate_condition_variable() {
             safe_queue.push(i);
             producer_count++;
         }
-    });
+        });
 
     // Consumer thread with blocking wait
     std::thread consumer([&]() {
@@ -148,7 +152,7 @@ void demonstrate_condition_variable() {
             // Show that we got a value
             std::cout << "Consumer got value: " << value << std::endl;
         }
-    });
+        });
 
     // Let them run for a bit
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -160,13 +164,12 @@ void demonstrate_condition_variable() {
     std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
     std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
     std::cout << "The condition variable allows efficient waiting without "
-                 "busy-waiting."
-              << std::endl;
+        "busy-waiting."
+        << std::endl;
 }
 
-auto queueTest() -> void {
-    demonstrate_data_race();
-    demonstrate_concurrent_queue();
-    demonstrate_condition_variable();
+auto QueueTest::queueTest() -> void {
+    QueueTest::demonstrate_data_race();
+    QueueTest::demonstrate_concurrent_queue();
+    QueueTest::demonstrate_condition_variable();
 }
-

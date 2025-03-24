@@ -7,11 +7,10 @@
 #include <memory>
 
 template <typename T>
-class ConcurrentQueue {
+class ConcurrentStack {
 private:
-    std::unique_ptr<Node<T>> front_;
-    Node<T>* rear_ = nullptr;
-    std::size_t size_ = 0;
+    std::unique_ptr<Node<T>> top_;
+    std::size_t size_;
 
     // Synchronization primitives
     mutable std::mutex mutex_;
@@ -20,90 +19,95 @@ private:
     // Helper method for internal use when lock is already held
     auto push_unsafe(T value) -> void {
         auto newNode = std::make_unique<Node<T>>(std::move(value));
-        if (front_ == nullptr) {
-            front_ = std::move(newNode);
-            rear_ = front_.get();
-        }
-        else {
-            rear_->next = std::move(newNode);
-            rear_ = rear_->next.get();
-        }
+        newNode->next = std::move(top_);
+        top_ = std::move(newNode);
+
         size_++;
     }
 
-    // Helper method to check if queue is empty when lock is already held
-    auto empty_unsafe() const -> bool { return front_ == nullptr; }
+    // Helper method to check if stack is empty when lock is already held
+    auto empty_unsafe() const -> bool { return top_ == nullptr; }
 
 public:
     // Constructor
-    ConcurrentQueue() = default;
+    ConcurrentStack() = default;
 
     // Destructor
-    ~ConcurrentQueue() = default;
+    ~ConcurrentStack() = default;
 
     // Copy constructor
-    ConcurrentQueue(const ConcurrentQueue& other) {
+    ConcurrentStack(const ConcurrentStack& other) {
         std::lock_guard<std::mutex> lock(other.mutex_);
-        Node<T>* current = other.front_.get();
-        while (current != nullptr) {
-            push(current->data);
-            current = current->next.get();
+
+        top_ = nullptr;
+        size_ = other.size_;
+        if (other.top_ == nullptr)
+            return;
+        top_ = std::make_unique<Node<T>>(std::move(other.top_->data));
+        Node<T>* thisCurrent = top_.get();
+        Node<T>* otherNext = other.top_->next.get();
+        while (otherNext) {
+            thisCurrent->next = std::make_unique<Node<T>>(std::move(otherNext->data));
+            thisCurrent = thisCurrent->next.get();
+            otherNext = otherNext->next.get();
         }
     }
 
     // Move constructor
-    ConcurrentQueue(ConcurrentQueue&& other) noexcept {
+    ConcurrentStack(ConcurrentStack&& other) noexcept {
         std::lock_guard<std::mutex> lock(other.mutex_);
-        front_ = std::move(other.front_);
-        rear_ = other.rear_;
+
+        top_ = std::move(other.top_);
         size_ = other.size_;
-        other.rear_ = nullptr;
         other.size_ = 0;
     }
 
     // Copy assignment operator
-    auto operator=(const ConcurrentQueue& other) -> ConcurrentQueue& {
+    auto operator=(const ConcurrentStack& other) -> ConcurrentStack& {
         if (this != &other) {
-            // Need to lock both queues to avoid deadlock
-            std::lock(mutex_, other.mutex_);
+            // Need to lock both stacks to avoid deadlock
+            std::lock(mutex_, other.mutex);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
                 std::adopt_lock);
 
-            // Clear current queue
-            front_.reset();
-            rear_ = nullptr;
-            size_ = 0;
+            // Clear current stack
+            top_.reset();
+            size_ = other.size_;
 
-            // Copy elements from other queue
-            Node<T>* current = other.front_.get();
-            while (current != nullptr) {
-                push_unsafe(current->data);  // Using unsafe version since we
-                // already have the lock
-                current = current->next.get();
+            // Copy elements from other stack
+            if (other.top_ == nullptr)
+                return *this;
+            top_ = std::make_unique<Node<T>>(std::move(other.top_->data));
+            Node<T>* thisCurrent = top_.get();
+            Node<T>* otherNext = other.top_->next.get();
+            while (otherNext) {
+                thisCurrent->next = std::make_unique<Node<T>>(std::move(otherNext->data));
+                thisCurrent = thisCurrent->next.get();
+                otherNext = otherNext->next.get();
             }
         }
+
         return *this;
     }
 
     // Move assignment operator
-    auto operator=(ConcurrentQueue&& other) noexcept -> ConcurrentQueue& {
+    auto operator=(ConcurrentStack&& other) noexcept -> ConcurrentStack& {
         if (this != &other) {
-            std::lock(mutex_, other.mutex_);
+            std::lock(mutex_, other.mutex);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
                 std::adopt_lock);
 
-            front_ = std::move(other.front_);
-            rear_ = other.rear_;
+            top_ = std::move(other.top_);
             size_ = other.size_;
-            other.rear_ = nullptr;
+
             other.size_ = 0;
         }
         return *this;
     }
 
-    // Add an element to the queue
+    // Add an element to the stack
     auto push(T value) -> void {
         {
             std::lock_guard<std::mutex> lock(mutex_);
@@ -113,26 +117,24 @@ public:
         not_empty_cv_.notify_one();
     }
 
-    // Remove the front element (non-blocking)
+    // Remove the top element (non-blocking)
     auto try_pop(T& value) -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
         if (empty_unsafe()) { return false; }
 
-        value = std::move(front_->data);
-        if (front_.get() == rear_) { rear_ = nullptr; }
-        front_ = std::move(front_->next);
+        value = std::move(top_->data);
+        top_ = std::move(top_->next);
         size_--;
         return true;
     }
 
-    // Remove the front element (blocking)
+    // Remove the top element (blocking)
     auto pop(T& value) -> void {
         std::unique_lock<std::mutex> lock(mutex_);
         not_empty_cv_.wait(lock, [this] { return !empty_unsafe(); });
 
-        value = std::move(front_->data);
-        if (front_.get() == rear_) { rear_ = nullptr; }
-        front_ = std::move(front_->next);
+        value = std::move(top_->data);
+        top_ = std::move(top_->next);
         size_--;
     }
 
@@ -146,28 +148,27 @@ public:
             return false;  // Timed out
         }
 
-        value = std::move(front_->data);
-        if (front_.get() == rear_) { rear_ = nullptr; }
-        front_ = std::move(front_->next);
+        value = std::move(top_->data);
+        top_ = std::move(top_->next);
         size_--;
         return true;
     }
 
-    // Try to peek at front element without removing
-    auto try_peek(T& value) const -> bool {
+    // Try to peek at top element without removing
+    auto try_top(T& value) const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
         if (empty_unsafe()) { return false; }
-        value = front_->data;
+        value = top_->data;
         return true;
     }
 
-    // Check if the queue is empty
+    // Check if the stack is empty
     [[nodiscard]] auto empty() const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
-        return empty_unsafe();
+        return top_ == nullptr;
     }
 
-    // Get the size of the queue
+    // Get the size of the stack
     [[nodiscard]] auto size() const -> std::size_t {
         std::lock_guard<std::mutex> lock(mutex_);
         return size_;
