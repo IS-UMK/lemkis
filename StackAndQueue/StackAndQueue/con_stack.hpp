@@ -1,14 +1,14 @@
 #pragma once
 
-#include "node.hpp"
-
 #include <condition_variable>
-#include <mutex>
 #include <memory>
+#include <mutex>
+
+#include "node.hpp"
 
 template <typename T>
 class ConcurrentStack {
-private:
+  private:
     std::unique_ptr<Node<T>> top_;
     std::size_t size_;
 
@@ -28,7 +28,7 @@ private:
     // Helper method to check if stack is empty when lock is already held
     auto empty_unsafe() const -> bool { return top_ == nullptr; }
 
-public:
+  public:
     // Constructor
     ConcurrentStack() = default;
 
@@ -41,13 +41,13 @@ public:
 
         top_ = nullptr;
         size_ = other.size_;
-        if (other.top_ == nullptr)
-            return;
+        if (other.top_ == nullptr) return;
         top_ = std::make_unique<Node<T>>(std::move(other.top_->data));
         Node<T>* thisCurrent = top_.get();
         Node<T>* otherNext = other.top_->next.get();
         while (otherNext) {
-            thisCurrent->next = std::make_unique<Node<T>>(std::move(otherNext->data));
+            thisCurrent->next =
+                std::make_unique<Node<T>>(std::move(otherNext->data));
             thisCurrent = thisCurrent->next.get();
             otherNext = otherNext->next.get();
         }
@@ -69,20 +69,20 @@ public:
             std::lock(mutex_, other.mutex);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
-                std::adopt_lock);
+                                                   std::adopt_lock);
 
             // Clear current stack
             top_.reset();
             size_ = other.size_;
 
             // Copy elements from other stack
-            if (other.top_ == nullptr)
-                return *this;
+            if (other.top_ == nullptr) return *this;
             top_ = std::make_unique<Node<T>>(std::move(other.top_->data));
             Node<T>* thisCurrent = top_.get();
             Node<T>* otherNext = other.top_->next.get();
             while (otherNext) {
-                thisCurrent->next = std::make_unique<Node<T>>(std::move(otherNext->data));
+                thisCurrent->next =
+                    std::make_unique<Node<T>>(std::move(otherNext->data));
                 thisCurrent = thisCurrent->next.get();
                 otherNext = otherNext->next.get();
             }
@@ -97,7 +97,7 @@ public:
             std::lock(mutex_, other.mutex);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
-                std::adopt_lock);
+                                                   std::adopt_lock);
 
             top_ = std::move(other.top_);
             size_ = other.size_;

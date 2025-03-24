@@ -1,7 +1,7 @@
 #pragma once
 
 class QueueTest {
-public:
+  public:
     // Demo of data race with the original Queue
     static auto demonstrate_data_race() -> void;
 

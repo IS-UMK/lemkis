@@ -1,7 +1,7 @@
 #pragma once
 
 class StackTest {
-public:
+  public:
     // Demo of data race with the original Stack
     static auto demonstrate_data_race() -> void;
 

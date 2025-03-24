@@ -1,5 +1,5 @@
-#include "stack_test.hpp"
 #include "queue_test.hpp"
+#include "stack_test.hpp"
 
 auto main() -> int {
     QueueTest::queueTest();

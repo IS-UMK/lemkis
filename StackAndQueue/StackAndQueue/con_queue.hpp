@@ -1,14 +1,14 @@
 #pragma once
 
-#include "node.hpp"
-
 #include <condition_variable>
-#include <mutex>
 #include <memory>
+#include <mutex>
+
+#include "node.hpp"
 
 template <typename T>
 class ConcurrentQueue {
-private:
+  private:
     std::unique_ptr<Node<T>> front_;
     Node<T>* rear_ = nullptr;
     std::size_t size_ = 0;
@@ -23,8 +23,7 @@ private:
         if (front_ == nullptr) {
             front_ = std::move(newNode);
             rear_ = front_.get();
-        }
-        else {
+        } else {
             rear_->next = std::move(newNode);
             rear_ = rear_->next.get();
         }
@@ -34,7 +33,7 @@ private:
     // Helper method to check if queue is empty when lock is already held
     auto empty_unsafe() const -> bool { return front_ == nullptr; }
 
-public:
+  public:
     // Constructor
     ConcurrentQueue() = default;
 
@@ -68,7 +67,7 @@ public:
             std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
-                std::adopt_lock);
+                                                   std::adopt_lock);
 
             // Clear current queue
             front_.reset();
@@ -92,7 +91,7 @@ public:
             std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
-                std::adopt_lock);
+                                                   std::adopt_lock);
 
             front_ = std::move(other.front_);
             rear_ = other.rear_;

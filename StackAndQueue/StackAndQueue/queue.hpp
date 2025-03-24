@@ -1,8 +1,8 @@
 #pragma once
 
-#include "node.hpp"
-
 #include <memory>
+
+#include "node.hpp"
 
 template <typename T>
 class Queue {
