@@ -48,6 +48,8 @@ y4 = x
 y3 = x
 
 Can y1= 1, y2= 2, y3 = 2, y4 = 1 happen?
+Can y1= 1, y2= 2, y3 = 1, y4 = 2 happen?
+
 ```
 # Synchronizations / Barriers
 read-acquire no instruction After me can go before me 
