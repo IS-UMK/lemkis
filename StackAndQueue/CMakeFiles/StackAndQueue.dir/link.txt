@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++23  -ftemplate-backtrace-limit=0 -fconcepts-diagnostics-depth=3  CMakeFiles/StackAndQueue.dir/src/main.cpp.o -o StackAndQueue 
