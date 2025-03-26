@@ -71,3 +71,14 @@ Exercise
 What if we combine RA and WR barriers?
 
 
+# Lock free queue
+Does it work?
+```cpp
+int q[N]
+std::atomic<size_t> front;
+void push(int x) {
+  size_t my_slot = front.fetch_add(1);
+  q[my_slot] = x;
+}
+```
+
