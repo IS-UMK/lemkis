@@ -28,12 +28,12 @@ if (flag1 == 0) { critical section}
 - relation happens-before
 
 Example
-
+```
 Thread 1                        Thread 2
 Foo(flag)------------------------
 S(a) ----------------------------S(a)  ------------------- here we synchronize
 Bar(flag)------------------------Bar(flag)
-
+```
 
 Thread 1
 x  = 1
