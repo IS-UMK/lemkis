@@ -38,6 +38,9 @@ namespace Benchmark {
                 if (push_count >= N && pop_count >= N) break;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }*/
+            while (push_count < N) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
         });
 
         measure_time("ConcurrentStack (Pop)", [&] {
@@ -59,6 +62,9 @@ namespace Benchmark {
                 if (push_count >= N && pop_count >= N) break;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }*/
+            while (pop_count < N) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
         });
 
         std::println("Pushed: {} items", push_count.load());
@@ -134,6 +140,9 @@ namespace Benchmark {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             */
+            while (push_count < N) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
         });
 
         measure_time("ConcurrentQueue (Pop)", [&] {
@@ -153,6 +162,9 @@ namespace Benchmark {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             */
+            while (pop_count < N) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
         });
 
         std::println("Pushed: {} items", push_count.load());
@@ -188,8 +200,7 @@ namespace Benchmark {
             // Wait for completion
             while (push_count < N || pop_count < N) {
                 if (push_count >= N && pop_count >= N) break;
-                std::this_thread::sleep_for(
-                    std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
 
@@ -209,8 +220,7 @@ namespace Benchmark {
         });
 
         measure_time("Stack (Pop)", [&] {
-            for (int pop_count = 0; pop_count < N; ++pop_count)
-                stack.pop();
+            for (int pop_count = 0; pop_count < N; ++pop_count) stack.pop();
         });
     }
 
@@ -226,8 +236,7 @@ namespace Benchmark {
         });
 
         measure_time("Queue (Pop)", [&] {
-            for (int pop_count = 0; pop_count < N; ++pop_count)
-                queue.pop();
+            for (int pop_count = 0; pop_count < N; ++pop_count) queue.pop();
         });
     }
 

@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = 
 
-CXX_FLAGS =  -std=c++23  -ftemplate-backtrace-limit=0 -std=c++23
+CXX_FLAGS =  -std=c++23  -ftemplate-backtrace-limit=0 -g -Wall -Wextra --pedantic -g3 -ggdb -std=c++23
 
