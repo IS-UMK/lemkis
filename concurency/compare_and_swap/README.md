@@ -20,3 +20,31 @@ if (flag2 == 0) { critical section}
 Thread 2
 flag2 = 1
 if (flag1 == 0) { critical section}
+
+
+# Sequential consistence (provided no data races)
+- relation happens-before
+
+Example
+
+Thread 1                        Thread 2
+Foo(flag)------------------------
+S(a) ----------------------------S(a)  ------------------- here we synchronize
+Bar(flag)------------------------Bar(flag)
+
+
+Thread 1
+x  = 1
+Thread 2 
+x = 2
+Thread 3
+y1= x
+y2 = x
+Thread 4
+y4 = x
+y3 = x
+
+Can y1= 1, y2= 2, y3 = 2, y4 = 1 happen?
+
+# Synchronizations / Barriers
+...
