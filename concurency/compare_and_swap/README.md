@@ -51,6 +51,7 @@ Can y1= 1, y2= 2, y3 = 2, y4 = 1 happen?
 # Synchronizations / Barriers
 read-acquire no instruction After me can go before me 
 
+```
 READ ACQUIRE
 |-------------------------|
 |                         |
@@ -63,4 +64,9 @@ WRITE RELEASE
 ALL MEMORY INSTRUCTION STAY ABOVE THE LINE
 |                         |
 |-------------------------|
+```
+
+Exercise
+What if we combine RA and WR barriers?
+
 
