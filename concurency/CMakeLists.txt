@@ -3,6 +3,7 @@ project(concurrency C CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 add_subdirectory(./mutex)
+add_subdirectory(./compare_and_swap)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++23  -ftemplate-backtrace-limit=0 -fconcepts-diagnostics-depth=3 ")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra --pedantic -g3 -ggdb")
 
@@ -13,4 +14,4 @@ add_executable(
   )
 
 find_package(Threads REQUIRED)
-target_link_libraries(${PROJECT_NAME} pthread mutex)
+target_link_libraries(${PROJECT_NAME} pthread mutex cas)
