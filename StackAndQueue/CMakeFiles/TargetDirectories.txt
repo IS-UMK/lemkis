@@ -1,0 +1,5 @@
+/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/CMakeFiles/StackAndQueue.dir
+/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/CMakeFiles/edit_cache.dir
+/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/CMakeFiles/rebuild_cache.dir
+/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/src/CMakeFiles/edit_cache.dir
+/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/src/CMakeFiles/rebuild_cache.dir
