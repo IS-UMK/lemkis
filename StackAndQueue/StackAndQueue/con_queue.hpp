@@ -16,23 +16,6 @@ class ConcurrentQueue {
     // Synchronization primitives
     mutable std::mutex mutex_;
     std::condition_variable not_empty_cv_;
-
-    // Helper method for internal use when lock is already held
-    auto push_unsafe(T value) -> void {
-        auto newNode = std::make_unique<Node<T>>(std::move(value));
-        if (front_ == nullptr) {
-            front_ = std::move(newNode);
-            rear_ = front_.get();
-        } else {
-            rear_->next = std::move(newNode);
-            rear_ = rear_->next.get();
-        }
-        size_++;
-    }
-
-    // Helper method to check if queue is empty when lock is already held
-    auto empty_unsafe() const -> bool { return front_ == nullptr; }
-
   public:
     // Constructor
     ConcurrentQueue() = default;
@@ -90,9 +73,7 @@ class ConcurrentQueue {
         if (this != &other) {
             std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
-            std::lock_guard<std::mutex> lock_other(other.mutex_,
-                                                   std::adopt_lock);
-
+            std::lock_guard<std::mutex> lock_other(other.mutex_, std::adopt_lock);
             front_ = std::move(other.front_);
             rear_ = other.rear_;
             size_ = other.size_;
@@ -102,54 +83,51 @@ class ConcurrentQueue {
         return *this;
     }
 
+    // Helper method for internal use when lock is already held
+    auto unsafe_push(T value) -> void {
+        auto newNode = std::make_unique<Node<T>>(std::move(value));
+        if (front_ == nullptr) {
+            front_ = std::move(newNode);
+            rear_ = front_.get();
+        } else {
+            rear_->next = std::move(newNode);
+            rear_ = rear_->next.get();
+        }
+        size_++;
+    }
+
     // Add an element to the queue
     auto push(T value) -> void {
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            push_unsafe(std::move(value));
+            unsafe_push(std::move(value));
         }
         // Notify one waiting thread that data is available
         not_empty_cv_.notify_one();
     }
 
-    // Remove the front element (non-blocking)
-    auto try_pop(T& value) -> bool {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (empty_unsafe()) { return false; }
-
-        value = std::move(front_->data);
+    // Remove the front element
+    auto unsafe_pop() -> void {
+        // Precondition: !empty()
+        // Calling pop() on an empty queue is undefined behavior
         if (front_.get() == rear_) { rear_ = nullptr; }
         front_ = std::move(front_->next);
         size_--;
+    }
+
+    // Remove the front element (non-blocking)
+    auto try_pop() -> bool {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (empty_unsafe()) { return false; }        
+        unsafe_pop();
         return true;
     }
 
-    // Remove the front element (blocking)
-    auto pop(T& value) -> void {
+    //Pop with use of cv
+    auto pop() -> void {
         std::unique_lock<std::mutex> lock(mutex_);
         not_empty_cv_.wait(lock, [this] { return !empty_unsafe(); });
-
-        value = std::move(front_->data);
-        if (front_.get() == rear_) { rear_ = nullptr; }
-        front_ = std::move(front_->next);
-        size_--;
-    }
-
-    // Timed wait pop
-    auto pop(T& value, std::chrono::milliseconds timeout) -> bool {
-        std::unique_lock<std::mutex> lock(mutex_);
-        bool success = not_empty_cv_.wait_for(
-            lock, timeout, [this] { return !empty_unsafe(); });
-
-        if (!success) {
-            return false;  // Timed out
-        }
-
-        value = std::move(front_->data);
-        if (front_.get() == rear_) { rear_ = nullptr; }
-        front_ = std::move(front_->next);
-        size_--;
-        return true;
+        unsafe_pop();
     }
 
     // Try to peek at front element without removing
@@ -159,6 +137,9 @@ class ConcurrentQueue {
         value = front_->data;
         return true;
     }
+
+    // Helper method to check if queue is empty when lock is already held
+    auto empty_unsafe() const -> bool { return front_ == nullptr; }
 
     // Check if the queue is empty
     [[nodiscard]] auto empty() const -> bool {
