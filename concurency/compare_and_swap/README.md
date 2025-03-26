@@ -35,7 +35,7 @@ Foo(flag)------------------------
 S(a) ----------------------------S(a)  ------------------- here we synchronize
 Bar(flag)------------------------Bar(flag)
 ```
-
+```
 Thread 1
 x  = 1
 Thread 2 
@@ -48,7 +48,7 @@ y4 = x
 y3 = x
 
 Can y1= 1, y2= 2, y3 = 2, y4 = 1 happen?
-
+```
 # Synchronizations / Barriers
 read-acquire no instruction After me can go before me 
 
