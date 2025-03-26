@@ -10,6 +10,7 @@
   - the instruction is issued to to a functional unit
   - only if all older instructions have completed the operations result is written to register file
 6. Thread local, static initialization
+7. Can two non-shared atomic variables wait for each other?
 # Pure mutex
 Reordering
 
