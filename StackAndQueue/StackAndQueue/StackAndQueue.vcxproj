@@ -130,11 +130,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="queue_test.cpp" />
     <ClCompile Include="stack_test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="benchmark.hpp" />
     <ClInclude Include="con_queue.hpp" />
     <ClInclude Include="con_stack.hpp" />
     <ClInclude Include="node.hpp" />
