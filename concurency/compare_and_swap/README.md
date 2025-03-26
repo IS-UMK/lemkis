@@ -9,7 +9,7 @@
   - if operands are available instruction the instruction is allowed to leave the queue before other instructions
   - the instruction is issued to to a functional unit
   - only if all older instructions have completed the operations result is written to register file
-
+6. Thread local, static initialization
 # Pure mutex
 Reordering
 
@@ -49,4 +49,18 @@ y3 = x
 Can y1= 1, y2= 2, y3 = 2, y4 = 1 happen?
 
 # Synchronizations / Barriers
-...
+read-acquire no instruction After me can go before me 
+
+READ ACQUIRE
+|-------------------------|
+|                         |
+ALL MEMORY INSTRUCTION STAY BELOW THE LINE
+
+
+Write release - no instruction BEFORE me can go after me
+
+WRITE RELEASE
+ALL MEMORY INSTRUCTION STAY ABOVE THE LINE
+|                         |
+|-------------------------|
+
