@@ -112,3 +112,12 @@ zeschodkowana macierz m =
 and det(m) = ????
 """
 )
+
+
+arr = np.arange(27).reshape(3, 3, 3)
+# print(f"arr =\n{arr}\n\n")
+# print(arr[0][0])
+# Using ellipsis to select the first column across all dimensions
+print(f"ellipsis arr[..., 0] =\n{arr[..., 0]}\n\n")
+
+# Equivalent to arr[:, :, 0]
