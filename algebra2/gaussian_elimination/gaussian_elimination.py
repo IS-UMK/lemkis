@@ -94,6 +94,16 @@ def gaussian_elimination(m: np.ndarray):
     zero_rows(m)
     return gaussian_elimination(m[1:, 1:])
 
+def determinant(m: np.ndarray):
+    assert(m.shape[0] == m.shape[1])
+    copy = m.astype(np.float64)
+    gaussian_elimination(copy)
+    return np.prod(np.diag(copy))
+
+
+
+
+
 
 m = m.astype(np.float64)
 # m[0, 0] = 0.0
@@ -115,9 +125,9 @@ and det(m) = ????
 
 
 arr = np.arange(27).reshape(3, 3, 3)
-# print(f"arr =\n{arr}\n\n")
+print(f"arr =\n{arr}\n\n")
 # print(arr[0][0])
 # Using ellipsis to select the first column across all dimensions
-print(f"ellipsis arr[..., 0] =\n{arr[..., 0]}\n\n")
+print(f"ellipsis arr[:, 0, :] =\n{arr[:, 0, :]}\n\n")
 
 # Equivalent to arr[:, :, 0]

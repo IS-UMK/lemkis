@@ -16,7 +16,16 @@ auto stack_push_example(stack<int> &s) {
     std::jthread t3{[&s]() { s.push(3); }};
 }
 
-
+auto factory_example(factory &f) {
+    std::jthread t2{[&f]() { while (true) {f.consume_a_cookie();} }};
+    std::jthread t3{[&f]() { while (true) {f.consume_a_cookie();} }};
+    std::jthread t1{[&f]() { while (true) {f.produce_a_cookie();} }};
+    // std::jthread t3{[&f]() { while (true) {f.consume_a_cookie();} }};
+    // std::this_thread::sleep_for(std::chrono::seconds(3));
+    // std::jthread t2{[&f]() { f.consume_a_cookie();} };
+    // std::jthread t1{[&f]() { f.produce_a_cookie();} };
+    // std::jthread t3{[&f]() { while (true) {f.consume_a_cookie();} }};
+}
 
 
 int main() {
@@ -38,5 +47,7 @@ int main() {
     std::println("\n\n\n Now comes condition variable example:\n\n\n");
     worker w;
     w.main_thread();
+    factory f{};
+    factory_example(f);
     return 0;
 }

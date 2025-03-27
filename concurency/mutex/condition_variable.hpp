@@ -4,7 +4,7 @@
 #include <print>
 #include <string>
 #include <thread>
-
+#include <vector>
 
 struct worker {
   public:
@@ -50,3 +50,39 @@ struct worker {
         std::println("Worker is done, data = {}", data);
     }
 };
+
+struct factory {
+    std::mutex m;
+    std::condition_variable cv;
+    std::vector<int> cookies{};
+    int cookie_id{0};
+    public:
+    void produce_a_cookie() {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        {
+            std::lock_guard lk(m);
+            cookies.push_back(cookie_id);
+            std::println("a cookie {} is ready\n", cookie_id++);
+        }
+        cv.notify_one();
+
+    }
+
+    void consume_a_cookie() {   
+        std::println("cookies = {}", cookies.size());
+        {
+            std::unique_lock lk(m);
+            std::println("between lock and wait"); 
+            cv.wait(lk, [this] { return !cookies.empty(); });
+            /* tutaj mam mutex */
+            int cookie = cookies.back();
+            std::println("a cookie {} is acquired\n", cookie);
+            cookies.pop_back();
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
+    
+};
+
+
+
