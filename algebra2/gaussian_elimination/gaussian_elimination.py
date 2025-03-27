@@ -76,38 +76,39 @@ def swap_rows(m, i, j):
 
 
 def gaussian_elimination(m: np.ndarray):
+    print(f"gaussina elimination m =\n{m}")
+    if m.size == 0:
+        return
     if m.shape[0] == 1:
-        return m[0, 0]
+        return
     pivot = m[0, 0]
     first_column = m[:, 0]
     should_swap = pivot == 0
     if should_swap:
         non_zero_indeces = np.nonzero(first_column)[0]
         if len(non_zero_indeces) == 0:
-            return gaussian_elimination(m[1:, 1:])
+            gaussian_elimination(m[:, 1:])
+            return
         first_non_zero_index = non_zero_indeces[0]
         swap_rows(m, 0, first_non_zero_index)
     zero_rows(m)
-    return (
-        m[0, 0] * gaussian_elimination(m[1:, 1:])
-        if not should_swap
-        else -m[0, 0] * gaussian_elimination(m[1:, 1:])
-    )
+    return gaussian_elimination(m[1:, 1:])
 
 
 m = m.astype(np.float64)
-m[0, 0] = 0.0
+# m[0, 0] = 0.0
+m[:, 1] = m[:, 0]
 print(
     f"""
 macierz m = 
 {m}"""
 )
 
-detm = gaussian_elimination(m)
+gaussian_elimination(m)
 print(
     f"""
 zeschodkowana macierz m =
 {m}\n
-and det(m) = {detm}
+and det(m) = ????
 """
 )
