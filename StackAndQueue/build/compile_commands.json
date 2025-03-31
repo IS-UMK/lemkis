@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/build",
-  "command": "clang++-19    -std=c++23  -ftemplate-backtrace-limit=0 -g -Wall -Wextra --pedantic -g3 -ggdb -std=c++23 -o CMakeFiles/StackAndQueue.dir/src/main.cpp.o -c /home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/src/main.cpp",
-  "file": "/home/piotr-wsl/lemkis-stack-and-queue/StackAndQueue/src/main.cpp",
-  "output": "CMakeFiles/StackAndQueue.dir/src/main.cpp.o"
-}
-]
