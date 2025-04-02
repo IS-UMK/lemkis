@@ -17,6 +17,11 @@ add_executable(${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/src/benchmark.cpp
   )
 
+set(CMAKE_CXX_CLANG_TIDY
+  clang-tidy-11;
+  -format-style='file';
+  -header-filter=${CMAKE_CURRENT_SOURCE_DIR};
+)
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 if(CLANG_TIDY_EXE)
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*")
