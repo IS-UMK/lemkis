@@ -1,6 +1,4 @@
-#pragma once
-
-#include "queue_test.hpp"
+#include "include/queue_test.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -9,8 +7,8 @@
 #include <thread>
 #include <vector>
 
-#include "con_queue.hpp"
-#include "queue.hpp"
+#include "include/con_queue.hpp"
+#include "include/queue.hpp"
 
 // Demonstration in which use of unsafe methods leads to data race
 auto QueueTest::demonstrate_data_race() -> void {

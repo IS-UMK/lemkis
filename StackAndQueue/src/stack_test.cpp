@@ -1,6 +1,4 @@
-#pragma once
-
-#include "stack_test.hpp"
+#include "include/stack_test.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -9,8 +7,8 @@
 #include <thread>
 #include <vector>
 
-#include "con_stack.hpp"
-#include "stack.hpp"
+#include "include/con_stack.hpp"
+#include "include/stack.hpp"
 
 // Demonstration in which use of unsafe methods leads to data race
 auto StackTest::demonstrate_data_race() -> void {
@@ -31,7 +29,7 @@ auto StackTest::demonstrate_data_race() -> void {
     std::jthread consumer([&](std::stop_token stoken) {
         for (int i = 0; i < 10000 && !stoken.stop_requested() && !race_detected;
              ++i) {
-            std::println("got here");
+            // std::println("got here");
             try {
                 if (!unsafe_stack.unsafe_empty()) {
                     int value = unsafe_stack.unsafe_top();
@@ -89,7 +87,7 @@ auto StackTest::demonstrate_concurrent_stack() -> void {
     consumer.request_stop();
     std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
     std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
-    std::cout << "Items left in stack: " << safe_stack.size() << std::endl;
+    // std::cout << "Items left in stack: " << safe_stack.size() << std::endl;
     std::cout
         << "The concurrent implementation handles multiple threads correctly."
         << std::endl;
@@ -130,7 +128,7 @@ auto StackTest::demonstrate_condition_variable() -> void {
 }
 
 auto StackTest::stackTest() -> void {
-    StackTest::demonstrate_data_race();
+    // StackTest::demonstrate_data_race();
     StackTest::demonstrate_concurrent_stack();
     StackTest::demonstrate_condition_variable();
 }

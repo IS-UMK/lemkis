@@ -51,7 +51,7 @@ class ConcurrentStack {
     // Copy assignment operator
     auto operator=(const ConcurrentStack& other) -> ConcurrentStack& {
         if (this != &other) {
-            std::lock(mutex_, other.mutex);
+            std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
                                                    std::adopt_lock);
@@ -74,7 +74,7 @@ class ConcurrentStack {
     // Move assignment operator
     auto operator=(ConcurrentStack&& other) noexcept -> ConcurrentStack& {
         if (this != &other) {
-            std::lock(mutex_, other.mutex);
+            std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
             std::lock_guard<std::mutex> lock_other(other.mutex_,
                                                    std::adopt_lock);

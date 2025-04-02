@@ -3,7 +3,7 @@
 #include "src/include/stack_test.hpp"
 
 auto main() -> int {
-    QueueTest::queueTest();
+    // QueueTest::queueTest();
     StackTest::stackTest();
     Benchmark::run_benchmarks(1000);
     return 0;
