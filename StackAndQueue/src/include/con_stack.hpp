@@ -15,6 +15,7 @@ class ConcurrentStack {
     // Synchronization primitives
     mutable std::mutex mutex_;
     std::condition_variable not_empty_cv_;
+
   public:
     // Constructor
     ConcurrentStack() = default;
@@ -50,9 +51,10 @@ class ConcurrentStack {
     // Copy assignment operator
     auto operator=(const ConcurrentStack& other) -> ConcurrentStack& {
         if (this != &other) {
-            std::lock(mutex_, other.mutex);
+            std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
-            std::lock_guard<std::mutex> lock_other(other.mutex_, std::adopt_lock);
+            std::lock_guard<std::mutex> lock_other(other.mutex_,
+                                                   std::adopt_lock);
             top_.reset();
             size_ = other.size_;
             if (other.top_ == nullptr) return *this;
@@ -72,9 +74,10 @@ class ConcurrentStack {
     // Move assignment operator
     auto operator=(ConcurrentStack&& other) noexcept -> ConcurrentStack& {
         if (this != &other) {
-            std::lock(mutex_, other.mutex);
+            std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
-            std::lock_guard<std::mutex> lock_other(other.mutex_, std::adopt_lock);
+            std::lock_guard<std::mutex> lock_other(other.mutex_,
+                                                   std::adopt_lock);
             top_ = std::move(other.top_);
             size_ = other.size_;
             other.size_ = 0;
@@ -124,9 +127,7 @@ class ConcurrentStack {
     }
 
     // Access the top element
-    auto unsafe_top() -> T& {
-        return top_->data;
-    }
+    auto unsafe_top() -> T& { return top_->data; }
 
     // Try to peek at top element without removing
     auto try_top(T& value) const -> bool {

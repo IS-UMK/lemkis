@@ -1,16 +1,16 @@
-#pragma once
+#include "include/queue_test.hpp"
 
-#include "queue_test.hpp"
 #include <atomic>
 #include <chrono>
 #include <iostream>
 #include <print>
 #include <thread>
 #include <vector>
-#include "con_queue.hpp"
-#include "queue.hpp"
 
-//Demonstration in which use of unsafe methods leads to data race
+#include "include/con_queue.hpp"
+#include "include/queue.hpp"
+
+// Demonstration in which use of unsafe methods leads to data race
 auto QueueTest::demonstrate_data_race() -> void {
     std::println("=== Demonstrating Data Race Issues ===");
     ConcurrentQueue<int> unsafe_queue;
@@ -50,12 +50,16 @@ auto QueueTest::demonstrate_data_race() -> void {
     if (race_detected) {
         std::println("A race condition was detected!");
     } else {
-        std::println("No race condition detected in this run, but the code is still unsafe.");
-        std::println("The absence of a detected race doesn't mean the code is thread-safe.");
+        std::println(
+            "No race condition detected in this run, but the code is still "
+            "unsafe.");
+        std::println(
+            "The absence of a detected race doesn't mean the code is "
+            "thread-safe.");
     }
 }
 
-//Demonstration where mutex is used to ensure safe concurrency
+// Demonstration where mutex is used to ensure safe concurrency
 auto QueueTest::demonstrate_concurrent_queue() -> void {
     std::println("\n=== Demonstrating Thread-Safe Queue ===");
     ConcurrentQueue<int> safe_queue;
@@ -81,10 +85,12 @@ auto QueueTest::demonstrate_concurrent_queue() -> void {
     std::println("Producer pushed: {} items", std::to_string(producer_count));
     std::println("Consumer popped: {} items", std::to_string(consumer_count));
     std::println("Items left in queue: {}", std::to_string(safe_queue.size()));
-    std::println("The concurrent implementation handles multiple threads correctly.");
+    std::println(
+        "The concurrent implementation handles multiple threads correctly.");
 }
 
-//Demonstration where Producer thread occasionally pauses and Consumer thread waits based on cv
+// Demonstration where Producer thread occasionally pauses and Consumer thread
+// waits based on cv
 auto QueueTest::demonstrate_condition_variable() -> void {
     std::println("\n=== Demonstrating Condition Variable Usage ===");
     ConcurrentQueue<int> safe_queue;
@@ -113,7 +119,9 @@ auto QueueTest::demonstrate_condition_variable() -> void {
     consumer.request_stop();
     std::println("Producer pushed: {} items", std::to_string(producer_count));
     std::println("Consumer popped: {} items", std::to_string(consumer_count));
-    std::println("The condition variable allows efficient waiting without busy-waiting.");
+    std::println(
+        "The condition variable allows efficient waiting without "
+        "busy-waiting.");
 }
 
 auto QueueTest::queueTest() -> void {

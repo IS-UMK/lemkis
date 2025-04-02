@@ -1,4 +1,4 @@
-#include "benchmark.hpp"
+#include "include/benchmark.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -32,12 +32,6 @@ namespace Benchmark {
                 });
             }
 
-            /*
-            // Wait for completion
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) break;
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }*/
             while (push_count < N) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
@@ -56,12 +50,6 @@ namespace Benchmark {
                 });
             }
 
-            /*
-            // Wait for completion
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) break;
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }*/
             while (pop_count < N) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
@@ -134,12 +122,6 @@ namespace Benchmark {
             }
 
             // Wait for completion
-            /*
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) break;
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-            */
             while (push_count < N) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
@@ -156,12 +138,6 @@ namespace Benchmark {
             }
 
             // Wait for completion
-            /*
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) break;
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-            */
             while (pop_count < N) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }

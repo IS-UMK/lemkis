@@ -39,5 +39,3 @@ Makefile
 *.cbp
 CMakeScripts
 compile_commands.json
-
-build/

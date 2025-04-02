@@ -1,14 +1,14 @@
-#pragma once
+#include "include/stack_test.hpp"
 
-#include "stack_test.hpp"
 #include <atomic>
 #include <chrono>
 #include <iostream>
 #include <print>
 #include <thread>
 #include <vector>
-#include "con_stack.hpp"
-#include "stack.hpp"
+
+#include "include/con_stack.hpp"
+#include "include/stack.hpp"
 
 // Demonstration in which use of unsafe methods leads to data race
 auto StackTest::demonstrate_data_race() -> void {
@@ -38,7 +38,7 @@ auto StackTest::demonstrate_data_race() -> void {
                 }
             } catch (const std::exception& e) {
                 std::println("Race condition detected: {}", e.what());
-                          ;
+                ;
                 race_detected = true;
             }
             std::this_thread::yield();
@@ -52,8 +52,12 @@ auto StackTest::demonstrate_data_race() -> void {
     if (race_detected) {
         std::println("A race condition was detected!");
     } else {
-        std::println("No race condition detected in this run, but the code is still unsafe.");
-        std::println("The absence of a detected race doesn't mean the code is thread-safe.");
+        std::println(
+            "No race condition detected in this run, but the code is still "
+            "unsafe.");
+        std::println(
+            "The absence of a detected race doesn't mean the code is "
+            "thread-safe.");
     }
 }
 
@@ -84,10 +88,12 @@ auto StackTest::demonstrate_concurrent_stack() -> void {
     std::println("Producer pushed: {} items", std::to_string(producer_count));
     std::println("Consumer popped: {} items", std::to_string(consumer_count));
     std::println("Items left in stack: {}", std::to_string(safe_stack.size()));
-    std::println("The concurrent implementation handles multiple threads correctly.");
+    std::println(
+        "The concurrent implementation handles multiple threads correctly.");
 }
 
-// Demonstration where Producer thread occasionally pauses and Consumer thread waits based on cv
+// Demonstration where Producer thread occasionally pauses and Consumer thread
+// waits based on cv
 auto StackTest::demonstrate_condition_variable() -> void {
     std::println("\n=== Demonstrating Condition Variable Usage ===");
     ConcurrentStack<int> safe_stack;
@@ -114,7 +120,9 @@ auto StackTest::demonstrate_condition_variable() -> void {
     consumer.request_stop();
     std::println("Producer pushed: {} items", std::to_string(producer_count));
     std::println("Consumer popped: {} items", std::to_string(consumer_count));
-    std::println("The condition variable allows efficient waiting without busy-waiting.");
+    std::println(
+        "The condition variable allows efficient waiting without "
+        "busy-waiting.");
 }
 
 auto StackTest::stackTest() -> void {
