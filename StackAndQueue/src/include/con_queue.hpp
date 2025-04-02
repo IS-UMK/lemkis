@@ -16,6 +16,7 @@ class ConcurrentQueue {
     // Synchronization primitives
     mutable std::mutex mutex_;
     std::condition_variable not_empty_cv_;
+
   public:
     // Constructor
     ConcurrentQueue() = default;
@@ -73,7 +74,8 @@ class ConcurrentQueue {
         if (this != &other) {
             std::lock(mutex_, other.mutex_);
             std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
-            std::lock_guard<std::mutex> lock_other(other.mutex_, std::adopt_lock);
+            std::lock_guard<std::mutex> lock_other(other.mutex_,
+                                                   std::adopt_lock);
             front_ = std::move(other.front_);
             rear_ = other.rear_;
             size_ = other.size_;
@@ -118,12 +120,12 @@ class ConcurrentQueue {
     // Remove the front element (non-blocking)
     auto try_pop() -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (empty_unsafe()) { return false; }        
+        if (empty_unsafe()) { return false; }
         unsafe_pop();
         return true;
     }
 
-    //Pop with use of cv
+    // Pop with use of cv
     auto pop() -> void {
         std::unique_lock<std::mutex> lock(mutex_);
         not_empty_cv_.wait(lock, [this] { return !empty_unsafe(); });

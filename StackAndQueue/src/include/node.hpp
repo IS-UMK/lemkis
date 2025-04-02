@@ -2,7 +2,7 @@
 
 #include <memory>
 
-template <class T>  // maybe typename?
+template <class T>
 struct Node {
     T data;
     std::unique_ptr<Node> next;

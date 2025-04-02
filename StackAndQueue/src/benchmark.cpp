@@ -4,7 +4,6 @@
 #include <mutex>
 
 namespace Benchmark {
-    // Helper to measure time
     template <typename Func>
     auto measure_time(const std::string& name, Func&& func) -> void {
         auto start = std::chrono::high_resolution_clock::now();
@@ -14,8 +13,6 @@ namespace Benchmark {
             std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::println("{}: {} ms", name, duration.count());
     }
-
-    // --- ConcurrentStack Benchmark ---
     auto benchmark_concurrent_stack(int N) -> void {
         ConcurrentStack<int> stack;
         std::atomic<int> push_count(0);
@@ -86,14 +83,10 @@ namespace Benchmark {
                     }
                 });
             }
-
-            // Wait for completion or timeout
             while (push_count < N || pop_count < N) {
                 if (push_count >= N && pop_count >= N) break;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
-
-            // Wait for completion
             while (push_count < N || pop_count < N) {
                 if (push_count >= N && pop_count >= N) break;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -103,8 +96,6 @@ namespace Benchmark {
         std::println("Pushed: {} items", push_count.load());
         std::println("Popped: {} items", pop_count.load());
     }
-
-    // --- ConcurrentQueue Benchmark ---
     auto benchmark_concurrent_queue(int N) -> void {
         ConcurrentQueue<int> queue;
         std::atomic<int> push_count(0);
@@ -120,8 +111,6 @@ namespace Benchmark {
                     }
                 });
             }
-
-            // Wait for completion
             while (push_count < N) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
@@ -136,8 +125,6 @@ namespace Benchmark {
                     }
                 });
             }
-
-            // Wait for completion
             while (pop_count < N) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
@@ -146,8 +133,6 @@ namespace Benchmark {
         std::println("Pushed: {} items", push_count.load());
         std::println("Popped: {} items", pop_count.load());
     }
-
-    // --- ConcurrentQueue Producer-Consumer Benchmark ---
     auto benchmark_concurrent_queue_producer_consumer(int N) -> void {
         ConcurrentQueue<int> queue;
         std::atomic<int> push_count(0);
@@ -172,8 +157,6 @@ namespace Benchmark {
                     }
                 });
             }
-
-            // Wait for completion
             while (push_count < N || pop_count < N) {
                 if (push_count >= N && pop_count >= N) break;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -183,8 +166,6 @@ namespace Benchmark {
         std::println("Pushed: {} items", push_count.load());
         std::println("Popped: {} items", pop_count.load());
     }
-
-    // --- Stack Benchmark (Single-threaded) ---
     auto benchmark_stack(int N) -> void {
         Stack<int> stack;
         std::atomic<int> push_count(0);
@@ -199,8 +180,6 @@ namespace Benchmark {
             for (int pop_count = 0; pop_count < N; ++pop_count) stack.pop();
         });
     }
-
-    // --- Queue Benchmark (Single-threaded) ---
     auto benchmark_queue(int N) -> void {
         Queue<int> queue;
         std::atomic<int> push_count(0);
@@ -215,8 +194,6 @@ namespace Benchmark {
             for (int pop_count = 0; pop_count < N; ++pop_count) queue.pop();
         });
     }
-
-    // --- Run All Benchmarks ---
     auto run_benchmarks(int N) -> void {
         std::println("\n=== Benchmarking with N = {} ===\n", N);
 

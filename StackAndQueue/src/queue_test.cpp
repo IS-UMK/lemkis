@@ -1,4 +1,6 @@
-#include "include/queue_test.hpp"
+#pragma once
+
+#include "queue_test.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -7,8 +9,8 @@
 #include <thread>
 #include <vector>
 
-#include "include/con_queue.hpp"
-#include "include/queue.hpp"
+#include "con_queue.hpp"
+#include "queue.hpp"
 
 // Demonstration in which use of unsafe methods leads to data race
 auto QueueTest::demonstrate_data_race() -> void {
@@ -36,7 +38,8 @@ auto QueueTest::demonstrate_data_race() -> void {
                     consumer_count++;
                 }
             } catch (const std::exception& e) {
-                std::println("Race condition detected: {}", e.what());
+                std::cout << "Race condition detected: " << e.what()
+                          << std::endl;
                 race_detected = true;
             }
             std::this_thread::yield();
@@ -45,23 +48,23 @@ auto QueueTest::demonstrate_data_race() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     producer.request_stop();
     consumer.request_stop();
-    std::println("Producer pushed: {} items", std::to_string(producer_count));
-    std::println("Consumer popped: {} items", std::to_string(consumer_count));
+    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
+    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
     if (race_detected) {
-        std::println("A race condition was detected!");
+        std::cout << "A race condition was detected!" << std::endl;
     } else {
-        std::println(
-            "No race condition detected in this run, but the code is still "
-            "unsafe.");
-        std::println(
-            "The absence of a detected race doesn't mean the code is "
-            "thread-safe.");
+        std::cout << "No race condition detected in this run, but the code is "
+                     "still unsafe."
+                  << std::endl;
+        std::cout << "The absence of a detected race doesn't mean the code is "
+                     "thread-safe."
+                  << std::endl;
     }
 }
 
 // Demonstration where mutex is used to ensure safe concurrency
 auto QueueTest::demonstrate_concurrent_queue() -> void {
-    std::println("\n=== Demonstrating Thread-Safe Queue ===");
+    std::cout << "\n=== Demonstrating Thread-Safe Queue ===" << std::endl;
     ConcurrentQueue<int> safe_queue;
     std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
@@ -82,17 +85,19 @@ auto QueueTest::demonstrate_concurrent_queue() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     producer.request_stop();
     consumer.request_stop();
-    std::println("Producer pushed: {} items", std::to_string(producer_count));
-    std::println("Consumer popped: {} items", std::to_string(consumer_count));
-    std::println("Items left in queue: {}", std::to_string(safe_queue.size()));
-    std::println(
-        "The concurrent implementation handles multiple threads correctly.");
+    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
+    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
+    std::cout << "Items left in queue: " << safe_queue.size() << std::endl;
+    std::cout
+        << "The concurrent implementation handles multiple threads correctly."
+        << std::endl;
 }
 
 // Demonstration where Producer thread occasionally pauses and Consumer thread
 // waits based on cv
 auto QueueTest::demonstrate_condition_variable() -> void {
-    std::println("\n=== Demonstrating Condition Variable Usage ===");
+    std::cout << "\n=== Demonstrating Condition Variable Usage ==="
+              << std::endl;
     ConcurrentQueue<int> safe_queue;
     std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
@@ -111,17 +116,17 @@ auto QueueTest::demonstrate_condition_variable() -> void {
             int value = 0;
             safe_queue.pop();
             consumer_count++;
-            std::println("Consumer got value: {}", std::to_string(value));
+            std::cout << "Consumer got value: " << value << std::endl;
         }
     });
     std::this_thread::sleep_for(std::chrono::seconds(1));
     producer.request_stop();
     consumer.request_stop();
-    std::println("Producer pushed: {} items", std::to_string(producer_count));
-    std::println("Consumer popped: {} items", std::to_string(consumer_count));
-    std::println(
-        "The condition variable allows efficient waiting without "
-        "busy-waiting.");
+    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
+    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
+    std::cout << "The condition variable allows efficient waiting without "
+                 "busy-waiting."
+              << std::endl;
 }
 
 auto QueueTest::queueTest() -> void {
