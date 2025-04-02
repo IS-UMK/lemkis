@@ -16,3 +16,8 @@ add_executable(${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/src/queue_test.cpp
   ${PROJECT_SOURCE_DIR}/src/benchmark.cpp
   )
+
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+if(CLANG_TIDY_EXE)
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*")
+endif()
