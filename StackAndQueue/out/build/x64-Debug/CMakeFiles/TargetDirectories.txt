@@ -1,0 +1,3 @@
+D:/studia/lemkis-stack-and-queue-master(1)/lemkis-stack-and-queue-master/StackAndQueue/out/build/x64-Debug/CMakeFiles/StackAndQueue.dir
+D:/studia/lemkis-stack-and-queue-master(1)/lemkis-stack-and-queue-master/StackAndQueue/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+D:/studia/lemkis-stack-and-queue-master(1)/lemkis-stack-and-queue-master/StackAndQueue/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
