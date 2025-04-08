@@ -7,11 +7,13 @@
 
 #include "con_queue.hpp"
 #include "con_stack.hpp"
-#include "queue.hpp"
-#include "stack.hpp"
-#include "vector_stack.hpp"
+#include "concurrentqueue.h"
 #include "list_stack.hpp"
+#include "queue.hpp"
+#include "readerwriterqueue.h"
+#include "stack.hpp"
 #include "two_stack_queue.hpp"
+#include "vector_stack.hpp"
 
 namespace Benchmark {
     auto benchmark_concurrent_stack(int N) -> void;
@@ -25,4 +27,4 @@ namespace Benchmark {
     auto run_benchmarks(int N) -> void;
 
     auto run_benchmarks_new(int N) -> void;
-}  
+}
