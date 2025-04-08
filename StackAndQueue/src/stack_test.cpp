@@ -32,7 +32,7 @@ auto StackTest::demonstrate_data_race() -> void {
             // std::println("got here");
             try {
                 if (!unsafe_stack.unsafe_empty()) {
-                    int value = unsafe_stack.unsafe_top();
+                    int _ = unsafe_stack.unsafe_top();
                     unsafe_stack.unsafe_pop();
                     consumer_count++;
                 }

@@ -348,165 +348,239 @@ namespace Benchmark {
         int items_per_consumer = total_items / num_consumers;
 
         for (int c = 0; c < num_consumers; ++c) {
-            if (queue_name == "lock-free") {
+            if (method_name == "mutex") {
                 consumers.emplace_back([&queue,
                                         &consumed_count,
                                         &producers_done,
                                         items_per_consumer,
                                         total_items]() {
                     int items_processed = 0;
-                    while (items_processed < items_per_consumer) {}
-            } else if (method_name == "mutex") {
-                    consumers.emplace_back([&queue,
-                                            &consumed_count,
-                                            &producers_done,
-                                            items_per_consumer,
-                                            total_items]() {
-                        int items_processed = 0;
-                        while (items_processed < items_per_consumer) {
-                            auto item = queue.mutex_dequeue();
-                            if (item) {
-                                consumed_count.fetch_add(1);
-                                items_processed++;
-                            } else if (producers_done &&
-                                       consumed_count.load() >= total_items) {
-                                // All items have been produced and consumed
-                                break;
-                            } else {
-                                // No items available yet, yield to other
-                                // threads
-                                std::this_thread::yield();
-                            }
+                    while (items_processed < items_per_consumer) {
+                        auto item = queue.mutex_dequeue();
+                        if (item) {
+                            consumed_count.fetch_add(1);
+                            items_processed++;
+                        } else if (producers_done &&
+                                   consumed_count.load() >= total_items) {
+                            // All items have been produced and consumed
+                            break;
+                        } else {
+                            // No items available yet, yield to other
+                            // threads
+                            std::this_thread::yield();
+                        }
+                    }
+                });
+            } else if (method_name == "cv") {
+                consumers.emplace_back(
+                    [&queue, &consumed_count, items_per_consumer]() {
+                        for (int i = 0; i < items_per_consumer; ++i) {
+                            auto item = queue.cv_dequeue_wait();
+                            consumed_count.fetch_add(1);
                         }
                     });
-            } else if (method_name == "cv") {
-                    consumers.emplace_back(
-                        [&queue, &consumed_count, items_per_consumer]() {
-                            for (int i = 0; i < items_per_consumer; ++i) {
-                                auto item = queue.cv_dequeue_wait();
-                                consumed_count.fetch_add(1);
-                            }
-                        });
             }
-            }
-
-            // Wait for all producer threads to finish
-            for (auto& producer : producers) { producer.join(); }
-
-            producers_done = true;
-
-            // Wait for all consumer threads to finish
-            for (auto& consumer : consumers) { consumer.join(); }
-
-            auto end_time = std::chrono::high_resolution_clock::now();
-            auto duration =
-                std::chrono::duration_cast<std::chrono::milliseconds>(
-                    end_time - start_time);
-
-            std::print(
-                "{} with {} method: {} producers, {} consumers, {} items total "
-                "- "
-                "completed in {} ms\n",
-                queue_name,
-                method_name,
-                num_producers,
-                num_consumers,
-                total_items,
-                duration.count());
         }
 
-        auto run_benchmarks_new(int N) -> void {
-            // Configuration
-            const int total_items = N;
+        // Wait for all producer threads to finish
+        for (auto& producer : producers) { producer.join(); }
 
-            std::print("Running Stack Benchmarks:\n");
-            std::print("========================\n\n");
+        producers_done = true;
 
-            // Test various configurations for stacks
-            for (int producers : {1, 2, 4, 8}) {
-                for (int consumers : {1, 2, 4, 8}) {
-                    int items_per_producer = total_items / producers;
+        // Wait for all consumer threads to finish
+        for (auto& consumer : consumers) { consumer.join(); }
 
-                    // Vector stack with mutex
-                    benchmark_stack_new<VectorStack<int>>("VectorStack",
-                                                          "mutex",
-                                                          producers,
-                                                          consumers,
-                                                          items_per_producer);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+            end_time - start_time);
 
-                    // Vector stack with condition variables
-                    benchmark_stack_new<VectorStack<int>>("VectorStack",
-                                                          "cv",
-                                                          producers,
-                                                          consumers,
-                                                          items_per_producer);
+        std::print(
+            "{} with {} method: {} producers, {} consumers, {} items total "
+            "- "
+            "completed in {} ms\n",
+            queue_name,
+            method_name,
+            num_producers,
+            num_consumers,
+            total_items,
+            duration.count());
+    }
 
-                    // List stack with mutex
-                    benchmark_stack_new<ListStack<int>>("ListStack",
+    // Benchmark function for queue
+    template <typename QueueType>
+    auto benchmark_lock_free_queue_new(const std::string& queue_name,
+                                       const std::string& mechanism_name,
+                                       int num_producers,
+                                       int num_consumers,
+                                       int items_per_producer) -> void {
+
+        QueueType queue;
+        std::atomic<int> produced_count = 0;
+        std::atomic<int> consumed_count = 0;
+        std::atomic<bool> producers_done = false;
+
+        // For timing
+        auto start_time = std::chrono::high_resolution_clock::now();
+
+        // Create producer threads
+        std::vector<std::jthread> producers;
+        for (int p = 0; p < num_producers; ++p) {
+            producers.emplace_back(
+                [&queue, &produced_count, items_per_producer]() {
+                    for (int i = 0; i < items_per_producer; ++i) {
+                        queue.enqueue(i);
+                        produced_count.fetch_add(1);
+                    }
+                });
+        }
+
+        // Create consumer threads
+        std::vector<std::jthread> consumers;
+        int total_items = num_producers * items_per_producer;
+        int items_per_consumer = total_items / num_consumers;
+
+        for (int c = 0; c < num_consumers; ++c) {
+            consumers.emplace_back([&queue,
+                                    &consumed_count,
+                                    &producers_done,
+                                    items_per_consumer,
+                                    total_items]() {
+                int items_processed = 0;
+                while (items_processed < items_per_consumer) {
+                    int item;
+                    bool succeeded = queue.try_dequeue(item);
+                    if (succeeded) {
+                        consumed_count.fetch_add(1);
+                        items_processed++;
+                    } else if (producers_done &&
+                               consumed_count.load() >= total_items) {
+                        // All items have been produced and consumed
+                        break;
+                    } else {
+                        // No items available yet, yield to other
+                        // threads
+                        std::this_thread::yield();
+                    }
+                }
+            });
+        }
+
+        // Wait for all producer threads to finish
+        for (auto& producer : producers) { producer.join(); }
+
+        producers_done = true;
+
+        // Wait for all consumer threads to finish
+        for (auto& consumer : consumers) { consumer.join(); }
+
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+            end_time - start_time);
+
+        std::print(
+            "{} with {} mechanism: {} producers, {} consumers, {} items total "
+            "- "
+            "completed in {} ms\n",
+            queue_name,
+            mechanism_name,
+            num_producers,
+            num_consumers,
+            total_items,
+            duration.count());
+    }
+
+    auto run_benchmarks_new(int N) -> void {
+        // Configuration
+        const int total_items = N;
+
+        std::print("Running Stack Benchmarks:\n");
+        std::print("========================\n\n");
+
+        // Test various configurations for stacks
+        for (int producers : {1, 2, 4}) {
+            for (int consumers : {1, 2, 4}) {
+                int items_per_producer = total_items / producers;
+
+                // Vector stack with mutex
+                benchmark_stack_new<VectorStack<int>>("VectorStack",
+                                                      "mutex",
+                                                      producers,
+                                                      consumers,
+                                                      items_per_producer);
+
+                // Vector stack with condition variables
+                benchmark_stack_new<VectorStack<int>>("VectorStack",
+                                                      "cv",
+                                                      producers,
+                                                      consumers,
+                                                      items_per_producer);
+
+                // List stack with mutex
+                benchmark_stack_new<ListStack<int>>("ListStack",
+                                                    "mutex",
+                                                    producers,
+                                                    consumers,
+                                                    items_per_producer);
+
+                // List stack with condition variables
+                benchmark_stack_new<ListStack<int>>("ListStack",
+                                                    "cv",
+                                                    producers,
+                                                    consumers,
+                                                    items_per_producer);
+
+                std::print("\n");
+            }
+        }
+
+        std::print("\nRunning Queue Benchmarks:\n");
+        std::print("========================\n\n");
+
+        // Test various configurations for queue
+        for (int producers : {1, 2, 4}) {
+            for (int consumers : {1, 2, 4}) {
+                int items_per_producer = total_items / producers;
+
+                // Two stack queue with mutex
+                benchmark_queue_new<TwoStackQueue<int>>("TwoStackQueue",
                                                         "mutex",
                                                         producers,
                                                         consumers,
                                                         items_per_producer);
 
-                    // List stack with condition variables
-                    benchmark_stack_new<ListStack<int>>("ListStack",
+                // Two stack queue with condition variables
+                benchmark_queue_new<TwoStackQueue<int>>("TwoStackQueue",
                                                         "cv",
                                                         producers,
                                                         consumers,
                                                         items_per_producer);
 
-                    std::print("\n");
-                }
+                std::print("\n");
             }
-
-            std::print("\nRunning Queue Benchmarks:\n");
-            std::print("========================\n\n");
-
-            // Test various configurations for queue
-            for (int producers : {1, 2, 4, 8}) {
-                for (int consumers : {1, 2, 4, 8}) {
-                    int items_per_producer = total_items / producers;
-
-                    // Two stack queue with mutex
-                    benchmark_queue_new<TwoStackQueue<int>>("TwoStackQueue",
-                                                            "mutex",
-                                                            producers,
-                                                            consumers,
-                                                            items_per_producer);
-
-                    // Two stack queue with condition variables
-                    benchmark_queue_new<TwoStackQueue<int>>("TwoStackQueue",
-                                                            "cv",
-                                                            producers,
-                                                            consumers,
-                                                            items_per_producer);
-
-                    std::print("\n");
-                }
-            }
-
-            std::print("\nRunning Lock-Free Queue Benchmarks:\n");
-            std::print("========================\n\n");
-
-            // Test various configurations for queue
-            for (int producers : {1, 2, 4, 8}) {
-                for (int consumers : {1, 2, 4, 8}) {
-                    int items_per_producer = total_items / producers;
-
-                    // Lock free queue with compare_exchange
-                    benchmark_queue_new<moodycamel::ConcurrentQueue<int>>(
-                        "LockFreeQueue",
-                        "compare-exchange",
-                        producers,
-                        consumers,
-                        items_per_producer);
-
-                    std::print("\n");
-                }
-            }
-
-            // Lock free queue with atomic release
-            benchmark_queue_new<moodycamel::ReaderWriterQueue<int>>(
-                "LockFreeQueue", "atomic", 1, 1, total_items);
         }
-    }  // namespace Benchmark
+
+        std::print("\nRunning Lock-Free Queue Benchmarks:\n");
+        std::print("========================\n\n");
+
+        // Test various configurations for queue
+        for (int producers : {1, 2, 4}) {
+            for (int consumers : {1, 2, 4}) {
+                int items_per_producer = total_items / producers;
+
+                // Lock free queue with compare_exchange
+                benchmark_lock_free_queue_new<moodycamel::ConcurrentQueue<int>>(
+                    "LockFreeQueue",
+                    "compare-exchange",
+                    producers,
+                    consumers,
+                    items_per_producer);
+
+                std::print("\n");
+            }
+        }
+
+        // Lock free queue with atomic release
+        benchmark_lock_free_queue_new<moodycamel::ReaderWriterQueue<int>>(
+            "LockFreeQueue", "atomic", 1, 1, total_items);
+    }
+}  // namespace Benchmark

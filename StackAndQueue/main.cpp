@@ -5,7 +5,7 @@
 auto main() -> int {
     // QueueTest::queueTest();
     StackTest::stackTest();
-    Benchmark::run_benchmarks(1000);
+    Benchmark::run_benchmarks(100000);
     Benchmark::run_benchmarks_new(100000);
     return 0;
 }
