@@ -3,9 +3,9 @@
 #include <memory>
 
 template <class T>
-struct Node {
+struct node {
     T data;
-    std::unique_ptr<Node> next;
+    std::unique_ptr<node> next;
 
-    Node(T value) : data(std::move(value)), next(nullptr) {}
+    explicit node(T value) : data(std::move(value)), next(nullptr) {}
 };

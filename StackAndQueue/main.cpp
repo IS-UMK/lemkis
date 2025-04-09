@@ -5,10 +5,10 @@
 auto main() -> int {
     const int benchmark_count = 100000;
 
-    // QueueTest::queueTest();
-    StackTest::stackTest();
-    Benchmark::run_benchmarks(benchmark_count);
-    Benchmark::run_benchmarks_new(benchmark_count);
+    queue_test::run_queue_test();
+    stack_test::run_stack_test();
+    benchmark::run_benchmarks(benchmark_count);
+    benchmark::run_benchmarks_new(benchmark_count);
 
     return 0;
 }

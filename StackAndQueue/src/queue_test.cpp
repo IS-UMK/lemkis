@@ -1,9 +1,9 @@
 #include "include/queue_test.hpp"
 
 // Demonstration in which use of unsafe methods leads to data race
-auto QueueTest::demonstrate_data_race(const int item_count) -> void {
+auto queue_test::demonstrate_data_race(const int item_count) -> void {
     std::println("=== Demonstrating Data Race Issues ===");
-    ConcurrentQueue<int> unsafe_queue;
+    concurrent_queue<int> unsafe_queue;
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::atomic<bool> race_detected(false);
@@ -51,9 +51,9 @@ auto QueueTest::demonstrate_data_race(const int item_count) -> void {
 }
 
 // Demonstration where mutex is used to ensure safe concurrency
-auto QueueTest::demonstrate_concurrent_queue(const int item_count) -> void {
+auto queue_test::demonstrate_concurrent_queue(const int item_count) -> void {
     std::println("\n=== Demonstrating Thread-Safe Queue ===");
-    ConcurrentQueue<int> safe_queue;
+    concurrent_queue<int> safe_queue;
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::jthread producer([&](const std::stop_token &stoken) {
@@ -81,12 +81,12 @@ auto QueueTest::demonstrate_concurrent_queue(const int item_count) -> void {
 
 // Demonstration where Producer thread occasionally pauses and Consumer thread
 // waits based on cv
-auto QueueTest::demonstrate_condition_variable(const int item_count) -> void {
+auto queue_test::demonstrate_condition_variable(const int item_count) -> void {
     const int sleep_time_ms = 100;
     const int pushes_until_sleep = 10;
 
     std::println("\n=== Demonstrating Condition Variable Usage ===");
-    ConcurrentQueue<int> safe_queue;
+    concurrent_queue<int> safe_queue;
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::jthread producer([&](const std::stop_token &stoken) {
@@ -117,11 +117,11 @@ auto QueueTest::demonstrate_condition_variable(const int item_count) -> void {
         "busy-waiting.");
 }
 
-auto QueueTest::queueTest() -> void {
+auto queue_test::run_queue_test() -> void {
     const int data_race_items = 10000;
     const int con_queue_items = 10000;
     const int cond_variable_items = 100;
-    QueueTest::demonstrate_data_race(data_race_items);
-    QueueTest::demonstrate_concurrent_queue(con_queue_items);
-    QueueTest::demonstrate_condition_variable(cond_variable_items);
+    queue_test::demonstrate_data_race(data_race_items);
+    queue_test::demonstrate_concurrent_queue(con_queue_items);
+    queue_test::demonstrate_condition_variable(cond_variable_items);
 }

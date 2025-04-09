@@ -3,14 +3,15 @@
 #include <condition_variable>
 #include <mutex>
 #include <optional>
+
 #include "vector_stack.hpp"
 
-// Queue implementation using two stacks (based on VectorStack)
+// Queue implementation using two stacks (based on vector_stack)
 template <typename T>
-class TwoStackQueue {
+class two_stack_queue {
   private:
-    VectorStack<T> m_stack_input;   // For enqueue operations
-    VectorStack<T> m_stack_output;  // For dequeue operations
+    vector_stack<T> m_stack_input;   // For enqueue operations
+    vector_stack<T> m_stack_output;  // For dequeue operations
     mutable std::mutex m_mutex;
     std::condition_variable m_cv;
 
@@ -32,7 +33,7 @@ class TwoStackQueue {
         m_stack_input.unsafe_push(std::move(value));
     }
 
-    std::optional<T> unsafe_dequeue() {
+    auto unsafe_dequeue() -> std::optional<T> {
         if (m_stack_output.unsafe_empty()) {
             // If output stack is empty, transfer elements from input stack
             transfer_if_needed();
@@ -44,11 +45,11 @@ class TwoStackQueue {
         return m_stack_output.unsafe_pop();
     }
 
-    bool unsafe_empty() const {
+    auto unsafe_empty() const -> bool {
         return m_stack_input.unsafe_empty() && m_stack_output.unsafe_empty();
     }
 
-    size_t unsafe_size() const {
+    auto unsafe_size() const -> size_t {
         return m_stack_input.unsafe_size() + m_stack_output.unsafe_size();
     }
 
@@ -58,7 +59,7 @@ class TwoStackQueue {
         unsafe_enqueue(std::move(value));
     }
 
-    std::optional<T> mutex_dequeue() {
+    auto mutex_dequeue() -> std::optional<T> {
         std::lock_guard<std::mutex> lock(m_mutex);
         return unsafe_dequeue();
     }
@@ -73,26 +74,26 @@ class TwoStackQueue {
     }
 
     // This will wait until there's an item to dequeue
-    T cv_dequeue_wait() {
+    auto cv_dequeue_wait() -> T {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_cv.wait(lock, [this] { return !this->unsafe_empty(); });
         return *unsafe_dequeue();
     }
 
     // This will return nullopt if empty
-    std::optional<T> cv_dequeue() {
+    auto cv_dequeue() -> std::optional<T> {
         std::unique_lock<std::mutex> lock(m_mutex);
         if (unsafe_empty()) { return std::nullopt; }
         return unsafe_dequeue();
     }
 
     // Same for cv and mutex versions since they only read
-    bool empty() const {
+    auto empty() const -> bool {
         std::lock_guard<std::mutex> lock(m_mutex);
         return unsafe_empty();
     }
 
-    size_t size() const {
+    auto size() const -> size_t {
         std::lock_guard<std::mutex> lock(m_mutex);
         return unsafe_size();
     }

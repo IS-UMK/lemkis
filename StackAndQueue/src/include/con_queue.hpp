@@ -7,10 +7,10 @@
 #include "node.hpp"
 
 template <typename T>
-class ConcurrentQueue {
+class concurrent_queue {
   private:
-    std::unique_ptr<Node<T>> front_;
-    Node<T>* rear_ = nullptr;
+    std::unique_ptr<node<T>> front_;
+    node<T>* rear_ = nullptr;
     std::size_t size_ = 0;
 
     // Synchronization primitives
@@ -19,80 +19,19 @@ class ConcurrentQueue {
 
   public:
     // Constructor
-    ConcurrentQueue() = default;
+    concurrent_queue() = default;
 
     // Destructor
-    ~ConcurrentQueue() = default;
-
-    // Copy constructor
-    ConcurrentQueue(const ConcurrentQueue& other) {
-        std::lock_guard<std::mutex> lock(other.mutex_);
-        Node<T>* current = other.front_.get();
-        while (current != nullptr) {
-            push(current->data);
-            current = current->next.get();
-        }
-    }
-
-    // Move constructor
-    ConcurrentQueue(ConcurrentQueue&& other) noexcept {
-        std::lock_guard<std::mutex> lock(other.mutex_);
-        front_ = std::move(other.front_);
-        rear_ = other.rear_;
-        size_ = other.size_;
-        other.rear_ = nullptr;
-        other.size_ = 0;
-    }
-
-    // Copy assignment operator
-    auto operator=(const ConcurrentQueue& other) -> ConcurrentQueue& {
-        if (this != &other) {
-            // Need to lock both queues to avoid deadlock
-            std::lock(mutex_, other.mutex_);
-            std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
-            std::lock_guard<std::mutex> lock_other(other.mutex_,
-                                                   std::adopt_lock);
-
-            // Clear current queue
-            front_.reset();
-            rear_ = nullptr;
-            size_ = 0;
-
-            // Copy elements from other queue
-            Node<T>* current = other.front_.get();
-            while (current != nullptr) {
-                push_unsafe(current->data);  // Using unsafe version since we
-                // already have the lock
-                current = current->next.get();
-            }
-        }
-        return *this;
-    }
-
-    // Move assignment operator
-    auto operator=(ConcurrentQueue&& other) noexcept -> ConcurrentQueue& {
-        if (this != &other) {
-            std::lock(mutex_, other.mutex_);
-            std::lock_guard<std::mutex> lock_this(mutex_, std::adopt_lock);
-            std::lock_guard<std::mutex> lock_other(other.mutex_,
-                                                   std::adopt_lock);
-            front_ = std::move(other.front_);
-            rear_ = other.rear_;
-            size_ = other.size_;
-            other.rear_ = nullptr;
-            other.size_ = 0;
-        }
-        return *this;
-    }
+    ~concurrent_queue() = default;
 
     // Helper method for internal use when lock is already held
     auto unsafe_push(T value) -> void {
-        auto newNode = std::make_unique<Node<T>>(std::move(value));
+        auto new_node = std::make_unique<node<T>>(std::move(value));
         if (front_ == nullptr) {
-            front_ = std::move(newNode);
+            front_ = std::move(new_node);
             rear_ = front_.get();
         } else {
-            rear_->next = std::move(newNode);
+            rear_->next = std::move(new_node);
             rear_ = rear_->next.get();
         }
         size_++;

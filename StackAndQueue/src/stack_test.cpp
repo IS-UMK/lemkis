@@ -1,9 +1,9 @@
 #include "include/stack_test.hpp"
 
 // Demonstration in which use of unsafe methods leads to data race
-auto StackTest::demonstrate_data_race(const int item_count) -> void {
+auto stack_test::demonstrate_data_race(const int item_count) -> void {
     std::println("=== Demonstrating Data Race Issues ===");
-    ConcurrentStack<int> unsafe_stack;
+    concurrent_stack<int> unsafe_stack;
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::atomic<bool> race_detected(false);
@@ -51,9 +51,9 @@ auto StackTest::demonstrate_data_race(const int item_count) -> void {
 }
 
 // Demonstration where mutex is used to ensure safe concurrency
-auto StackTest::demonstrate_concurrent_stack(const int item_count) -> void {
+auto stack_test::demonstrate_concurrent_stack(const int item_count) -> void {
     std::println("\n=== Demonstrating Thread-Safe Stack ===");
-    ConcurrentStack<int> safe_stack;
+    concurrent_stack<int> safe_stack;
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::jthread producer([&](const std::stop_token &stoken) {
@@ -82,12 +82,12 @@ auto StackTest::demonstrate_concurrent_stack(const int item_count) -> void {
 
 // Demonstration where Producer thread occasionally pauses and Consumer thread
 // waits based on cv
-auto StackTest::demonstrate_condition_variable(const int item_count) -> void {
+auto stack_test::demonstrate_condition_variable(const int item_count) -> void {
     const int sleep_time_ms = 100;
     const int pushes_until_sleep = 10;
 
     std::println("\n=== Demonstrating Condition Variable Usage ===");
-    ConcurrentStack<int> safe_stack;
+    concurrent_stack<int> safe_stack;
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::jthread producer([&](const std::stop_token &stoken) {
@@ -116,11 +116,11 @@ auto StackTest::demonstrate_condition_variable(const int item_count) -> void {
         "busy-waiting.");
 }
 
-auto StackTest::stackTest() -> void {
+auto stack_test::run_stack_test() -> void {
     const int data_race_items = 10000;
     const int con_queue_items = 10000;
     const int cond_variable_items = 100;
-    StackTest::demonstrate_data_race(data_race_items);
-    StackTest::demonstrate_concurrent_stack(con_queue_items);
-    StackTest::demonstrate_condition_variable(cond_variable_items);
+    stack_test::demonstrate_data_race(data_race_items);
+    stack_test::demonstrate_concurrent_stack(con_queue_items);
+    stack_test::demonstrate_condition_variable(cond_variable_items);
 }

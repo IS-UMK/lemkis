@@ -13,7 +13,7 @@ ImplementationFileExtensions:
   - cc
   - cpp
   - cxx
-HeaderFilterRegex: '^((?!libs).)*$'
+HeaderFilterRegex: ''
 FormatStyle:     file
 User:            michus
 CheckOptions:

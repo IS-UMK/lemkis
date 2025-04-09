@@ -10,15 +10,15 @@
 #include "con_queue.hpp"
 #include "queue.hpp"
 
-namespace QueueTest {
-    // Demo of data race with the original Queue
-    auto demonstrate_data_race(const int item_count) -> void;
+namespace queue_test {
+    // Demo of data race with the original queue
+    auto demonstrate_data_race(int item_count) -> void;
 
     // Demo of thread-safe queue
-    auto demonstrate_concurrent_queue(const int item_count) -> void;
+    auto demonstrate_concurrent_queue(int item_count) -> void;
 
     // Demo of condition variable for efficient waiting
-    auto demonstrate_condition_variable(const int item_count) -> void;
+    auto demonstrate_condition_variable(int item_count) -> void;
 
-    auto queueTest() -> void;
-}  // namespace QueueTest
+    auto run_queue_test() -> void;
+}  // namespace queue_test
