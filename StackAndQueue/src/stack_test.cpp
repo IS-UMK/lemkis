@@ -1,44 +1,33 @@
 #include "include/stack_test.hpp"
 
-#include <atomic>
-#include <chrono>
-#include <iostream>
-#include <print>
-#include <thread>
-#include <vector>
-
-#include "include/con_stack.hpp"
-#include "include/stack.hpp"
-
 // Demonstration in which use of unsafe methods leads to data race
-auto StackTest::demonstrate_data_race() -> void {
+auto StackTest::demonstrate_data_race(const int item_count) -> void {
     std::println("=== Demonstrating Data Race Issues ===");
     ConcurrentStack<int> unsafe_stack;
-    std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::atomic<bool> race_detected(false);
-    std::jthread producer([&](std::stop_token stoken) {
-        for (int i = 0; i < 10000 && !stoken.stop_requested() && !race_detected;
+    std::jthread producer([&](const std::stop_token &stoken) {
+        for (int i = 0;
+             i < item_count && !stoken.stop_requested() && !race_detected;
              ++i) {
             unsafe_stack.unsafe_push(i);
             producer_count++;
             std::this_thread::yield();
         }
     });
-    std::jthread consumer([&](std::stop_token stoken) {
-        for (int i = 0; i < 10000 && !stoken.stop_requested() && !race_detected;
+    std::jthread consumer([&](const std::stop_token &stoken) {
+        for (int i = 0;
+             i < item_count && !stoken.stop_requested() && !race_detected;
              ++i) {
             // std::println("got here");
             try {
                 if (!unsafe_stack.unsafe_empty()) {
-                    int _ = unsafe_stack.unsafe_top();
                     unsafe_stack.unsafe_pop();
                     consumer_count++;
                 }
-            } catch (const std::exception& e) {
-                std::cout << "Race condition detected: " << e.what()
-                          << std::endl;
+            } catch (const std::exception &e) {
+                std::println("Race condition detected: {}", e.what());
                 race_detected = true;
             }
             std::this_thread::yield();
@@ -47,35 +36,34 @@ auto StackTest::demonstrate_data_race() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     producer.request_stop();
     consumer.request_stop();
-    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
-    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
+    std::println("Producer pushed: {} items", producer_count.load());
+    std::println("Consumer popped: {} items", consumer_count.load());
     if (race_detected) {
-        std::cout << "A race condition was detected!" << std::endl;
+        std::println("A race condition was detected!");
     } else {
-        std::cout << "No race condition detected in this run, but the code is "
-                     "still unsafe."
-                  << std::endl;
-        std::cout << "The absence of a detected race doesn't mean the code is "
-                     "thread-safe."
-                  << std::endl;
+        std::println(
+            "No race condition detected in this run, but the code is "
+            "still unsafe.");
+        std::println(
+            "The absence of a detected race doesn't mean the code is "
+            "thread-safe.");
     }
 }
 
 // Demonstration where mutex is used to ensure safe concurrency
-auto StackTest::demonstrate_concurrent_stack() -> void {
-    std::cout << "\n=== Demonstrating Thread-Safe Stack ===" << std::endl;
+auto StackTest::demonstrate_concurrent_stack(const int item_count) -> void {
+    std::println("\n=== Demonstrating Thread-Safe Stack ===");
     ConcurrentStack<int> safe_stack;
-    std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
-    std::jthread producer([&](std::stop_token stoken) {
-        for (int i = 0; i < 10000 && !stoken.stop_requested(); ++i) {
+    std::jthread producer([&](const std::stop_token &stoken) {
+        for (int i = 0; i < item_count && !stoken.stop_requested(); ++i) {
             safe_stack.push(i);
             producer_count++;
             std::this_thread::yield();
         }
     });
-    std::jthread consumer([&](std::stop_token stoken) {
+    std::jthread consumer([&](const std::stop_token &stoken) {
         while (!stoken.stop_requested() || !safe_stack.empty()) {
             int value;
             if (safe_stack.try_pop(value)) { consumer_count++; }
@@ -85,33 +73,34 @@ auto StackTest::demonstrate_concurrent_stack() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     producer.request_stop();
     consumer.request_stop();
-    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
-    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
-    // std::cout << "Items left in stack: " << safe_stack.size() << std::endl;
-    std::cout
-        << "The concurrent implementation handles multiple threads correctly."
-        << std::endl;
+    std::println("Producer pushed: {} items", producer_count.load());
+    std::println("Consumer popped: {} items", consumer_count.load());
+    // std::println("Items left in stack: {}", safe_stack.size());
+    std::println(
+        "The concurrent implementation handles multiple threads correctly.");
 }
 
 // Demonstration where Producer thread occasionally pauses and Consumer thread
 // waits based on cv
-auto StackTest::demonstrate_condition_variable() -> void {
-    std::cout << "\n=== Demonstrating Condition Variable Usage ==="
-              << std::endl;
+auto StackTest::demonstrate_condition_variable(const int item_count) -> void {
+    const int sleep_time_ms = 100;
+    const int pushes_until_sleep = 10;
+
+    std::println("\n=== Demonstrating Condition Variable Usage ===");
     ConcurrentStack<int> safe_stack;
-    std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
-    std::jthread producer([&](std::stop_token stoken) {
-        for (int i = 0; i < 100 && !stoken.stop_requested(); ++i) {
-            if (i % 10 == 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::jthread producer([&](const std::stop_token &stoken) {
+        for (int i = 0; i < item_count && !stoken.stop_requested(); ++i) {
+            if (i % pushes_until_sleep == 0) {
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(sleep_time_ms));
             }
             safe_stack.push(i);
             producer_count++;
         }
     });
-    std::jthread consumer([&](std::stop_token stoken) {
+    std::jthread consumer([&](const std::stop_token &stoken) {
         while (!stoken.stop_requested() || !safe_stack.empty()) {
             safe_stack.pop();
             consumer_count++;
@@ -120,15 +109,18 @@ auto StackTest::demonstrate_condition_variable() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     producer.request_stop();
     consumer.request_stop();
-    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
-    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
-    std::cout << "The condition variable allows efficient waiting without "
-                 "busy-waiting."
-              << std::endl;
+    std::println("Producer pushed: {} items", producer_count.load());
+    std::println("Consumer popped: {} items", consumer_count.load());
+    std::println(
+        "The condition variable allows efficient waiting without "
+        "busy-waiting.");
 }
 
 auto StackTest::stackTest() -> void {
-    // StackTest::demonstrate_data_race();
-    StackTest::demonstrate_concurrent_stack();
-    StackTest::demonstrate_condition_variable();
+    const int data_race_items = 10000;
+    const int con_queue_items = 10000;
+    const int cond_variable_items = 100;
+    StackTest::demonstrate_data_race(data_race_items);
+    StackTest::demonstrate_concurrent_stack(con_queue_items);
+    StackTest::demonstrate_condition_variable(cond_variable_items);
 }

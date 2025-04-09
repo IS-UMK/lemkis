@@ -1,43 +1,33 @@
 #include "include/queue_test.hpp"
 
-#include <atomic>
-#include <chrono>
-#include <iostream>
-#include <print>
-#include <thread>
-#include <vector>
-
-#include "include/con_queue.hpp"
-#include "include/queue.hpp"
-
 // Demonstration in which use of unsafe methods leads to data race
-auto QueueTest::demonstrate_data_race() -> void {
+auto QueueTest::demonstrate_data_race(const int item_count) -> void {
     std::println("=== Demonstrating Data Race Issues ===");
     ConcurrentQueue<int> unsafe_queue;
-    std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
     std::atomic<bool> race_detected(false);
-    std::jthread producer([&](std::stop_token stoken) {
-        for (int i = 0; i < 10000 && !stoken.stop_requested() && !race_detected;
+    std::jthread producer([&](const std::stop_token &stoken) {
+        for (int i = 0;
+             i < item_count && !stoken.stop_requested() && !race_detected;
              ++i) {
             unsafe_queue.unsafe_push(i);
             producer_count++;
             std::this_thread::yield();
         }
     });
-    std::jthread consumer([&](std::stop_token stoken) {
-        for (int i = 0; i < 10000 && !stoken.stop_requested() && !race_detected;
+    std::jthread consumer([&](const std::stop_token &stoken) {
+        for (int i = 0;
+             i < item_count && !stoken.stop_requested() && !race_detected;
              ++i) {
-            std::println("got here");
+            // std::println("got here");
             try {
-                if (!unsafe_queue.empty_unsafe()) {
+                if (!unsafe_queue.unsafe_empty()) {
                     unsafe_queue.unsafe_pop();
                     consumer_count++;
                 }
-            } catch (const std::exception& e) {
-                std::cout << "Race condition detected: " << e.what()
-                          << std::endl;
+            } catch (const std::exception &e) {
+                std::println("Race condition detected: {}", e.what());
                 race_detected = true;
             }
             std::this_thread::yield();
@@ -46,35 +36,34 @@ auto QueueTest::demonstrate_data_race() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     producer.request_stop();
     consumer.request_stop();
-    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
-    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
+    std::println("Producer pushed: {} items", producer_count.load());
+    std::println("Consumer popped: {} items", consumer_count.load());
     if (race_detected) {
-        std::cout << "A race condition was detected!" << std::endl;
+        std::println("A race condition was detected!");
     } else {
-        std::cout << "No race condition detected in this run, but the code is "
-                     "still unsafe."
-                  << std::endl;
-        std::cout << "The absence of a detected race doesn't mean the code is "
-                     "thread-safe."
-                  << std::endl;
+        std::println(
+            "No race condition detected in this run, but the code is "
+            "still unsafe.");
+        std::println(
+            "The absence of a detected race doesn't mean the code is "
+            "thread-safe.");
     }
 }
 
 // Demonstration where mutex is used to ensure safe concurrency
-auto QueueTest::demonstrate_concurrent_queue() -> void {
-    std::cout << "\n=== Demonstrating Thread-Safe Queue ===" << std::endl;
+auto QueueTest::demonstrate_concurrent_queue(const int item_count) -> void {
+    std::println("\n=== Demonstrating Thread-Safe Queue ===");
     ConcurrentQueue<int> safe_queue;
-    std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
-    std::jthread producer([&](std::stop_token stoken) {
-        for (int i = 0; i < 10000 && !stoken.stop_requested(); ++i) {
+    std::jthread producer([&](const std::stop_token &stoken) {
+        for (int i = 0; i < item_count && !stoken.stop_requested(); ++i) {
             safe_queue.push(i);
             producer_count++;
             std::this_thread::yield();
         }
     });
-    std::jthread consumer([&](std::stop_token stoken) {
+    std::jthread consumer([&](const std::stop_token &stoken) {
         while (!stoken.stop_requested() || !safe_queue.empty()) {
             if (safe_queue.try_pop()) { consumer_count++; }
             std::this_thread::yield();
@@ -83,52 +72,56 @@ auto QueueTest::demonstrate_concurrent_queue() -> void {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     producer.request_stop();
     consumer.request_stop();
-    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
-    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
-    std::cout << "Items left in queue: " << safe_queue.size() << std::endl;
-    std::cout
-        << "The concurrent implementation handles multiple threads correctly."
-        << std::endl;
+    std::println("Producer pushed: {} items", producer_count.load());
+    std::println("Consumer popped: {} items", consumer_count.load());
+    std::println("Items left in queue: {}", safe_queue.size());
+    std::println(
+        "The concurrent implementation handles multiple threads correctly.");
 }
 
 // Demonstration where Producer thread occasionally pauses and Consumer thread
 // waits based on cv
-auto QueueTest::demonstrate_condition_variable() -> void {
-    std::cout << "\n=== Demonstrating Condition Variable Usage ==="
-              << std::endl;
+auto QueueTest::demonstrate_condition_variable(const int item_count) -> void {
+    const int sleep_time_ms = 100;
+    const int pushes_until_sleep = 10;
+
+    std::println("\n=== Demonstrating Condition Variable Usage ===");
     ConcurrentQueue<int> safe_queue;
-    std::atomic<bool> stop_flag(false);
     std::atomic<int> producer_count(0);
     std::atomic<int> consumer_count(0);
-    std::jthread producer([&](std::stop_token stoken) {
-        for (int i = 0; i < 100 && !stoken.stop_requested(); ++i) {
-            if (i % 10 == 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::jthread producer([&](const std::stop_token &stoken) {
+        for (int i = 0; i < item_count && !stoken.stop_requested(); ++i) {
+            if (i % pushes_until_sleep == 0) {
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(sleep_time_ms));
             }
             safe_queue.push(i);
             producer_count++;
         }
     });
-    std::jthread consumer([&](std::stop_token stoken) {
+    std::jthread consumer([&](const std::stop_token &stoken) {
         while (!stoken.stop_requested() || !safe_queue.empty()) {
             int value = 0;
             safe_queue.pop();
             consumer_count++;
-            std::cout << "Consumer got value: " << value << std::endl;
+            std::println("Consumer got value: {}", value);
         }
     });
     std::this_thread::sleep_for(std::chrono::seconds(1));
     producer.request_stop();
     consumer.request_stop();
-    std::cout << "Producer pushed: " << producer_count << " items" << std::endl;
-    std::cout << "Consumer popped: " << consumer_count << " items" << std::endl;
-    std::cout << "The condition variable allows efficient waiting without "
-                 "busy-waiting."
-              << std::endl;
+    std::println("Producer pushed: {} items", producer_count.load());
+    std::println("Consumer popped: {} items", consumer_count.load());
+    std::println(
+        "The condition variable allows efficient waiting without "
+        "busy-waiting.");
 }
 
 auto QueueTest::queueTest() -> void {
-    QueueTest::demonstrate_data_race();
-    QueueTest::demonstrate_concurrent_queue();
-    QueueTest::demonstrate_condition_variable();
+    const int data_race_items = 10000;
+    const int con_queue_items = 10000;
+    const int cond_variable_items = 100;
+    QueueTest::demonstrate_data_race(data_race_items);
+    QueueTest::demonstrate_concurrent_queue(con_queue_items);
+    QueueTest::demonstrate_condition_variable(cond_variable_items);
 }

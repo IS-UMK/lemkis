@@ -1,7 +1,21 @@
 #include "include/benchmark.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <mutex>
+#include <print>
+#include <thread>
+#include <vector>
+
+#include "include/con_queue.hpp"
+#include "include/con_stack.hpp"
+#include "include/list_stack.hpp"
+#include "include/queue.hpp"
+#include "include/stack.hpp"
+#include "include/two_stack_queue.hpp"
+#include "include/vector_stack.hpp"
+#include "libs/concurrentqueue.h"
+#include "libs/readerwriterqueue.h"
 
 namespace Benchmark {
     template <typename Func>
@@ -13,6 +27,7 @@ namespace Benchmark {
             std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::println("{}: {} ms", name, duration.count());
     }
+
     auto benchmark_concurrent_stack(int N) -> void {
         ConcurrentStack<int> stack;
         std::atomic<int> push_count(0);
@@ -96,6 +111,7 @@ namespace Benchmark {
         std::println("Pushed: {} items", push_count.load());
         std::println("Popped: {} items", pop_count.load());
     }
+
     auto benchmark_concurrent_queue(int N) -> void {
         ConcurrentQueue<int> queue;
         std::atomic<int> push_count(0);
@@ -133,6 +149,7 @@ namespace Benchmark {
         std::println("Pushed: {} items", push_count.load());
         std::println("Popped: {} items", pop_count.load());
     }
+
     auto benchmark_concurrent_queue_producer_consumer(int N) -> void {
         ConcurrentQueue<int> queue;
         std::atomic<int> push_count(0);
@@ -166,34 +183,47 @@ namespace Benchmark {
         std::println("Pushed: {} items", push_count.load());
         std::println("Popped: {} items", pop_count.load());
     }
+
     auto benchmark_stack(int N) -> void {
         Stack<int> stack;
         std::atomic<int> push_count(0);
         std::atomic<int> pop_count(0);
 
         measure_time("Stack (Push)", [&] {
-            for (int push_count = 0; push_count < N; ++push_count)
+            while (push_count < N) {
                 stack.push(push_count);
+                push_count++;
+            }
         });
 
         measure_time("Stack (Pop)", [&] {
-            for (int pop_count = 0; pop_count < N; ++pop_count) stack.pop();
+            while (pop_count < N) {
+                stack.pop();
+                pop_count++;
+            }
         });
     }
+
     auto benchmark_queue(int N) -> void {
         Queue<int> queue;
         std::atomic<int> push_count(0);
         std::atomic<int> pop_count(0);
 
         measure_time("Queue (Push)", [&] {
-            for (int push_count = 0; push_count < N; ++push_count)
+            while (push_count < N) {
                 queue.push(push_count);
+                push_count++;
+            }
         });
 
         measure_time("Queue (Pop)", [&] {
-            for (int pop_count = 0; pop_count < N; ++pop_count) queue.pop();
+            while (pop_count < N) {
+                queue.pop();
+                pop_count++;
+            }
         });
     }
+
     auto run_benchmarks(int N) -> void {
         std::println("\n=== Benchmarking with N = {} ===\n", N);
 
@@ -274,7 +304,7 @@ namespace Benchmark {
                 consumers.emplace_back(
                     [&stack, &consumed_count, items_per_consumer]() {
                         for (int i = 0; i < items_per_consumer; ++i) {
-                            auto item = stack.cv_pop_wait();
+                            stack.cv_pop_wait();
                             consumed_count.fetch_add(1);
                         }
                     });
@@ -375,7 +405,7 @@ namespace Benchmark {
                 consumers.emplace_back(
                     [&queue, &consumed_count, items_per_consumer]() {
                         for (int i = 0; i < items_per_consumer; ++i) {
-                            auto item = queue.cv_dequeue_wait();
+                            queue.cv_dequeue_wait();
                             consumed_count.fetch_add(1);
                         }
                     });

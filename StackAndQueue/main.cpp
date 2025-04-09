@@ -3,9 +3,12 @@
 #include "src/include/stack_test.hpp"
 
 auto main() -> int {
+    const int benchmark_count = 100000;
+
     // QueueTest::queueTest();
     StackTest::stackTest();
-    Benchmark::run_benchmarks(100000);
-    Benchmark::run_benchmarks_new(100000);
+    Benchmark::run_benchmarks(benchmark_count);
+    Benchmark::run_benchmarks_new(benchmark_count);
+
     return 0;
 }

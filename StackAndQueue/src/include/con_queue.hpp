@@ -108,6 +108,14 @@ class ConcurrentQueue {
         not_empty_cv_.notify_one();
     }
 
+    // Remove the front element (non-blocking)
+    auto try_pop() -> bool {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (unsafe_empty()) { return false; }
+        unsafe_pop();
+        return true;
+    }
+
     // Remove the front element
     auto unsafe_pop() -> void {
         // Precondition: !empty()
@@ -117,36 +125,28 @@ class ConcurrentQueue {
         size_--;
     }
 
-    // Remove the front element (non-blocking)
-    auto try_pop() -> bool {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (empty_unsafe()) { return false; }
-        unsafe_pop();
-        return true;
-    }
-
     // Pop with use of cv
     auto pop() -> void {
         std::unique_lock<std::mutex> lock(mutex_);
-        not_empty_cv_.wait(lock, [this] { return !empty_unsafe(); });
+        not_empty_cv_.wait(lock, [this] { return !unsafe_empty(); });
         unsafe_pop();
     }
 
     // Try to peek at front element without removing
     auto try_peek(T& value) const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (empty_unsafe()) { return false; }
+        if (unsafe_empty()) { return false; }
         value = front_->data;
         return true;
     }
 
     // Helper method to check if queue is empty when lock is already held
-    auto empty_unsafe() const -> bool { return front_ == nullptr; }
+    auto unsafe_empty() const -> bool { return front_ == nullptr; }
 
     // Check if the queue is empty
     [[nodiscard]] auto empty() const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
-        return empty_unsafe();
+        return unsafe_empty();
     }
 
     // Get the size of the queue
