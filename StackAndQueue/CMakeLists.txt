@@ -7,17 +7,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_program(CLANG_TIDY NAMES clang-tidy)
 if(CLANG_TIDY)
-  set(CMAKE_CXX_CLANG_TIDY
-    "${CLANG_TIDY}"
-    "-header-filter=.*"
-  )
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
   message(STATUS "Clang-tidy enabled")
 else()
   message(WARNING "Clang-tidy not found, checks disabled")
 endif()
 
 set(SOURCES
-  ${CMAKE_SOURCE_DIR}/main.cpp
+  ${CMAKE_SOURCE_DIR}/src/main.cpp
   ${CMAKE_SOURCE_DIR}/src/stack_test.cpp
   ${CMAKE_SOURCE_DIR}/src/queue_test.cpp
   ${CMAKE_SOURCE_DIR}/src/benchmark.cpp
