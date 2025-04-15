@@ -13,7 +13,13 @@ All member functions (including copy constructor and copy assignment) can be cal
 If multiple threads of execution access the same std::shared_ptr object without synchronization and any of those accesses uses a non-const member function of shared_ptr then a data race will occur unless all such access is performed through an instance of std::atomic&lang;std::shared_ptr&rang;
 
 Associated `use_count` increments are guaranteed to be part of the atomic operation. Associated `use_count` decrements are sequenced after the atomic operation, but are not required to be part of it, except for the `use_count` change when overriding `expected` in a failed CAS. Any associated deletion and deallocation are sequenced after the atomic update step and are not part of the atomic operation.
+
+
+while std::atomic<std::shared_ptr<T>> provides thread-safe operations for managing shared ownership of objects, certain issues can still arise in multithreaded environments. These problems stem from the limitations of atomic shared pointers and the fact that they only ensure thread **safety** for the **shared pointer itself**, **not for the managed object** or other **complex interactions**.
+
 # Hazard pointers
+
+
 
 Hazard pointers are a lock-free memory management technique used in multithreaded environments to safely reclaim 
 (roughly free <details>
