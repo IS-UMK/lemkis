@@ -1,3 +1,5 @@
+# Supplementary meterials (defer reading/watching to the moment you get familiar with below notions)
+  - (https://www.youtube.com/watch?v=bjz_bMNNWRk) and the corresponding repo (https://github.com/erez-strauss/lockfree_mpmc_queue)
 # Shared pointers
 
 ## std::shared_ptr
