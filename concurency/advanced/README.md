@@ -1,8 +1,7 @@
 # Hazard pointers
 
 Hazard pointers are a lock-free memory management technique used in multithreaded environments to safely reclaim 
-(roughly free 
-<details>
+(roughly free <details>
   <summary>for details expand</summary>
   <p>Reclamation refers to the process of freeing or recovering resources, particularly memory, 
     that are no longer in use by a program or system. In computing, memory reclamation ensures efficient 
