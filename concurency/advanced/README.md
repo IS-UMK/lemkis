@@ -46,6 +46,37 @@ int main() {
 }
 ```
 
+### Premature desturction of the managed object
+ If one thread replaces or resets the atomic shared pointer while another thread is using it, the managed object might be destroyed before the second thread finishes accessing it.
+
+```cpp
+#include <atomic>
+#include <memory>
+#include <thread>
+#include <iostream>
+
+std::atomic<std::shared_ptr<int>> atomic_ptr(std::make_shared<int>(42));
+
+void reader() {
+    auto local_ptr = atomic_ptr.load(); // Safely load the shared pointer
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
+    if (local_ptr) {
+        std::cout << "Value: " << *local_ptr << "\n";
+    }
+}
+
+void writer() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Simulate delay
+    atomic_ptr.store(nullptr); // Replace the shared pointer
+}
+
+int main() {
+    std::jthread t1(reader);
+    std::jthread t2(writer);
+    return 0;
+}
+
+```
 # Hazard pointers
 
 
