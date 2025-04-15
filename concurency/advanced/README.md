@@ -57,7 +57,7 @@ void safe_write(std::shared_ptr<std::vector<int>>& data) {
 
 ```
 
-### Premature desturction of the managed object 
+### Premature destruction of the managed object 
  If one thread replaces or resets the atomic shared pointer while another thread is using it, the managed object might be destroyed before the second thread finishes accessing it.
 
 ```cpp
