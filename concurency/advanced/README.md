@@ -20,7 +20,7 @@ addressing issues such as dangling pointers and the ABA problem.
 
 ## Lock free stack example
 
-Unfortunately no compiler support <hazard_pointer> header yet. However to get a tasteof HPs:
+Unfortunately (as for now) no compiler supports <hazard_pointer> header yet. However to get a tasteof HPs:
 
 ```cpp
 #include <atomic>
