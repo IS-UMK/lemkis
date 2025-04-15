@@ -20,7 +20,14 @@ addressing issues such as dangling pointers and the ABA problem.
 
 ## Lock free stack example
 
-Unfortunately (as for now) no compiler supports <hazard_pointer> header yet. However to get a tasteof HPs:
+Unfortunately (as for now) no compiler supports <hazard_pointer> header yet. However to get a tasteof HPs we provide some examples. To understand what is going on let us explain two concepts:
+1. **retired object** refers to an object that is no longer part of an active data structure but cannot be immediately deallocated due to potential ongoing access by other threads. The retirement process ensures that the object is safely removed from the structure while deferring its reclamation until it is confirmed that no hazard pointers are referencing it.
+2. **std::hazard_pointer_domain** is a core component of the C++26 Hazard Pointers API that manages groups of hazard pointers and retired objects for safe memory reclamation in concurrent programs. It acts as a synchronization boundary for memory reclamation operations.
+   1.  Objects retired to one domain are only checked against hazard pointers within that domain.
+   2.  Multiple domains: Allow separate lock-free data structures to operate independently without cross-contamination.
+   3.  Owns all hazard pointers created for its domain.
+   4.  Manages retired objects queued for deferred reclamation.
+
 
 ```cpp
 #include <hazard_pointer>
@@ -80,3 +87,33 @@ int main() {
 }
 ```
 
+or 
+
+```cpp
+#include <hazard_pointer>
+#include <vector>
+#include <iostream>
+
+struct GraphNode : std::hazard_pointer_obj_base<GraphNode> {
+    int id;
+    std::vector<GraphNode*> neighbors;
+    
+    GraphNode(int id) : id(id) {}
+};
+
+void safe_traverse(GraphNode* start) {
+    std::hazard_pointer_domain domain;
+    std::hazard_pointer hp(domain);
+    
+    hp.protect(start); // Protect root node
+    for (auto neighbor : start->neighbors) {
+        hp.protect(neighbor); // Protect each neighbor
+        std::cout << "Traversing edge: " << start->id 
+                  << " -> " << neighbor->id << "\n";
+        
+        // Process neighbor (protected by hazard pointer)
+    }
+    
+    // Automatic cleanup via RAII
+}
+```
