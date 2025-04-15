@@ -17,10 +17,14 @@ jobs:
         submodules: 'recursive'
     - name: Install cppcheck
       run: sudo apt install cppcheck
+    # - name: Install llvm
+      # run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
     - name: Install llvm
       run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+    # - name: Install  g++
+    #   run: sudo apt update && sudo apt install g++ gcc && sudo apt upgrade
     - name: Install standard library headers for clang and clang tools
-      run: sudo apt install clang-tidy-18 clang-format-18 clang-tidy clang-format libc++-18-dev
+      run: sudo apt install clang-tidy-18 clang-format-18 libc++-18-dev 
     - name: Install the newest ninja
       run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
     - uses: actions/setup-python@v5
