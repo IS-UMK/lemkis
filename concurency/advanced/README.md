@@ -14,7 +14,7 @@ If multiple threads of execution access the same std::shared_ptr object without 
 
 Associated `use_count` increments are guaranteed to be part of the atomic operation. Associated `use_count` decrements are sequenced after the atomic operation, but are not required to be part of it, except for the `use_count` change when overriding `expected` in a failed CAS. Any associated deletion and deallocation are sequenced after the atomic update step and are not part of the atomic operation.
 
-Note that current implementations of atomic shared pointers **are not lock-free**.
+Note that current implementations of atomic shared pointers **are not lock-free**. Moreover, requent calls to `load`, `store`, or `compare_exchange` on an atomic shared pointer can introduce significant **overhead** because each operation involves synchronization at a hardware level, which can degrade performance under high contention.
 
 While std::atomic<std::shared_ptr<T>> provides thread-safe operations for managing shared ownership of objects, certain issues can still arise in multithreaded environments. These problems stem from the limitations of atomic shared pointers and the fact that they only ensure thread **safety** for the **shared pointer itself**, **not for the managed object** or other **complex interactions**.
 
@@ -47,7 +47,17 @@ int main() {
 }
 ```
 
-### Premature desturction of the managed object
+**Hence always protect access to the managed objects.** E.g.
+```cpp
+std::mutex mtx;
+void safe_write(std::shared_ptr<std::vector<int>>& data) {
+    std::lock_guard<std::mutex> lock(mtx);
+    data->push_back(42);
+}
+
+```
+
+### Premature desturction of the managed object 
  If one thread replaces or resets the atomic shared pointer while another thread is using it, the managed object might be destroyed before the second thread finishes accessing it.
 
 ```cpp
@@ -75,6 +85,15 @@ int main() {
     std::jthread t1(reader);
     std::jthread t2(writer);
     return 0;
+}
+
+```
+
+**Hence always hold a local copy:**
+```cpp
+auto local_ptr = atomic_shared_pointer.load();
+if (local_ptr) {
+    // Safe access to managed object
 }
 
 ```
