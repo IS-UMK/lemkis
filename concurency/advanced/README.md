@@ -23,112 +23,60 @@ addressing issues such as dangling pointers and the ABA problem.
 Unfortunately (as for now) no compiler supports <hazard_pointer> header yet. However to get a tasteof HPs:
 
 ```cpp
+#include <hazard_pointer>
 #include <atomic>
-#include <stdexcept>
 #include <iostream>
-#include <thread>
-#include <future>
+#include <memory>
 
-// Node concept and definition
-template <typename T>
-concept Node = requires(T a) {
-    { T::data };
-    { *a.next } -> std::same_as<T&>;
+struct Node : std::hazard_pointer_obj_base<Node> {
+    int data;
+    Node* next;
+    
+    Node(int val) : data(val), next(nullptr) {}
 };
 
-template <typename T>
-struct MyNode {
-    T data;
-    MyNode* next;
-    MyNode(T d) : data(d), next(nullptr) {}
-};
-
-// Hazard Pointer Management
-constexpr std::size_t MaxHazardPointers = 50;
-
-template <typename T>
-struct HazardPointer {
-    std::atomic<std::thread::id> id;
-    std::atomic<MyNode<T>*> pointer;
-};
-
-template <typename T>
-HazardPointer<T> HazardPointers[MaxHazardPointers];
-
-template <typename T>
-std::atomic<MyNode<T>*>& getHazardPointer() {
-    thread_local static HazardPointer<T> hazard;
-    return hazard.pointer;
-}
-
-// Retire List for Memory Reclamation
-template <typename T>
-class RetireList {
-    struct RetiredNode {
-        MyNode<T>* node;
-        RetiredNode* next;
-        RetiredNode(MyNode<T>* p) : node(p), next(nullptr) {}
-        ~RetiredNode() { delete node; }
-    };
-
-    std::atomic<RetiredNode*> retiredNodes;
-
-public:
-    void addNode(MyNode<T>* node) {
-        auto retiredNode = new RetiredNode(node);
-        retiredNode->next = retiredNodes.load();
-        while (!retiredNodes.compare_exchange_strong(retiredNode->next, retiredNode));
-    }
-
-    void deleteUnusedNodes() {
-        auto current = retiredNodes.exchange(nullptr);
-        while (current) {
-            auto next = current->next;
-            delete current;
-            current = next;
-        }
-    }
-};
-
-// Lock-Free Stack Implementation
-template <typename T>
 class LockFreeStack {
-    std::atomic<MyNode<T>*> head;
-    RetireList<T> retireList;
+    std::atomic<Node*> head{nullptr};
+    std::hazard_pointer_domain domain; // Hazard pointer domain
 
 public:
-    void push(T val) {
-        auto newMyNode = new MyNode<T>(val);
-        newMyNode->next = head.load();
-        while (!head.compare_exchange_strong(newMyNode->next, newMyNode));
+    void push(int value) {
+        auto* newNode = new Node(value);
+        newNode->next = head.load();
+        while (!head.compare_exchange_strong(newNode->next, newNode));
     }
 
-    T topAndPop() {
-        auto& hazardPointer = getHazardPointer<T>();
-        MyNode<T>* oldHead = head.load();
+    std::unique_ptr<int> pop() {
+        std::hazard_pointer hp(domain); // RAII hazard pointer
+        
+        Node* oldHead;
         do {
-            hazardPointer.store(oldHead);
             oldHead = head.load();
+            hp.protect(oldHead); // Protect the node
         } while (oldHead && !head.compare_exchange_strong(oldHead, oldHead->next));
 
-        if (!oldHead) throw std::out_of_range("The stack is empty!");
+        if (!oldHead) return nullptr;
+        
+        auto result = std::make_unique<int>(oldHead->data);
+        oldHead->retire(); // Schedule for safe reclamation
+        return result;
+    }
 
-        hazardPointer.store(nullptr);
-        retireList.addNode(oldHead);
-        retireList.deleteUnusedNodes();
-
-        return oldHead->data;
+    ~LockFreeStack() {
+        domain.reclaim(); // Force cleanup of all retired nodes
     }
 };
 
 int main() {
-    LockFreeStack<int> stack;
+    LockFreeStack stack;
+    stack.push(42);
+    stack.push(100);
 
-    stack.push(10);
-    stack.push(20);
-
-    std::cout << "Popped: " << stack.topAndPop() << '\n';
+    auto val1 = stack.pop();
+    auto val2 = stack.pop();
+    
+    if (val1) std::cout << "Popped: " << *val1 << "\n";
+    if (val2) std::cout << "Popped: " << *val2 << "\n";
 }
-
 ```
 
