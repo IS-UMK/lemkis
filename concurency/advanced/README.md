@@ -1,3 +1,18 @@
+# Shared pointers
+
+## std::shared_ptr
+
+**std::shared_ptr** is a smart pointer that retains shared ownership of an object through a pointer. Several shared_ptr objects may own the same object. The object is destroyed and its memory deallocated when either of the following happens:
+  - the last remaining shared_ptr owning the object is destroyed;
+  - the last remaining shared_ptr owning the object is assigned another pointer via operator= or reset().
+
+All member functions (including copy constructor and copy assignment) can be called by multiple threads on different shared_ptr objects without additional synchronization even if these objects are copies and share ownership of the same object. If multiple threads of execution access the same shared_ptr object without synchronization and any of those accesses uses a non-const member function of shared_ptr then a data race will occur; the std::atomic<shared_ptr> can be used to prevent the data race.
+
+## std::atomic<std::shared_ptr>
+
+If multiple threads of execution access the same std::shared_ptr object without synchronization and any of those accesses uses a non-const member function of shared_ptr then a data race will occur unless all such access is performed through an instance of std::atomic<std::shared_ptr>
+
+Associated `use_count` increments are guaranteed to be part of the atomic operation. Associated `use_count` decrements are sequenced after the atomic operation, but are not required to be part of it, except for the `use_count` change when overriding `expected` in a failed CAS. Any associated deletion and deallocation are sequenced after the atomic update step and are not part of the atomic operation.
 # Hazard pointers
 
 Hazard pointers are a lock-free memory management technique used in multithreaded environments to safely reclaim 
