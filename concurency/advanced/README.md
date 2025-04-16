@@ -1,5 +1,6 @@
 # Supplementary meterials (defer reading/watching to the moment you get familiar with below notions)
   - (https://www.youtube.com/watch?v=bjz_bMNNWRk) and the corresponding repo (https://github.com/erez-strauss/lockfree_mpmc_queue)
+  - [Lock-free Atomic Shared Pointers Without a Split Reference Count? It Can Be Done! - Daniel Anderson](https://www.youtube.com/watch?v=lNPZV9Iqo3U)
 # Shared pointers
 
 ## std::shared_ptr
