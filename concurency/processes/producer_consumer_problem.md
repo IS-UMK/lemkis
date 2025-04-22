@@ -65,5 +65,5 @@ process Worker[id : 1..N] {
 
 ---
 
-Apart from correctness of your solution - you should be able to explain to your classmates you solution and reveal what problems you have encountered during develepment of your solution (if no such  then please explain potential problems with the "most obvious solution"). Stick to the requirements i have sent you via email (in particular take care of style).
+Apart from correctness of your solution - you should be able to explain to your classmates you solution and reveal what problems you have encountered during develepment of your solution (if no such  then please explain potential problems with the "most obvious solution"). Stick to the requirements i have sent you via email (in particular take care of style). In this task, you are **not allowed to** use external libraries.
 
