@@ -182,7 +182,7 @@ template <typename... Args>
 ```
 
 
-### Example
+## Example
 
 ```cpp
   #include <array>
@@ -297,3 +297,59 @@ int main() {
   return EXIT_SUCCESS;
 }
 ```
+
+### Why `wait(nullptr)` is Used in the Code
+
+The `wait(nullptr)` function is used to wait for a child process to terminate. It serves an important purpose in process management when dealing with forked child processes in a program.
+
+---
+
+### 1. **Reaping the Child Process**
+When a parent process creates a child process using `fork()`, the operating system keeps information about the child process (such as its exit status) in a data structure in memory until the parent explicitly reads it. This is known as a **zombie process**.
+
+- **Zombie Process**: A child process that has terminated but still occupies an entry in the process table because its parent has not yet retrieved its exit status.
+- By calling `wait(nullptr)`, the parent process reads the child's exit status and allows the operating system to clean up the data structure for the child process, preventing it from becoming a zombie.
+
+---
+
+### 2. **Blocking Until the Child Completes**
+`wait(nullptr)` causes the parent process to block (pause execution) until one of its child processes terminates. This ensures that the parent doesn't proceed with operations that might depend on the child process having completed its work.
+
+In the given code:
+```cpp
+wait(nullptr); // Wait for child process
+```
+- The parent process waits for the child process to complete before continuing, ensuring that the shared memory modifications by the child process are finished before the parent exits or cleans up resources.
+
+---
+
+### 3. **Using `nullptr` as the Argument**
+The `wait()` function accepts a pointer to an integer argument where it can store the exit status of the terminated child process. By passing `nullptr`, you indicate that you don't care about the exit status and simply want to wait for the child to terminate.
+
+If you want to retrieve the exit status, you can pass a pointer to an integer instead:
+```cpp
+int status;
+wait(&status); // Wait for the child process and store its exit status in 'status'
+```
+
+---
+
+### 4. **Why It's Important**
+If you don't call `wait()` or a similar function (e.g., `waitpid()`), the following issues can occur:
+1. **Zombie Processes**: The child process will remain a zombie in the process table, leading to resource leaks.
+2. **Undefined Behavior**: The parent process might proceed without knowing whether the child process has completed, potentially leading to race conditions or resource cleanup issues.
+
+---
+
+### 5. **Alternative: `waitpid()`**
+`waitpid()` offers more control over which child process to wait for:
+```cpp
+#include <sys/wait.h>
+waitpid(pid, nullptr, 0); // Wait for a specific child process with PID 'pid' to terminate
+```
+- This is useful if the parent process has multiple child processes and wants to wait for a specific one.
+
+---
+
+### Summary
+The use of `wait(nullptr)` in the code ensures proper synchronization between the parent and child processes, prevents zombie processes, and allows the parent process to clean up resources correctly. It's a simple and effective way to manage child processes when you don't need to retrieve their exit status.
