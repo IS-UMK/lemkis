@@ -247,24 +247,22 @@ namespace communication {
 
 class unix_socket {
 public:
-    // Constructor for creating a socket
-    unix_socket() : socket_fd_(-1) {
+
+unix_socket() : socket_fd_(-1) {
         socket_fd_ = ::socket(AF_UNIX, SOCK_STREAM, 0);
         if (socket_fd_ == -1) {
             throw std::runtime_error("Failed to create UNIX socket");
         }
     }
 
-    // Constructor for accepting a connection (used by server)
     explicit unix_socket(int fd) : socket_fd_(fd) {}
 
-    // Destructor to close the socket
     ~unix_socket() {
         close();
     }
 
-    // Non-copyable but movable
     unix_socket(const unix_socket&) = delete;
+
     unix_socket& operator=(const unix_socket&) = delete;
 
     unix_socket(unix_socket&& other) noexcept : socket_fd_(other.socket_fd_) {
@@ -280,25 +278,18 @@ public:
         return *this;
     }
 
-    // Bind socket to a file path (server-specific)
-    void bind(const std::filesystem::path& path) {
+
+   void bind(const std::filesystem::path& path) {
         sockaddr_un addr{};
         addr.sun_family = AF_UNIX;
 
-        // Ensure the path fits within the sun_path limit
         if (path.string().size() >= sizeof(addr.sun_path)) {
             throw std::runtime_error("Socket path too long");
         }
-
-        // Copy the file path into the address structure using std::ranges::copy_n
         std::ranges::copy_n(path.string().begin(), path.string().size(), addr.sun_path);
-
-        // Remove any existing file at the path
         if (std::filesystem::exists(path)) {
             std::filesystem::remove(path);
         }
-
-        // Bind the socket to the file path
         if (::bind(socket_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
             throw std::runtime_error(std::format("Failed to bind UNIX socket to '{}'", path.string()));
         }
@@ -324,15 +315,11 @@ public:
     void connect(const std::filesystem::path& path) {
         sockaddr_un addr{};
         addr.sun_family = AF_UNIX;
-
         // Ensure the path fits within the sun_path limit
         if (path.string().size() >= sizeof(addr.sun_path)) {
             throw std::runtime_error("Socket path too long");
         }
-
-        // Copy the file path into the address structure using std::ranges::copy_n
         std::ranges::copy_n(path.string().begin(), path.string().size(), addr.sun_path);
-
         if (::connect(socket_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
             throw std::runtime_error(std::format("Failed to connect to UNIX socket at '{}'", path.string()));
         }
