@@ -18,6 +18,7 @@ The task involves workers producing and consuming `units` of a specific `type`. 
      ```
 
 2. **Workers**:
+   - There are `N` workers.
    - Each worker has the following behavior:
      1. Produces a unit using the function:
         ```cpp
@@ -36,11 +37,11 @@ The task involves workers producing and consuming `units` of a specific `type`. 
          }
         ```
 
-3. **Assumptions**:
+4. **Assumptions**:
    - Each worker produces an infinite number of units of all types.
    - Units are passed between workers through helper processes (`Helper`).
 
-4. **Helper Processes**:
+5. **Helper Processes**:
    - Helpers are implemented as an `N`-element array.
    - Each `Helper[i]` can only:
      - Send messages to its associated worker.
