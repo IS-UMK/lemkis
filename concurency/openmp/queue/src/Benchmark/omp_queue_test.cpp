@@ -1,132 +1,163 @@
 #include "../include/omp_queue.hpp"
-
-#include <chrono>
-#include <iostream>
-#include <jthread>
-#include <thread>
-#include <vector>
-
 #include "../include/concurrent_queue.hpp"
 
-constexpr int item_count = 100000;
+#include <chrono>
+#include <format>
+#include <iostream>
+#include <print>
+//#include <jthread>
+#include <mutex>
+#include <thread>
+#include <utility>
+#include <vector>
 
-void test_no_openmp_ompqueue(int prod, int cons) {
-    std::cout << "\n[OMPQueue] No OpenMP - Producers: " << prod
-              << ", Consumers: " << cons << "\n";
-    OMPQueue<int> q;
-    int pushed = 0, popped = 0;
 
-    auto start = std::chrono::high_resolution_clock::now();
+constexpr int item_limit = 100000;
 
-    for (int i = 0; i < prod; ++i) {
-        for (int j = 0; j < item_count / prod; ++j) {
-            q.push(j + i * 10000);
-            ++pushed;
-        }
-    }
 
-    for (int i = 0; i < cons; ++i) {
-        int local = 0, val = 0;
-        while (local < item_count / cons) {
-            if (q.pop(val)) {
-                ++popped;
-                ++local;
-            }
-        }
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Pushed: " << pushed << ", Popped: " << popped
-              << ", Remaining: " << q.size() << ", Time: "
-              << std::chrono::duration<double>(end - start).count() << " s\n";
+// Measures and prints performance metrics of a queue test
+void print_performance(const std::string& label,
+                        int pushed,
+                        int popped,
+                        std::size_t remaining,
+                        double time_seconds) {
+    std::print("\n{}\n", label);
+    std::print("Pushed: {}, Popped: {}, Remaining: {}, Time: {:.4f} s\n",
+                pushed,
+                popped,
+                remaining,
+                time_seconds);
 }
 
-void test_openmp_ompqueue(int prod, int cons) {
-    std::cout << "\n[OMPQueue] With OpenMP - Producers: " << prod
-              << ", Consumers: " << cons << "\n";
-    OMPQueue<int> q;
-    int pushed = 0, popped = 0;
 
-    auto start = std::chrono::high_resolution_clock::now();
+// Runs producer and consumer logic for sequencial OMPQueue
+void run_sequential_ompqueue_test(int producers, int consumers) {
+    OMPQueue<int> queue;
+    int pushed_count = 0;
+    int popped_count = 0;
 
-#pragma omp parallel num_threads(prod + cons)
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    for (int producer_id = 0; producer_id < producers; ++producer_id) {
+        for (int j = 0; j < item_limit / producers; ++j) {
+            queue.push(j + producer_id * 10000);
+            ++pushed_count;
+        }
+    }
+
+    for (int consumer_id = 0; consumer_id < consumers; ++consumer_id) {
+        int local_count = 0;
+        int value = 0;
+        while (local_count < item_limit / consumers) {
+            if (queue.pop(value)) {
+                ++popped_count;
+                ++local_count;
+            }
+        }
+    }
+
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    print_performance(
+        std::format("[OMPQueue] No OpenMP - Producers: {}, Consumers: {}",
+                    producers,
+                    consumers),
+        pushed_count,
+        popped_count,
+        queue.size(),
+        std::chrono::duration<double>(end - start).count());
+}
+
+
+// Runs OpenMP-based producer-consumer logic using OMPQueue
+void run_parallel_ompqueue_test(int producers, int consumers) {
+    OMPQueue<int> queue;
+    int pushed_count = 0;
+    int popped_count = 0;
+
+    const auto start = std::chrono::high_resolution_clock::now();
+
+#pragma omp parallel num_threads(producers + consumers)
     {
-        int tid = omp_get_thread_num();
-        if (tid < prod) {
-            for (int i = 0; i < item_count / prod; ++i) {
-                q.push(i + tid * 10000);
+        const int thread_id = omp_get_thread_num();
+        if (thread_id < producers) {
+            for (int i = 0; i < item_limit / producers; ++i) {
+                queue.push(i + thread_id * 10000);
 #pragma omp atomic
-                ++pushed;
+                ++pushed_count;
             }
         } else {
-            int val, local = 0;
-            while (local < item_count / cons) {
-                if (q.pop(val)) {
+            int local_count = 0;
+            int value = 0;
+            while (local_count < item_limit / consumers) {
+                if (queue.pop(value)) {
 #pragma omp atomic
-                    ++popped;
-                    ++local;
+                    ++popped_count;
+                    ++local_count;
                 }
             }
         }
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Pushed: " << pushed << ", Popped: " << popped
-              << ", Remaining: " << q.size() << ", Time: "
-              << std::chrono::duration<double>(end - start).count() << " s\n";
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    print_performance(
+        std::format("[OMPQueue] With OpenMP - Producers: {}, Consumers: {}",
+                    producers,
+                    consumers),
+        pushed_count,
+        popped_count,
+        queue.size(),
+        std::chrono::duration<double>(end - start).count());
 }
 
-void test_jthread_concurrentqueue(int prod, int cons) {
-    std::cout << "\n[ConcurrentQueue] With std::jthread - Producers: " << prod
-              << ", Consumers: " << cons << "\n";
-    concurrent_queue<int> q;
-    int pushed = 0, popped = 0;
+
+// Runs jthread-based producer-consumer logic using concurrent_queue
+/* void run_jthread_concurrentqueue_test(int producers, int consumers) {
+    concurrent_queue<int> queue;
+    int pushed_count = 0;
+    int popped_count = 0;
     std::mutex count_mutex;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    const auto start = std::chrono::high_resolution_clock::now();
 
     std::vector<std::jthread> threads;
 
-    for (int i = 0; i < prod; ++i) {
-        threads.emplace_back([&q, &pushed, i, prod, &count_mutex]() {
-            for (int j = 0; j < item_count / prod; ++j) {
-                q.push(j + i * 10000);
-                std::scoped_lock lock(count_mutex);
-                ++pushed;
-            }
-        });
-    }
-
-    for (int i = 0; i < cons; ++i) {
-        threads.emplace_back([&q, &popped, i, cons, &count_mutex]() {
-            int val, local = 0;
-            while (local < item_count / cons) {
-                if (q.try_peek(val)) {
-                    q.pop();
+    for (int i = 0; i < producers; ++i) {
+        threads.emplace_back(
+            [&queue, &pushed_count, i, producers, &count_mutex]() {
+                for (int j = 0; j < item_limit / producers; ++j) {
+                    queue.push(j + i * 10000);
                     std::scoped_lock lock(count_mutex);
-                    ++popped;
-                    ++local;
+                    ++pushed_count;
                 }
-            }
-        });
+            });
     }
 
-    for (auto& t : threads) t.join();
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Pushed: " << pushed << ", Popped: " << popped
-              << ", Remaining: " << q.size() << ", Time: "
-              << std::chrono::duration<double>(end - start).count() << " s\n";
-}
-
-int main() {
-    std::vector<std::pair<int, int>> configs = {{1, 1}, {2, 2}, {4, 4}};
-
-    for (const auto& [prod, cons] : configs) {
-        test_no_openmp_ompqueue(prod, cons);
-        test_openmp_ompqueue(prod, cons);
-        test_jthread_concurrentqueue(prod, cons);
+    for (int i = 0; i < consumers; ++i) {
+        threads.emplace_back(
+            [&queue, &popped_count, i, consumers, &count_mutex]() {
+                int local_count = 0;
+                int value = 0;
+                while (local_count < item_limit / consumers) {
+                    if (queue.try_peek(value)) {
+                        queue.pop();
+                        std::scoped_lock lock(count_mutex);
+                        ++popped_count;
+                        ++local_count;
+                    }
+                }
+            });
     }
 
-    return 0;
-}
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    print_performance(std::format("[ConcurrentQueue] With std::jthread - "
+                                    "Producers: {}, Consumers: {}",
+                                    producers,
+                                    consumers),
+                        pushed_count,
+                        popped_count,
+                        queue.size(),
+                        std::chrono::duration<double>(end - start).count());
+}*/

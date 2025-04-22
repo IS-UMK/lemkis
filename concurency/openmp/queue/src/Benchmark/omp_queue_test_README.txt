@@ -2,7 +2,7 @@ OMPQueue vs ConcurrentQueue: Test Wydajnoœci
 Testuje wydajnoœæ trzech implementacji kolejek w ró¿nych konfiguracjach liczby producentów i konsumentów, w celu porównania czasów operacji push i pop w ró¿nych wersjach: bez OpenMP, z OpenMP, oraz z std::jthread.
 
 Opis
-OMPQueue (No OpenMP) - Kolejka OMPQueue, dzia³aj¹ca bez wykorzystania OpenMP, z sekwencyjnymi operacjami push i pop. Wszystkie operacje s¹ blokowane za pomoc¹ blokady omp_lock_t, co pozwala na synchronizacjê w¹tków, ale nie wykorzystuje równoleg³oœci.
+OMPQueue (No OpenMP) - Kolejka OMPQueue, z sekwencyjnymi operacjami push i pop. Wszystkie operacje s¹ blokowane za pomoc¹ blokady omp_lock_t, co pozwala na synchronizacjê w¹tków, ale nie wykorzystuje równoleg³oœci.
 
 OMPQueue (With OpenMP) - Kolejka OMPQueue, dzia³aj¹ca z wykorzystaniem OpenMP. Operacje push i pop s¹ wykonywane równolegle przez wielu producentów i konsumentów, co pozwala na lepsz¹ skalowalnoœæ w przypadku wiêkszej liczby w¹tków. Synchronizacja dostêpu do kolejki jest realizowana za pomoc¹ mechanizmu OpenMP (omp_set_lock i omp_unset_lock).
 

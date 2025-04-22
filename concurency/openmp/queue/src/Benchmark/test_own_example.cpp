@@ -74,7 +74,7 @@ void test_dot_product(const vector<double>& a, const vector<double>& b) {
     });
 }
 
-int main() {
+auto run_own_test() -> void {
     cout << "==== SMALL DATASET ====" << endl;
     auto a_small = generate_random_vector(SMALL_SIZE);
     auto b_small = generate_random_vector(SMALL_SIZE);
@@ -97,5 +97,4 @@ int main() {
     cout << "\n= Testing DOT Product =" << endl;
     test_dot_product(a_large, b_large);
 
-    return 0;
 }

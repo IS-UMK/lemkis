@@ -5,18 +5,20 @@ project(queue CXX)
 include(CTest)
 enable_testing()
 
-add_executable(${PROJECT_NAME} main.cxx)
-
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# List of source files
 set(SOURCES
-  $(CMAKE_SOURCE_DIR)/src/main.cpp
+  ${CMAKE_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_SOURCE_DIR}/src/Benchmark/omp_queue_test.cpp
+  ${CMAKE_SOURCE_DIR}/src/Benchmark/test_own_example.cpp
 )
 
 set(INCLUDE_DIRS
   $(CMAKE_SOURCE_DIR)/src/include
+  $(CMAKE_SOURCE_DIR)/src/Benchmark
 )
 
 find_package(OpenMP REQUIRED)
@@ -28,8 +30,13 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -ftemplate-backtrace-limit=0 -O3 ")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_X_FLAGS_DEBUG} -Wall --pedantic -g3 -ggdb")
+target_compile_options(${PROJECT_NAME} PRIVATE
+  -ftemplate-backtrace-limit=0
+  -O3
+  -Wall
+  -Wextra
+  -pedantic
+)
 
 target_link_libraries(${PROJECT_NAME}
     OpenMP::OpenMP_CXX
