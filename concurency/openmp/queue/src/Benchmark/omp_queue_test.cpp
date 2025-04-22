@@ -1,11 +1,12 @@
 #include "../include/omp_queue.hpp"
-#include "../include/concurrent_queue.hpp"
 
 #include <chrono>
 #include <format>
 #include <iostream>
 #include <print>
-//#include <jthread>
+
+#include "../include/concurrent_queue.hpp"
+// #include <jthread>
 #include <mutex>
 #include <thread>
 #include <utility>
@@ -13,24 +14,25 @@
 
 
 constexpr int item_limit = 100000;
+constexpr int id_offset = 10000;
 
 
 // Measures and prints performance metrics of a queue test
 void print_performance(const std::string& label,
-                        int pushed,
-                        int popped,
-                        std::size_t remaining,
-                        double time_seconds) {
+                       int pushed,
+                       int popped,
+                       std::size_t remaining,
+                       double time_seconds) {
     std::print("\n{}\n", label);
     std::print("Pushed: {}, Popped: {}, Remaining: {}, Time: {:.4f} s\n",
-                pushed,
-                popped,
-                remaining,
-                time_seconds);
+               pushed,
+               popped,
+               remaining,
+               time_seconds);
 }
 
 
-// Runs producer and consumer logic for sequencial OMPQueue
+// Runs producer and consumer logic for OMPQueue without OpenMP
 void run_sequential_ompqueue_test(int producers, int consumers) {
     OMPQueue<int> queue;
     int pushed_count = 0;
@@ -40,7 +42,7 @@ void run_sequential_ompqueue_test(int producers, int consumers) {
 
     for (int producer_id = 0; producer_id < producers; ++producer_id) {
         for (int j = 0; j < item_limit / producers; ++j) {
-            queue.push(j + producer_id * 10000);
+            queue.push(j + producer_id * id_offset);
             ++pushed_count;
         }
     }
@@ -82,7 +84,7 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
         const int thread_id = omp_get_thread_num();
         if (thread_id < producers) {
             for (int i = 0; i < item_limit / producers; ++i) {
-                queue.push(i + thread_id * 10000);
+                queue.push(i + thread_id * id_offset);
 #pragma omp atomic
                 ++pushed_count;
             }
@@ -113,7 +115,7 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
 
 
 // Runs jthread-based producer-consumer logic using concurrent_queue
-/* void run_jthread_concurrentqueue_test(int producers, int consumers) {
+void run_jthread_concurrentqueue_test(int producers, int consumers) {
     concurrent_queue<int> queue;
     int pushed_count = 0;
     int popped_count = 0;
@@ -127,7 +129,7 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
         threads.emplace_back(
             [&queue, &pushed_count, i, producers, &count_mutex]() {
                 for (int j = 0; j < item_limit / producers; ++j) {
-                    queue.push(j + i * 10000);
+                    queue.push(j + i * id_offset);
                     std::scoped_lock lock(count_mutex);
                     ++pushed_count;
                 }
@@ -160,4 +162,4 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
                         popped_count,
                         queue.size(),
                         std::chrono::duration<double>(end - start).count());
-}*/
+}
