@@ -1,6 +1,6 @@
 # Task 
 
-The task involves workers producing and consuming units of a specific type. Below is the detailed explanation:
+The task involves workers producing and consuming units of a specific type. Implement this task using processes in c++. Below is the detailed explanation:
 
 ---
 
@@ -20,10 +20,11 @@ The task involves workers producing and consuming units of a specific type. Belo
    - Each worker has the following behavior:
      1. Produces a unit using the function:
         ```cpp
-         void produce(unit& u) {
+         auto produce() -> unit{
              static int counter = 0;
              u = counter++ % 5; // Produces units of 5 types (0 to 4) make it random
              std::println("Produced: {}", u);
+           return u;
          }
         ```
      2. Sends the unit to an intermediary process (`Helper`), which facilitates communication between workers.
@@ -53,8 +54,7 @@ The goal is to implement the `Helper` processes, assuming that workers follow th
 ```plaintext
 process Worker[id : 1..N] {
     while (true) {
-        unit u;
-        produce(u);
+        unit u = produce();
         send Helper[id].exchange(u);
         receive u;
         consume(u);
@@ -64,6 +64,3 @@ process Worker[id : 1..N] {
 
 ---
 
-### Summary
-
-This task involves creating processes (`Helpers`) to facilitate the exchange of units between workers, ensuring that each worker receives and consumes a unit of the same type as the one it produced.
