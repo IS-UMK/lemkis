@@ -311,6 +311,8 @@ Both the parent and child directly share the same memory mapping without needing
 
 The `wait(nullptr)` function is used to wait for a child process to terminate. It serves an important purpose in process management when dealing with forked child processes in a program.
 
+Does this code works? If not can you guess why not and can you fix it (it might be profitable to go to [semaphores](https://github.com/IS-UMK/lemkis/blob/master/concurency/processes/semaphores.md). 
+
 ---
 
 ### 1. **Reaping the Child Process**
@@ -360,5 +362,3 @@ waitpid(pid, nullptr, 0); // Wait for a specific child process with PID 'pid' to
 
 ---
 
-### Summary
-The use of `wait(nullptr)` in the code ensures proper synchronization between the parent and child processes, prevents zombie processes, and allows the parent process to clean up resources correctly. It's a simple and effective way to manage child processes when you don't need to retrieve their exit status.
