@@ -269,6 +269,7 @@ which allows us to simplify our above example to the following:
 #include "pipe_wrapper.h"
 #include <sys/wait.h>
 #include <iostream>
+#include <format>
 
 int main() {
     try {
@@ -283,7 +284,7 @@ int main() {
             // Child process
             ipc_pipe.close_write(); // Close unused write end
             std::string message = ipc_pipe.read();
-            std::cout << "Child received: " << message << '\n';
+            std::println("Child received: {}", message);
             ipc_pipe.close_read(); // Close read end
         } else {
             // Parent process
@@ -293,7 +294,7 @@ int main() {
             wait(nullptr); // Wait for child to finish
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << '\n';
+        std::println(std::format("Error: {}", e.what()));
         return EXIT_FAILURE;
     }
 
