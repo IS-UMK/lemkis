@@ -358,7 +358,7 @@ private:
 
 } // namespace communication
 ```
-<summary><details>correction</details><p>void bind(const std::filesystem::path& path) {
+<details><summary>correction</summary><p>void bind(const std::filesystem::path& path) {
     sockaddr_un addr{};
     addr.sun_family = AF_UNIX;
 
@@ -376,7 +376,7 @@ private:
     if (::bind(socket_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
         throw std::runtime_error(std::format("Failed to bind UNIX socket to '{}'", path.string()));
     }
-}</p></summary>
+}</p></details>
 which allows to rewrite server:
 ```cpp
 #include "unix_socket.h"
