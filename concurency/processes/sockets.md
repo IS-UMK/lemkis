@@ -368,22 +368,13 @@ which allows to rewrite server:
 int main() {
     try {
         communication::unix_socket server_socket;
-
-        // Bind and listen
         server_socket.bind(SOCKET_PATH);
         server_socket.listen();
-
         std::println("Server listening on {}", SOCKET_PATH);
-
-        // Accept a client connection
         communication::unix_socket client_socket = server_socket.accept();
         std::println("Client connected!");
-
-        // Receive data from the client
         std::string message = client_socket.receive();
         std::println("Server received: {}", message);
-
-        // Send a response to the client
         std::string response = "Hello from server!";
         client_socket.send(response);
 
@@ -406,20 +397,12 @@ and client
 int main() {
     try {
         communication::unix_socket client_socket;
-
-        // Connect to the server
         client_socket.connect(SOCKET_PATH);
         std::println("Connected to server at {}", SOCKET_PATH);
-
-        // Send data to the server
         std::string message = "Hello from client!";
         client_socket.send(message);
-        std::println("Client sent: {}", message);
-
-        // Receive response from the server
         std::string response = client_socket.receive();
         std::println("Client received: {}", response);
-
     } catch (const std::exception& e) {
         std::println("Error: {}", e.what());
         return EXIT_FAILURE;
