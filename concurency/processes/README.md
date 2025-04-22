@@ -154,29 +154,146 @@ munmap(ptr, 4096);
 ### Error handling
 
 ```cpp
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <string.h>
+#pragma once
 
-extern int sys_nerr;
 
-void syserr(const char *fmt, ...)
-{
-  va_list fmt_args;                // 1. Declare argument list holder
-  fprintf(stderr, "ERROR: ");      // 2. Print standard error prefix
-  va_start(fmt_args, fmt);         // 3. Initialize argument processing
-  vfprintf(stderr, fmt, fmt_args); // 4. Print formatted message with args
-  va_end(fmt_args);                // 5. Clean up argument list
-  fprintf(stderr," (%d; %s)\n",    // 6. Append system error details
-          errno, strerror(errno)); //    - errno: Last error number
-                                   //    - strerror: Human-readable message
-  exit(1);                         // 7. Terminate program with error code
+#include <format>
+#include <iostream>
+#include <system_error>
+#include <cstdlib>
+#include <cerrno>
+
+template <typename... Args>
+[[noreturn]] void syserr(std::format_string<Args...> fmt, Args&&... args) {
+    std::error_code ec(errno, std::system_category());
+    auto user_msg{std::format(fmt, std::forward<Args>(args)...)};
+    std::cerr << std::format(
+        "ERROR: {}\n ({}; {})\n",
+        user_msg, // user message formatted inline
+        ec.value(),
+        ec.message()
+    );
+    throw std::system_error(ec, user_msg);
+    
 }
 
+
 // Example usage: if (open("file.txt", O_RDONLY) == -1) syserr("File open failed");
+```
+
+
+### Example
+
+```cpp
+  #include <array>
+#include <chrono>
+#include <cstring>
+#include <exception>
+#include <fcntl.h> // For O_* constants
+#include <format>
+#include <iostream>
+#include <print>
+#include <ranges>
+#include <string>
+#include <string_view>
+#include <sys/mman.h>
+#include <sys/stat.h> // For mode constants
+#include <thread>
+#include <unistd.h>
+#include <vector>
+#include <wait.h>
+
+constexpr std::string_view SHM_NAME = "/practice_memory";
+constexpr int NAP_TIME = 2;
+constexpr size_t BUFF_SIZE = 12;
+
+void print_table(std::string_view t) {
+  std::println("Process {}, table at address {}:\n{}\n", getpid(),
+               static_cast<const void *>(t.data()),
+               t | std::views::chunk(1) | std::views::join_with('|') |
+                   std::ranges::to<std::string>());
+}
+
+class shared_memory {
+public:
+  shared_memory(std::string_view name, size_t size) : name_(name), size_(size) {
+    fd_memory_ = shm_open(name_.data(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    if (fd_memory_ == -1) {
+      throw std::runtime_error("shm_open failed");
+    }
+
+    if (ftruncate(fd_memory_, size_) == -1) {
+      shm_unlink(name_.data());
+      throw std::runtime_error("ftruncate failed");
+    }
+
+    mapped_mem_ = static_cast<char *>(mmap(
+        nullptr, size_, PROT_READ | PROT_WRITE, MAP_SHARED, fd_memory_, 0));
+    if (mapped_mem_ == MAP_FAILED) {
+      shm_unlink(name_.data());
+      throw std::runtime_error("mmap failed");
+    }
+
+    close(fd_memory_);
+    shm_unlink(
+        name_.data()); // Remove the special file; memory is still accessible
+  }
+
+  ~shared_memory() {
+    if (mapped_mem_ != MAP_FAILED) {
+      munmap(mapped_mem_, size_);
+    }
+  }
+
+  char *get() const { return mapped_mem_; }
+  size_t size() const { return size_; }
+
+private:
+  std::string_view name_;
+  size_t size_;
+  int fd_memory_;
+  char *mapped_mem_;
+};
+
+int main() {
+  try {
+    std::array<char, BUFF_SIZE> buff = {"Ala ma kota"};
+    std::print("Page size is {} bytes\n", sysconf(_SC_PAGE_SIZE));
+
+    shared_memory shared_mem(SHM_NAME, BUFF_SIZE);
+    char *mapped_mem = shared_mem.get();
+
+    print_table(std::string_view(mapped_mem, BUFF_SIZE));
+
+    std::this_thread::sleep_for(std::chrono::seconds(NAP_TIME));
+
+    pid_t pid = fork();
+    if (pid == -1) {
+      throw std::runtime_error("fork failed");
+    } else if (pid == 0) {
+      // Child process
+      std::this_thread::sleep_for(std::chrono::seconds(NAP_TIME));
+      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      std::this_thread::sleep_for(std::chrono::seconds(2 * NAP_TIME));
+      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      return 0;
+    } else {
+      // Parent process
+      std::print("Parent PID: {}, Child PID: {}\n", getpid(), pid);
+      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      std::this_thread::sleep_for(std::chrono::seconds(2 * NAP_TIME));
+
+      std::copy(buff.begin(), buff.end(), mapped_mem);
+      std::print("Process {}, modified shared memory content\n", getpid());
+      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+
+      wait(nullptr); // Wait for child process
+    }
+  } catch (const std::exception &ex) {
+    std::print("Error: {}\n", ex.what());
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
 ```
