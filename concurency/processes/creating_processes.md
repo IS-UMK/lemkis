@@ -188,10 +188,8 @@ if (pid == 0) {
 
 ---
 
-## **Summary**
+## Exercises
 
-- `fork()` is the standard way to create new processes in POSIX-compliant systems.
-- It creates a child process as a copy of the parent process.
-- Parent and child processes execute independently after `fork()`.
-- Use `fork()` for multitasking, IPC, or process isolation.
-- Always check for errors when calling `fork()` and handle them appropriately.
+Create a program which given natural number `n`:
+1. the initial process creates `n` child processes
+2. the initial process creates child process `p1`, `p1` creates its child process `p2`, ..., `p_{n -1}` creates `p_n`.
