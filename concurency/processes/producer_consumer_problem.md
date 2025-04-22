@@ -13,7 +13,7 @@ The task involves workers producing and consuming units of a specific type. Impl
      using unit = int;
      using unit_type = int;
       unit_type type(const unit& u) {
-          return u; // You can assume that the type is represented by the value itself.
+          return u; // Correct this - remember there are R types
       }
      ```
 
@@ -23,7 +23,7 @@ The task involves workers producing and consuming units of a specific type. Impl
         ```cpp
          auto produce() -> unit{
              static int counter = 0;
-             u = counter++ % 5; // Produces units of 5 types (0 to 4) make it random
+             u = counter++ % 5; // Produces units of 5 types (0 to 4) - make it random
              std::println("Produced: {}", u);
            return u;
          }
