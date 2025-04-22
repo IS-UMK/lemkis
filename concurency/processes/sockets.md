@@ -1,4 +1,4 @@
-# Guide to Using UNIX Sockets in C
+# UNIX Sockets in C
 
 ---
 
