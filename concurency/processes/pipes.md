@@ -167,3 +167,99 @@ Child received: Hello from parent!
 ---
 
 
+# Pipe wrapper in c++
+
+
+```cpp
+#pragma once
+
+#include <array>
+#include <unistd.h>
+#include <stdexcept>
+#include <string_view>
+#include <concepts>
+#include <cstdio>
+#include <iostream>
+
+namespace communication {
+
+// A wrapper class for Unix pipes
+class pipe {
+public:
+    // Constructors and Destructors
+    pipe() {
+        if (::pipe(pipe_fd_.data()) == -1) {
+            throw std::runtime_error("Failed to create pipe");
+        }
+    }
+
+    ~pipe() {
+        close_read();  // Close the read end of the pipe
+        close_write(); // Close the write end of the pipe
+    }
+
+    // Non-copyable, but movable
+    pipe(const pipe&) = delete;
+    pipe& operator=(const pipe&) = delete;
+
+    pipe(pipe&& other) noexcept {
+        pipe_fd_ = other.pipe_fd_;
+        other.pipe_fd_ = {-1, -1};
+    }
+
+    pipe& operator=(pipe&& other) noexcept {
+        if (this != &other) {
+            close_read();
+            close_write();
+            pipe_fd_ = other.pipe_fd_;
+            other.pipe_fd_ = {-1, -1};
+        }
+        return *this;
+    }
+
+    // Write data to the pipe
+    template <std::convertible_to<std::string_view> T>
+    void write(const T& data) const {
+        const auto str_data = std::string_view(data);
+        if (::write(pipe_fd_[1], str_data.data(), str_data.size()) == -1) {
+            throw std::runtime_error("Failed to write to pipe");
+        }
+    }
+
+    // Read data from the pipe
+    std::string read(size_t buffer_size = 1024) const {
+        std::string buffer(buffer_size, '\0');
+        const ssize_t bytes_read = ::read(pipe_fd_[0], buffer.data(), buffer_size);
+        if (bytes_read == -1) {
+            throw std::runtime_error("Failed to read from pipe");
+        }
+        buffer.resize(bytes_read); // Resize buffer to actual data size
+        return buffer;
+    }
+
+    // Close the read end of the pipe
+    void close_read() {
+        if (pipe_fd_[0] != -1) {
+            ::close(pipe_fd_[0]);
+            pipe_fd_[0] = -1;
+        }
+    }
+
+    // Close the write end of the pipe
+    void close_write() {
+        if (pipe_fd_[1] != -1) {
+            ::close(pipe_fd_[1]);
+            pipe_fd_[1] = -1;
+        }
+    }
+
+    // Getters for raw file descriptors
+    int read_fd() const { return pipe_fd_[0]; }
+    int write_fd() const { return pipe_fd_[1]; }
+
+private:
+    std::array<int, 2> pipe_fd_{-1, -1}; // File descriptors for the pipe
+};
+
+} // namespace communication
+```
