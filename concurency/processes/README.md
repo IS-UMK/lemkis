@@ -14,3 +14,121 @@ by using both the computer's physical memory (RAM) and a portion of secondary st
 The operating system divides memory into these pages to efficiently manage, allocate, and move data. When a program needs more memory than is physically available, the OS can transfer pages between main memory (RAM) and secondary storage (such as a hard disk) in a process called paging or swapping.
 
 Pages are typically 4 KB or 8 KB in size, but the exact size depends on the system architecture. The use of pages allows the OS to provide each process with its own continuous virtual address space, even if the underlying physical memory is fragmented or limited.
+
+## Shared memory
+
+**Shared memory** is a fundamental inter-process communication (IPC) mechanism that enables multiple processes to access the same region of memory, allowing them to exchange data efficiently without redundant copies or complex message-passing protocols. Here's a structured breakdown:
+
+Core Characteristics
+Simultaneous Access: Multiple processes can read/write the same memory region concurrently.
+
+Efficiency: Avoids data copying between processes (unlike pipes/sockets).
+
+Persistence:
+
+POSIX: Survives process termination until explicitly deleted (shm_unlink).
+
+System V: Typically persists until system reboot unless actively removed.
+
+Virtual Filesystem: On Linux, POSIX shared memory objects reside in /dev/shm (a tmpfs RAM disk).
+
+## POSIX Shared Memory Functions  
+
+The core functions for POSIX shared memory management form a workflow for creating, accessing, and cleaning up shared memory regions. Here's the essential toolkit:
+
+### 1. `int shm_open(const char *name, int oflag, mode_t mode);`  
+**Purpose**: Creates/opens a shared memory object (persistent or temporary).  
+**Params** 
+```cpp
+const char *name: "/my_shm" // Must begin with '/'
+int oflag: O_CREAT | O_RDWR // Common flags
+mode_t mode: 0600 // User read/write permissions
+```
+
+**Behavior**:  
+- Returns file descriptor for memory object  
+- Analogous to `open()` for files  
+- Creates persistent object if `O_CREAT` specified  
+
+### 2. `shm_unlink("/my_shm"); // Immediate name removal`
+**Purpose**: Removes shared memory object name  
+
+
+## Complementary System Calls
+### 3. `int ftruncate(int fd, off_t length);`
+**Purpose**: Sets shared memory size  
+**Usage**:  
+```cpp
+ftruncate(shm_fd, 4096); // Set 4KB size
+// Required after creation to allocate space
+```
+### 4. `void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);`
+**Purpose**: Maps memory into address space  
+**Typical Usage**:
+```cpp
+char *ptr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+// MAP_SHARED ensures cross-process visibility
+```
+### 5. `int munmap(void *addr, size_t length);`
+**Purpose**: Unmaps memory region  
+**Usage**:  
+```cpp
+munmap(ptr, 4096); // Release virtual mapping
+// Doesn't affect other process mappings
+```
+
+
+### 6. `int close(int fd);`
+**Purpose**: Releases file descriptor  
+**Signature**:  
+
+## Complete Workflow Example
+
+sequenceDiagram
+Process->>OS: shm_open("/mem", O_CREAT|O_RDWR, 0600)
+OS-->>Process: fd=3
+Process->>OS: ftruncate(3, 4096)
+Process->>OS: mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0)
+OS-->>Process: ptr=0x7f1234567890
+Process->>OS: shm_unlink("/mem")
+Process->>OS: munmap(0x7f1234567890, 4096)
+Process->>OS: close(3)
+
+
+**Typical Initialization Sequence**:  
+```cpp
+// 1. Create shared memory
+int fd = shm_open("/shm", O_CREAT|O_RDWR, 0600);
+
+// 2. Allocate size
+ftruncate(fd, 4096);
+
+// 3. Map memory
+void *ptr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+
+// 4. Cleanup name
+shm_unlink("/shm");
+
+// 5. Release descriptor
+close(fd);
+
+// ... Use memory ...
+
+// 6. Unmap when done
+munmap(ptr, 4096);
+```
+
+**Cleanup Order**:  
+1. `munmap()` all memory regions  
+2. `close()` associated file descriptors  
+3. `shm_unlink()` names (preferably early)  
+
+**Key Features**:  
+- **Persistence**: Objects survive process termination unless unlinked  
+- **Security**: Permissions controlled via `mode` parameter  
+- **Efficiency**: Shared memory provides fastest IPC mechanism  
+- **Atomicity**: OS guarantees full page transfers  
+
+> **Pro Tip**: Always check return values for errors in production code. Use `perror()` or `strerror(errno)` for debugging.  
+> **Warning**: Never store pointers in shared memory - virtual addresses differ between processes. Use offsets instead.
+
