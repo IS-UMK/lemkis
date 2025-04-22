@@ -7,7 +7,7 @@ The task involves workers producing and consuming `units` of a specific `type`. 
 ## Concept
 
 1. **Unit**:
-   - Units are of `R` types, represented as non-negative integers.
+   - Units are of `R` types
    - The type of a unit can be checked using the function:
      ```cpp
      using unit = int;
