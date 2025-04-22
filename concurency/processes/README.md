@@ -56,6 +56,13 @@ const char *name: "/my_shm" // Must begin with '/'
 int oflag: O_CREAT | O_RDWR // Common flags
 mode_t mode: 0600 // User read/write permissions
 ```
+**Remainder**
+`shm_open` returns a file descriptor because POSIX shared memory objects are designed to integrate seamlessly with the existing UNIX file and memory management infrastructure. In UNIX-like systems, a file descriptor is a universal handle that represents an open file, device, pipe, or other resources—including shared memory objects. This design choice offers several advantages:
+
+1. **Uniformity**: By representing shared memory as a file descriptor, the same system calls and APIs (like mmap, ftruncate, close) used for regular files can also be used for shared memory. This simplifies the API and makes it easier for developers to manage different types of resources in a consistent way.
+2. **Resource Management**: File descriptors provide a well-understood mechanism for tracking resource usage, permissions, and cleanup. When a shared memory object is opened, the kernel creates an "open file description" and assigns a file descriptor to it, just like with files.
+3. **Interoperability**: Many system calls that operate on files (such as mmap for mapping memory) require a file descriptor as an argument. By returning a file descriptor, shm_open allows shared memory objects to be mapped into a process's address space using the same mechanisms as files.
+4. **Precedent**: In POSIX and UNIX, file descriptors are already used for various object types, including regular files, pipes, sockets, and devices. Extending this model to shared memory objects keeps the system interface simple and extensible.
 
 **Behavior**:  
 - Returns file descriptor for memory object  
