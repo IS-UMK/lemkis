@@ -228,6 +228,7 @@ int main() {
 
 # Cpp wrapper
 
+I asked AI to write a modern wrapper for unix socket. Is this implementation correct? Can you see a potential problem?
 ```cpp
 #pragma once
 
