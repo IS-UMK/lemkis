@@ -236,9 +236,12 @@ int main() {
 #include <unistd.h>
 #include <stdexcept>
 #include <string>
-#include <cstring>
+#include <string_view>
+#include <filesystem>
+#include <ranges>
 #include <iostream>
 #include <format>
+#include <span>
 
 namespace communication {
 
@@ -257,9 +260,7 @@ public:
 
     // Destructor to close the socket
     ~unix_socket() {
-        if (socket_fd_ != -1) {
-            ::close(socket_fd_);
-        }
+        close();
     }
 
     // Non-copyable but movable
@@ -272,9 +273,7 @@ public:
 
     unix_socket& operator=(unix_socket&& other) noexcept {
         if (this != &other) {
-            if (socket_fd_ != -1) {
-                ::close(socket_fd_);
-            }
+            close();
             socket_fd_ = other.socket_fd_;
             other.socket_fd_ = -1;
         }
@@ -282,17 +281,26 @@ public:
     }
 
     // Bind socket to a file path (server-specific)
-    void bind(const std::string& path) {
+    void bind(const std::filesystem::path& path) {
         sockaddr_un addr{};
-        memset(&addr, 0, sizeof(addr));
         addr.sun_family = AF_UNIX;
-        strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
 
-        // Unlink the path to avoid conflicts
-        ::unlink(path.c_str());
+        // Ensure the path fits within the sun_path limit
+        if (path.string().size() >= sizeof(addr.sun_path)) {
+            throw std::runtime_error("Socket path too long");
+        }
 
+        // Copy the file path into the address structure using std::ranges::copy_n
+        std::ranges::copy_n(path.string().begin(), path.string().size(), addr.sun_path);
+
+        // Remove any existing file at the path
+        if (std::filesystem::exists(path)) {
+            std::filesystem::remove(path);
+        }
+
+        // Bind the socket to the file path
         if (::bind(socket_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
-            throw std::runtime_error("Failed to bind UNIX socket to path");
+            throw std::runtime_error(std::format("Failed to bind UNIX socket to '{}'", path.string()));
         }
     }
 
@@ -313,20 +321,26 @@ public:
     }
 
     // Connect to a server (client-specific)
-    void connect(const std::string& path) {
+    void connect(const std::filesystem::path& path) {
         sockaddr_un addr{};
-        memset(&addr, 0, sizeof(addr));
         addr.sun_family = AF_UNIX;
-        strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
+
+        // Ensure the path fits within the sun_path limit
+        if (path.string().size() >= sizeof(addr.sun_path)) {
+            throw std::runtime_error("Socket path too long");
+        }
+
+        // Copy the file path into the address structure using std::ranges::copy_n
+        std::ranges::copy_n(path.string().begin(), path.string().size(), addr.sun_path);
 
         if (::connect(socket_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
-            throw std::runtime_error("Failed to connect to UNIX socket");
+            throw std::runtime_error(std::format("Failed to connect to UNIX socket at '{}'", path.string()));
         }
     }
 
     // Send data through the socket
-    void send(const std::string& message) const {
-        if (::write(socket_fd_, message.c_str(), message.size()) == -1) {
+    void send(std::string_view message) const {
+        if (::send(socket_fd_, message.data(), message.size(), 0) == -1) {
             throw std::runtime_error("Failed to send data through UNIX socket");
         }
     }
@@ -334,12 +348,20 @@ public:
     // Receive data from the socket
     std::string receive(size_t buffer_size = 1024) const {
         std::string buffer(buffer_size, '\0');
-        ssize_t bytes_received = ::read(socket_fd_, buffer.data(), buffer_size);
+        ssize_t bytes_received = ::recv(socket_fd_, buffer.data(), buffer_size, 0);
         if (bytes_received == -1) {
             throw std::runtime_error("Failed to receive data from UNIX socket");
         }
-        buffer.resize(bytes_received); // Resize buffer to actual data size
+        buffer.resize(static_cast<size_t>(bytes_received)); // Trim the buffer to actual size
         return buffer;
+    }
+
+    // Close the socket
+    void close() {
+        if (socket_fd_ != -1) {
+            ::close(socket_fd_);
+            socket_fd_ = -1;
+        }
     }
 
 private:
