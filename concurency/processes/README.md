@@ -185,7 +185,7 @@ template <typename... Args>
 ## Example
 
 ```cpp
-  #include <array>
+#include <array>
 #include <chrono>
 #include <cstring>
 #include <exception>
@@ -203,9 +203,7 @@ template <typename... Args>
 #include <vector>
 #include <wait.h>
 
-constexpr std::string_view SHM_NAME = "/practice_memory";
-constexpr int NAP_TIME = 2;
-constexpr size_t BUFF_SIZE = 12;
+
 
 void print_table(std::string_view t) {
   std::println("Process {}, table at address {}:\n{}\n", getpid(),
@@ -255,9 +253,16 @@ private:
   char *mapped_mem_;
 };
 
+
+constexpr std::string_view SHM_NAME = "/practice_memory";
+constexpr int NAP_TIME = 2;
+constexpr std::string_view BUFF{"Ala ma kota"};
+constexpr size_t BUFF_SIZE = BUFF.size();
+
+
 int main() {
   try {
-    std::array<char, BUFF_SIZE> buff = {"Ala ma kota"};
+    
     std::print("Page size is {} bytes\n", sysconf(_SC_PAGE_SIZE));
 
     shared_memory shared_mem(SHM_NAME, BUFF_SIZE);
@@ -267,25 +272,26 @@ int main() {
 
     std::this_thread::sleep_for(std::chrono::seconds(NAP_TIME));
 
-    pid_t pid = fork();
+    const pid_t pid = fork();
+    const std::string_view mapped_mem_view(mapped_mem, BUFF_SIZE);
     if (pid == -1) {
       throw std::runtime_error("fork failed");
     } else if (pid == 0) {
       // Child process
       std::this_thread::sleep_for(std::chrono::seconds(NAP_TIME));
-      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      print_table(mapped_mem_view);
       std::this_thread::sleep_for(std::chrono::seconds(2 * NAP_TIME));
-      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      print_table(mapped_mem_view);
       return 0;
     } else {
       // Parent process
       std::print("Parent PID: {}, Child PID: {}\n", getpid(), pid);
-      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      print_table(mapped_mem_view);
       std::this_thread::sleep_for(std::chrono::seconds(2 * NAP_TIME));
 
-      std::copy(buff.begin(), buff.end(), mapped_mem);
+      std::ranges::copy(BUFF, mapped_mem);
       std::print("Process {}, modified shared memory content\n", getpid());
-      print_table(std::string_view(mapped_mem, BUFF_SIZE));
+      print_table(mapped_mem_view);
 
       wait(nullptr); // Wait for child process
     }
