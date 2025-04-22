@@ -11,8 +11,9 @@ The task involves workers producing and consuming units of a specific type. Impl
    - The type of a unit can be checked using the function:
      ```cpp
      using unit = int;
-      int type(const unit& u) {
-          return u; // Assume the type is represented by the value itself.
+     using unit_type = int;
+      unit_type type(const unit& u) {
+          return u; // You can assume that the type is represented by the value itself.
       }
      ```
 
