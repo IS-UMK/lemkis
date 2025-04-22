@@ -263,3 +263,40 @@ private:
 
 } // namespace communication
 ```
+
+which allows us to simplify our above example to the following:
+```cpp
+#include "pipe_wrapper.h"
+#include <sys/wait.h>
+#include <iostream>
+
+int main() {
+    try {
+        communication::pipe ipc_pipe;
+
+        pid_t pid = fork();
+        if (pid == -1) {
+            throw std::runtime_error("Failed to fork process");
+        }
+
+        if (pid == 0) {
+            // Child process
+            ipc_pipe.close_write(); // Close unused write end
+            std::string message = ipc_pipe.read();
+            std::cout << "Child received: " << message << '\n';
+            ipc_pipe.close_read(); // Close read end
+        } else {
+            // Parent process
+            ipc_pipe.close_read(); // Close unused read end
+            ipc_pipe.write("Hello from parent!");
+            ipc_pipe.close_write(); // Close write end
+            wait(nullptr); // Wait for child to finish
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+```
