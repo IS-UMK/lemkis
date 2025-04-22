@@ -1,4 +1,4 @@
-# Creating New Processes and Using `fork()`
+# Creation of  new processes and using `fork()`
 
 ---
 
