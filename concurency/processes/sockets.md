@@ -376,7 +376,9 @@ private:
       }
       </code>
 </p></details>
+
 which allows to rewrite server:
+
 ```cpp
 #include "unix_socket.h"
 #include <iostream>
