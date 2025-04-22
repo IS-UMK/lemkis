@@ -629,9 +629,172 @@ private:
 and `server.cpp`:
 
 ```cpp
+#include <iostream>
+#include <string>
+#include <chrono>
+#include <format>
+#include <thread>
+#include "message_queue.hpp"
 
+using namespace std::chrono_literals;
+
+struct message {
+    int id;
+    float value;
+    char text[64];
+};
+
+int main() {
+    // Clean up any existing queue with the same name
+    ipc::message_queue::unlink("/example_queue");
+    
+    // Create a custom attribute configuration
+    ipc::message_queue_attributes attrs{
+        .flags = 0,                // Default flags (blocking mode)
+        .max_messages = 10,        // Maximum messages in queue
+        .message_size = 1024,      // Maximum message size
+        .current_messages = 0      // Initially empty
+    };
+    
+    // Create a message queue
+    auto queue_result = ipc::message_queue::create("/example_queue", 
+                                                  ipc::message_queue::mode::read_write, 
+                                                  0666, attrs);
+    
+    if (!queue_result) {
+        std::cerr << std::format("Failed to create message queue: {}\n", queue_result.error().message());
+        return 1;
+    }
+    
+    auto& queue = queue_result.value();
+    std::cout << std::format("Server: Message queue '{}' created\n", queue.name());
+    
+    // Display queue attributes
+    auto attr_result = queue.get_attributes();
+    if (attr_result) {
+        const auto& attr = attr_result.value();
+        std::cout << std::format("Queue configuration:\n"
+                                 "  Max messages: {}\n"
+                                 "  Message size: {} bytes\n"
+                                 "  Current messages: {}\n",
+                                 attr.max_messages, attr.message_size, attr.current_messages);
+    }
+    
+    // Send a string message
+    std::string hello = "Hello from C++23 message queue!";
+    auto send_result = queue.send(std::as_bytes(std::span{hello.data(), hello.size()}), 1);
+    
+    if (!send_result) {
+        std::cerr << std::format("Failed to send string: {}\n", send_result.error().message());
+    } else {
+        std::cout << std::format("Server: Sent string message with priority 1\n");
+    }
+    
+    // Send a structured message
+    message msg{
+        .id = 42,
+        .value = 3.14159f,
+        .text = "Structured data"
+    };
+    
+    // Using the templated send method for trivially copyable types
+    auto struct_send_result = queue.send(msg, 2);
+    
+    if (!struct_send_result) {
+        std::cerr << std::format("Failed to send struct: {}\n", struct_send_result.error().message());
+    } else {
+        std::cout << std::format("Server: Sent struct message with ID {} and priority 2\n", msg.id);
+    }
+    
+    // Sleep so the client has time to connect
+    std::cout << "Server: Waiting for client to process messages...\n";
+    std::this_thread::sleep_for(5s);
+    
+    // Automatically cleans up when queue goes out of scope
+    std::cout << "Server: Shutting down\n";
+    return 0;
+}
 ```
 and `client.cpp`
 
 ```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <format>
+#include "message_queue.hpp"
+
+using namespace std::chrono_literals;
+
+struct message {
+    int id;
+    float value;
+    char text[64];
+};
+
+int main() {
+    // Open the existing message queue
+    auto queue_result = ipc::message_queue::open("/example_queue", 
+                                               ipc::message_queue::mode::read_only);
+    
+    if (!queue_result) {
+        std::cerr << std::format("Failed to open message queue: {}\n", queue_result.error().message());
+        return 1;
+    }
+    
+    auto& queue = queue_result.value();
+    std::cout << std::format("Client: Connected to message queue '{}'\n", queue.name());
+    
+    // Get queue attributes
+    auto attr_result = queue.get_attributes();
+    if (attr_result) {
+        auto message_size = attr_result.value().message_size;
+        std::cout << std::format("Client: Message queue has {} messages, max size: {} bytes\n", 
+                                attr_result.value().current_messages, message_size);
+        
+        // Receive string message using raw bytes
+        std::vector<std::byte> buffer(message_size);
+        unsigned int priority = 0;
+        
+        auto receive_result = queue.receive_bytes(buffer, &priority);
+        
+        if (!receive_result) {
+            std::cerr << std::format("Failed to receive message: {}\n", receive_result.error().message());
+        } else {
+            size_t bytes_received = receive_result.value();
+            std::string text(reinterpret_cast<char*>(buffer.data()), bytes_received);
+            std::cout << std::format("Client: Received string message with priority {}: '{}'\n", 
+                                    priority, text);
+        }
+        
+        // Receive structured data with timeout
+        auto struct_result = queue.receive<message>(2s, &priority);
+        
+        if (!struct_result) {
+            std::cerr << std::format("Failed to receive struct or timed out: {}\n", 
+                                    struct_result.error().message());
+        } else {
+            const auto& msg = struct_result.value();
+            std::cout << std::format("Client: Received struct message with priority {}:\n"
+                                    "  ID: {}\n"
+                                    "  Value: {:.5f}\n"
+                                    "  Text: '{}'\n",
+                                    priority, msg.id, msg.value, msg.text);
+        }
+    } else {
+        std::cerr << std::format("Failed to get queue attributes: {}\n", attr_result.error().message());
+    }
+    
+    // Unlink the queue when done
+    std::cout << "Client: Cleaning up message queue\n";
+    auto unlink_result = ipc::message_queue::unlink("/example_queue");
+    
+    if (!unlink_result) {
+        std::cerr << std::format("Failed to unlink queue: {}\n", unlink_result.error().message());
+    }
+    
+    std::cout << "Client: Done\n";
+    return 0;
+}
 ```
