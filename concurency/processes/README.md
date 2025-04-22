@@ -303,6 +303,9 @@ int main() {
   return EXIT_SUCCESS;
 }
 ```
+Note that implicitly **shared memory inheritance** occurs that is the parent process uses mmap() to map the shared memory before the fork() call.
+When fork() is called, the child process inherits the parent's memory mappings (including the shared memory region) as part of the process duplication.
+Both the parent and child directly share the same memory mapping without needing to re-open or re-map the shared memory.
 
 ### Why `wait(nullptr)` is Used in the Code
 
