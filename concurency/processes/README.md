@@ -1,10 +1,13 @@
 # Basic notions
 
+## Virtual memory
 
 **Virtual memory** is a memory management technique used by modern operating systems to give applications the illusion that they have access to a large, 
 continuous block of memory, even if the physical RAM is limited or fragmented. It achieves this 
 by using both the computer's physical memory (RAM) and a portion of secondary storage (such as a hard drive or SSD) as an extension of RAM
 
+
+## Memory page
 
 **page** (also called a **memory page** or **virtual page**) is a fixed-length, contiguous block of virtual memory that serves as the smallest unit of data for memory management in operating systems that use virtual memory. Each page is described by a single entry in a page table, which maps virtual pages to physical memory locations (called page frames).
 
