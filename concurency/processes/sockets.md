@@ -359,26 +359,22 @@ private:
 } // namespace communication
 ```
 <details><summary>correction</summary><p>
-   ```cpp 
+      <code>
       void bind(const std::filesystem::path& path) {
          sockaddr_un addr{};addr.sun_family = AF_UNIX;
-   
        if (path.string().size() >= sizeof(addr.sun_path)) {
            throw std::runtime_error("Socket path too long");
        }
-   
        // Copy the socket path into the address structure
        std::ranges::copy_n(path.string().begin(), path.string().size(), addr.sun_path);
-   
        // Safely remove any existing socket file
        ::unlink(path.c_str()); // Atomic and safe for UNIX domain sockets
-   
        // Bind the socket
        if (::bind(socket_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
            throw std::runtime_error(std::format("Failed to bind UNIX socket to '{}'", path.string()));
        }
       }
-```
+      </code>
 </p></details>
 which allows to rewrite server:
 ```cpp
