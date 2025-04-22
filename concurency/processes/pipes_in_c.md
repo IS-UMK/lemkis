@@ -166,6 +166,4 @@ Child received: Hello from parent!
 
 ---
 
-## Summary
 
-Pipes in C are a powerful IPC mechanism, especially for parent-child communication. They are lightweight, easy to use, and sufficient for many basic use cases. For more complex IPC requirements (e.g., bidirectional communication or communication between unrelated processes), named pipes, sockets, or shared memory may be better alternatives.
