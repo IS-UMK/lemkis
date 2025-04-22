@@ -623,6 +623,28 @@ private:
     [[nodiscard]] static std::string validate_name(std::string_view name) {
         // Message queue names must start with a '/'
         if (name.empty() || name[0] != '/') {
+            return std::format("/{}", name);
+        }
+        return std::string{name};
+    }
+    
+    [[nodiscard]] static result<message_queue> open_impl(std::string_view name, int flags, bool create = false, mode_t permissions = 0) {
+        mqd_t mqd;
+        
+        if (create) {
+            mqd = mq_open(validate_name(name).c_str(), flags, permissions, nullptr);
+        } else {
+            mqd = mq_open(validate_name(name).c_str(), flags);
+        }
+        
+        if (mqd == static_cast<mqd_t>(-1)) {
+            return std::unexpected(make_error_code(message_queue_error::open_failed));
+        }
+        
+        auto mqdes = std::make_unique<mqd_t>(mqd);
+        return message_queue(mq_descriptor_handle(std::move(mqdes)), std::string(name));
+    }
+};
             
 ```
 
