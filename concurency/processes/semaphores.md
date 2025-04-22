@@ -166,9 +166,84 @@ int main() {
 
 ---
 
-## Summary
+# C++ class implementation
 
-- POSIX semaphores are synchronization primitives for managing access to shared resources.
-- They can be used for both inter-thread and inter-process synchronization.
-- Operations like `sem_wait` (decrement) and `sem_post` (increment) are atomic and block/unblock processes as needed.
-- Named semaphores are suitable for process synchronization, while unnamed semaphores are better for thread synchronization within a single process.
+
+
+```cpp
+class named_posix_semaphore {
+public:
+  explicit named_posix_semaphore(std::string_view name,
+                                 unsigned int initial_value = 0)
+      : name_(name), semaphore_(nullptr) {
+    // Create or open the semaphore
+    semaphore_ = sem_open(name.data(), O_CREAT | O_EXCL, 0644, initial_value);
+    if (semaphore_ == SEM_FAILED) {
+      throw std::runtime_error(
+          std::format("Failed to create semaphore: {}", name));
+    }
+  }
+
+  ~named_posix_semaphore() {
+    // Close the semaphore
+    if (semaphore_ != nullptr) {
+      sem_close(semaphore_);
+    }
+
+    // Unlink the semaphore from the system
+    sem_unlink(name_.data());
+  }
+
+  // Copy constructor and copy assignment are deleted to avoid accidental
+  // copying
+  named_posix_semaphore(const named_posix_semaphore &) = delete;
+  named_posix_semaphore &operator=(const named_posix_semaphore &) = delete;
+
+  // Move constructor
+  named_posix_semaphore(named_posix_semaphore &&other) noexcept
+      : name_(std::move(other.name_)), semaphore_(other.semaphore_) {
+    other.semaphore_ = nullptr;
+  }
+
+  // Move assignment operator
+  named_posix_semaphore &operator=(named_posix_semaphore &&other) noexcept {
+    if (this != &other) {
+      // Clean up existing semaphore
+      if (semaphore_ != nullptr) {
+        sem_close(semaphore_);
+        sem_unlink(name_.data());
+      }
+
+      // Move resources
+      name_ = std::move(other.name_);
+      semaphore_ = other.semaphore_;
+      other.semaphore_ = nullptr;
+    }
+    return *this;
+  }
+
+  // Wait (decrement semaphore)
+  void wait() {
+    if (sem_wait(semaphore_) == -1) {
+      throw std::runtime_error(
+          std::format("Failed to wait on semaphore: ", name_));
+    }
+  }
+
+  // Signal (increment semaphore)
+  void post() {
+    if (sem_post(semaphore_) == -1) {
+      throw std::runtime_error(
+          std::format("Failed to post to semaphore: ", name_));
+    }
+  }
+
+  // Try to wait without blocking
+  bool try_wait() { return sem_trywait(semaphore_) == 0; }
+
+private:
+  std::string_view name_; // Name of the semaphore
+  sem_t *semaphore_;      // POSIX semaphore handle
+};
+
+```
