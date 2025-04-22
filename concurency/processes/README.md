@@ -151,3 +151,32 @@ munmap(ptr, 4096);
 > **Pro Tip**: Always check return values for errors in production code. Use `perror()` or `strerror(errno)` for debugging.  
 > **Warning**: Never store pointers in shared memory - virtual addresses differ between processes. Use offsets instead.
 
+### Error handling
+
+```cpp
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <string.h>
+
+extern int sys_nerr;
+
+void syserr(const char *fmt, ...)
+{
+  va_list fmt_args;                // 1. Declare argument list holder
+  fprintf(stderr, "ERROR: ");      // 2. Print standard error prefix
+  va_start(fmt_args, fmt);         // 3. Initialize argument processing
+  vfprintf(stderr, fmt, fmt_args); // 4. Print formatted message with args
+  va_end(fmt_args);                // 5. Clean up argument list
+  fprintf(stderr," (%d; %s)\n",    // 6. Append system error details
+          errno, strerror(errno)); //    - errno: Last error number
+                                   //    - strerror: Human-readable message
+  exit(1);                         // 7. Terminate program with error code
+}
+
+// Example usage: if (open("file.txt", O_RDONLY) == -1) syserr("File open failed");
+```
