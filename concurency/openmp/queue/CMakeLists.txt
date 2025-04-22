@@ -5,7 +5,6 @@ project(queue CXX)
 include(CTest)
 enable_testing()
 
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -16,17 +15,16 @@ set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/Benchmark/test_own_example.cpp
 )
 
+# Corrected include directories
 set(INCLUDE_DIRS
-  $(CMAKE_SOURCE_DIR)/src/include
-  $(CMAKE_SOURCE_DIR)/src/Benchmark
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src/Benchmark
 )
 
 find_package(OpenMP REQUIRED)
 
 # Create an executable
-add_executable(${PROJECT_NAME}
-	${SOURCES}
-)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
@@ -39,8 +37,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME}
-    OpenMP::OpenMP_CXX
+  OpenMP::OpenMP_CXX
 )
-
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

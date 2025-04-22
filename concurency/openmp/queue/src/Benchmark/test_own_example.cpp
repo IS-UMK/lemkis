@@ -1,46 +1,42 @@
-// benchmark_std_vs_omp.cpp
+#include "../include/own_test.hpp"
 #include <algorithm>
 #include <execution>
-#include <vector>
 #include <numeric>
 #include <iostream>
 #include <random>
 #include <chrono>
 #include <omp.h>
+#include <format>
+#include <print>
 
-using namespace std;
-
-constexpr size_t SMALL_SIZE = 10'000;
-constexpr size_t LARGE_SIZE = 100'000'000;
-
-vector<double> generate_random_vector(size_t size) {
-    vector<double> vec(size);
-    mt19937 gen(42);
-    uniform_real_distribution<> dis(0.0, 1.0);
-    generate(vec.begin(), vec.end(), [&]() { return dis(gen); });
+auto generate_random_vector(std::size_t size) -> std::vector<double> {
+    std::vector<double> vec(size);
+    std::mt19937 gen(42);
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+    std::generate(vec.begin(), vec.end(), [&]() { return dis(gen); });
     return vec;
 }
 
 template <typename Func>
-void benchmark(const string& name, Func func) {
-    auto start = chrono::high_resolution_clock::now();
+auto benchmark(const std::string& name, Func func) -> void {
+    auto start = std::chrono::high_resolution_clock::now();
     func();
-    auto end = chrono::high_resolution_clock::now();
-    chrono::duration<double> diff = end - start;
-    cout << name << " time: " << diff.count() << " s\n";
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::print("{} time: {} s\n", name, diff.count());
 }
 
-void test_transform(const vector<double>& input, vector<double>& output) {
+auto test_transform(const std::vector<double>& input, std::vector<double>& output) -> void {
     benchmark("std::transform (seq)", [&]() {
-        transform(execution::seq, input.begin(), input.end(), output.begin(), [](double x) { return x * x; });
+        std::transform(std::execution::seq, input.begin(), input.end(), output.begin(), [](double x) { return x * x; });
     });
 
     benchmark("std::transform (par)", [&]() {
-        transform(execution::par, input.begin(), input.end(), output.begin(), [](double x) { return x * x; });
+        std::transform(std::execution::par, input.begin(), input.end(), output.begin(), [](double x) { return x * x; });
     });
 
     benchmark("std::transform (par_unseq)", [&]() {
-        transform(execution::par_unseq, input.begin(), input.end(), output.begin(), [](double x) { return x * x; });
+        std::transform(std::execution::par_unseq, input.begin(), input.end(), output.begin(), [](double x) { return x * x; });
     });
 
     benchmark("OpenMP transform", [&]() {
@@ -51,17 +47,17 @@ void test_transform(const vector<double>& input, vector<double>& output) {
     });
 }
 
-void test_dot_product(const vector<double>& a, const vector<double>& b) {
+auto test_dot_product(const std::vector<double>& a, const std::vector<double>& b) -> void {
     benchmark("std::inner_product (seq)", [&]() {
-        volatile double res = inner_product(a.begin(), a.end(), b.begin(), 0.0);
+         std::inner_product(a.begin(), a.end(), b.begin(), 0.0);
     });
 
     benchmark("std::transform_reduce (par)", [&]() {
-        volatile double res = transform_reduce(execution::par, a.begin(), a.end(), b.begin(), 0.0);
+         std::transform_reduce(std::execution::par, a.begin(), a.end(), b.begin(), 0.0);
     });
 
     benchmark("std::transform_reduce (par_unseq)", [&]() {
-        volatile double res = transform_reduce(execution::par_unseq, a.begin(), a.end(), b.begin(), 0.0);
+         std::transform_reduce(std::execution::par_unseq, a.begin(), a.end(), b.begin(), 0.0);
     });
 
     benchmark("OpenMP dot product", [&]() {
@@ -70,31 +66,30 @@ void test_dot_product(const vector<double>& a, const vector<double>& b) {
         for (int i = 0; i < static_cast<int>(a.size()); ++i) {
             res += a[i] * b[i];
         }
-        volatile double sink = res;
+
     });
 }
 
 auto run_own_test() -> void {
-    cout << "==== SMALL DATASET ====" << endl;
+    std::print("==== SMALL DATASET ====\n");
     auto a_small = generate_random_vector(SMALL_SIZE);
     auto b_small = generate_random_vector(SMALL_SIZE);
-    vector<double> output_small(SMALL_SIZE);
+    std::vector<double> output_small(SMALL_SIZE);
 
-    cout << "\n= Testing Transform Product =" << endl;
+    std::print("\n= Testing Transform Product =\n");
     test_transform(a_small, output_small);
 
-    cout << "\n= Testing DOT Product =" << endl;
+    std::print("\n= Testing DOT Product =\n");
     test_dot_product(a_small, b_small);
 
-    cout << "\n==== LARGE DATASET ====" << endl;
+    std::print("\n==== LARGE DATASET ====\n");
     auto a_large = generate_random_vector(LARGE_SIZE);
     auto b_large = generate_random_vector(LARGE_SIZE);
-    vector<double> output_large(LARGE_SIZE);
+    std::vector<double> output_large(LARGE_SIZE);
 
-    cout << "\n= Testing Transform Product =" << endl;
+    std::print("\n= Testing Transform Product =\n");
     test_transform(a_large, output_large);
 
-    cout << "\n= Testing DOT Product =" << endl;
+    std::print("\n= Testing DOT Product =\n");
     test_dot_product(a_large, b_large);
-
 }
