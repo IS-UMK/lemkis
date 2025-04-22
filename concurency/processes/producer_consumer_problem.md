@@ -21,17 +21,17 @@ The task involves workers producing and consuming units of a specific type. Belo
      1. Produces a unit using the function:
         ```cpp
          void produce(unit& u) {
-          static int counter = 0;
-          u = counter++ % 5; // Produces units of 5 types (0 to 4) make it random
-          std::println("Produced: {}", u);
-      }
+             static int counter = 0;
+             u = counter++ % 5; // Produces units of 5 types (0 to 4) make it random
+             std::println("Produced: {}", u);
+         }
         ```
      2. Sends the unit to an intermediary process (`Helper`), which facilitates communication between workers.
      3. Receives a unit of the same type, produced by another worker, and consumes it using the function:
         ```cpp
          void consume(const unit& u) {
-          std::println("Consumed: {}", u);
-      }
+             std::println("Consumed: {}", u);
+         }
         ```
 
 3. **Assumptions**:
