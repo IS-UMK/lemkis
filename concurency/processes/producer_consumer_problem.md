@@ -1,6 +1,6 @@
 # Task 
 
-The task involves workers producing and consuming units of a specific type. Implement this task using processes in c++. Below is the detailed explanation:
+The task involves workers producing and consuming `units` of a specific `type`. Implement this task using processes in c++. Below is the detailed explanation (beware that the following code is oversimplified and sometimes even pseudo-code is given):
 
 ---
 
