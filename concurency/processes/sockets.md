@@ -432,3 +432,14 @@ int main() {
     return EXIT_SUCCESS;
 }
 ```
+
+You can compile example using
+```bash
+g++ -std=c++23 -o server server.cpp && g++ -std=c++23 -o client client.cpp
+```
+ and then 
+
+```bash
+./server & sleep 1 && ./client
+```
+Why `sleep 1`? What might happen if we do not sleep?
