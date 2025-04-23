@@ -126,6 +126,7 @@ void run_jthread_concurrentqueue_test(int producers, int consumers) {
     concurrent_queue<int> queue;
     std::atomic<int> pushed_count{0};
     std::atomic<int> popped_count{0};
+    std::atomic<bool> producers_done{false};
     std::vector<std::jthread> threads;
 
     const int items_per_producer = item_limit / producers;
@@ -133,37 +134,36 @@ void run_jthread_concurrentqueue_test(int producers, int consumers) {
 
     // Create producers
     for (int i = 0; i < producers; ++i) {
-        threads.emplace_back([&, i](const std::stop_token& stoken) {
-            for (int j = 0; j < items_per_producer && !stoken.stop_requested();
-                 ++j) {
+        threads.emplace_back([&, i] {
+            for (int j = 0; j < items_per_producer; ++j) {
                 queue.push(j + i * id_offset);
                 pushed_count.fetch_add(1, std::memory_order_relaxed);
-                std::this_thread::yield();
+            }
+            // Last producer to finish sets the flag
+            if (pushed_count.load() >= item_limit) {
+                producers_done.store(true);
             }
         });
     }
 
     // Create consumers
     for (int i = 0; i < consumers; ++i) {
-        threads.emplace_back([&](const std::stop_token& stoken) {
-            while (!stoken.stop_requested() || !queue.empty()) {
+        threads.emplace_back([&] {
+            while (true) {
+                // Exit only when all producers are done AND queue is empty
+                if (producers_done.load() && queue.empty()) { break; }
+
                 if (queue.try_pop()) {
                     popped_count.fetch_add(1, std::memory_order_relaxed);
+                } else {
+                    std::this_thread::yield();
                 }
-                std::this_thread::yield();
             }
         });
     }
 
-    // Let threads work for reasonable time (scaled with problem size)
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(100 + (item_limit / 10000)));
-
-    // Request all threads to stop
-    for (auto& thread : threads) { thread.request_stop(); }
-
-    // Ensure all threads finish
-    threads.clear();
+    // Wait for all threads to finish naturally
+    threads.clear();  // This joins all threads
 
     const auto end = std::chrono::high_resolution_clock::now();
 
