@@ -6,7 +6,6 @@
 #include <print>
 
 #include "../include/concurrent_queue.hpp"
-// #include <jthread>
 #include <mutex>
 #include <thread>
 #include <utility>
@@ -48,14 +47,11 @@ void run_sequential_ompqueue_test(int producers, int consumers) {
     }
 
     for (int consumer_id = 0; consumer_id < consumers; ++consumer_id) {
-        int local_count = 0;
         int value = 0;
-        while (!queue.empty()) {
-            if (queue.pop(value)) {
-                ++popped_count;
-                ++local_count;
-            }
+        while (popped_count < item_limit) {
+            if (queue.pop(value)) { ++popped_count; }
         }
+
     }
 
     const auto end = std::chrono::high_resolution_clock::now();
@@ -77,25 +73,34 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
     int pushed_count = 0;
     int popped_count = 0;
 
+    const int items_per_producer = item_limit / producers;
+    const int total_to_push = items_per_producer * producers;
+
     const auto start = std::chrono::high_resolution_clock::now();
 
 #pragma omp parallel num_threads(producers + consumers)
     {
         const int thread_id = omp_get_thread_num();
+
         if (thread_id < producers) {
-            for (int i = 0; i < item_limit / producers; ++i) {
+            for (int i = 0; i < items_per_producer; ++i) {
                 queue.push(i + thread_id * id_offset);
 #pragma omp atomic
                 ++pushed_count;
             }
         } else {
-            int local_count = 0;
             int value = 0;
-            while (!queue.empty()) {
+            while (true) {
+                int current;
+#pragma omp atomic read
+                current = popped_count;
+                if (current >= total_to_push) { break; }
+
                 if (queue.pop(value)) {
 #pragma omp atomic
                     ++popped_count;
-                    ++local_count;
+                } else {
+#pragma omp taskyield
                 }
             }
         }
@@ -114,52 +119,60 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
 }
 
 
-// Runs jthread-based producer-consumer logic using concurrent_queue
+
+// Runs jthread-based producer-consumer logic using concurrent_queue and
+// stop_token
 void run_jthread_concurrentqueue_test(int producers, int consumers) {
     concurrent_queue<int> queue;
-    int pushed_count = 0;
-    int popped_count = 0;
-    std::mutex count_mutex;
-
-    const auto start = std::chrono::high_resolution_clock::now();
-
+    std::atomic<int> pushed_count{0};
+    std::atomic<int> popped_count{0};
     std::vector<std::jthread> threads;
 
+    const int items_per_producer = item_limit / producers;
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    // Create producers
     for (int i = 0; i < producers; ++i) {
-        threads.emplace_back(
-            [&queue, &pushed_count, i, producers, &count_mutex]() {
-                for (int j = 0; j < item_limit / producers; ++j) {
-                    queue.push(j + i * id_offset);
-                    std::scoped_lock lock(count_mutex);
-                    ++pushed_count;
-                }
-            });
+        threads.emplace_back([&, i](const std::stop_token& stoken) {
+            for (int j = 0; j < items_per_producer && !stoken.stop_requested();
+                 ++j) {
+                queue.push(j + i * id_offset);
+                pushed_count.fetch_add(1, std::memory_order_relaxed);
+                std::this_thread::yield();
+            }
+        });
     }
 
+    // Create consumers
     for (int i = 0; i < consumers; ++i) {
-        threads.emplace_back(
-            [&queue, &popped_count, i, consumers, &count_mutex]() {
-                int local_count = 0;
-                int value = 0;
-                while (local_count < item_limit / consumers) {
-                    if (queue.try_peek(value)) {
-                        queue.pop();
-                        std::scoped_lock lock(count_mutex);
-                        ++popped_count;
-                        ++local_count;
-                    }
+        threads.emplace_back([&](const std::stop_token& stoken) {
+            while (!stoken.stop_requested() || !queue.empty()) {
+                if (queue.try_pop()) {
+                    popped_count.fetch_add(1, std::memory_order_relaxed);
                 }
-            });
+                std::this_thread::yield();
+            }
+        });
     }
+
+    // Let threads work for reasonable time (scaled with problem size)
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(100 + (item_limit / 10000)));
+
+    // Request all threads to stop
+    for (auto& thread : threads) { thread.request_stop(); }
+
+    // Ensure all threads finish
+    threads.clear();
 
     const auto end = std::chrono::high_resolution_clock::now();
 
     print_performance(std::format("[ConcurrentQueue] With std::jthread - "
-                                    "Producers: {}, Consumers: {}",
-                                    producers,
-                                    consumers),
-                        pushed_count,
-                        popped_count,
-                        queue.size(),
-                        std::chrono::duration<double>(end - start).count());
+                                  "Producers: {}, Consumers: {}",
+                                  producers,
+                                  consumers),
+                      pushed_count.load(),
+                      popped_count.load(),
+                      queue.size(),
+                      std::chrono::duration<double>(end - start).count());
 }
