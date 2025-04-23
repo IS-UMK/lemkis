@@ -10,7 +10,7 @@ int main() {
          for (int consumers : consumer_counts) {
              run_sequential_ompqueue_test(producers, consumers);
              run_parallel_ompqueue_test(producers, consumers);
-             //run_jthread_concurrentqueue_test(producers, consumers);
+             run_jthread_concurrentqueue_test(producers, consumers);
          }
      }
     run_own_test();

@@ -13,7 +13,7 @@
 #include <vector>
 
 
-constexpr int item_limit = 100000;
+constexpr int item_limit = 1000000;
 constexpr int id_offset = 10000;
 
 
@@ -50,7 +50,7 @@ void run_sequential_ompqueue_test(int producers, int consumers) {
     for (int consumer_id = 0; consumer_id < consumers; ++consumer_id) {
         int local_count = 0;
         int value = 0;
-        while (local_count < item_limit / consumers) {
+        while (!queue.empty()) {
             if (queue.pop(value)) {
                 ++popped_count;
                 ++local_count;
@@ -91,7 +91,7 @@ void run_parallel_ompqueue_test(int producers, int consumers) {
         } else {
             int local_count = 0;
             int value = 0;
-            while (local_count < item_limit / consumers) {
+            while (!queue.empty()) {
                 if (queue.pop(value)) {
 #pragma omp atomic
                     ++popped_count;
