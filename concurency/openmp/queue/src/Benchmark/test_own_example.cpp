@@ -9,6 +9,7 @@
 #include <format>
 #include <print>
 
+
 auto generate_random_vector(std::size_t size) -> std::vector<double> {
     std::vector<double> vec(size);
     std::mt19937 gen(42);
@@ -49,15 +50,18 @@ auto test_transform(const std::vector<double>& input, std::vector<double>& outpu
 
 auto test_dot_product(const std::vector<double>& a, const std::vector<double>& b) -> void {
     benchmark("std::inner_product (seq)", [&]() {
-         std::inner_product(a.begin(), a.end(), b.begin(), 0.0);
+        double result = std::inner_product(a.begin(), a.end(), b.begin(), 0.0);
+        std::print("Result: {}\n", result);  
     });
 
     benchmark("std::transform_reduce (par)", [&]() {
-         std::transform_reduce(std::execution::par, a.begin(), a.end(), b.begin(), 0.0);
+        double result = std::transform_reduce(std::execution::par, a.begin(), a.end(), b.begin(), 0.0);
+        std::print("Result: {}\n", result);  
     });
 
     benchmark("std::transform_reduce (par_unseq)", [&]() {
-         std::transform_reduce(std::execution::par_unseq, a.begin(), a.end(), b.begin(), 0.0);
+        double result = std::transform_reduce(std::execution::par_unseq, a.begin(), a.end(), b.begin(), 0.0);
+        std::print("Result: {}\n", result);  
     });
 
     benchmark("OpenMP dot product", [&]() {
@@ -66,9 +70,10 @@ auto test_dot_product(const std::vector<double>& a, const std::vector<double>& b
         for (int i = 0; i < static_cast<int>(a.size()); ++i) {
             res += a[i] * b[i];
         }
-
+        std::print("Result: {}\n", res); 
     });
 }
+
 
 auto run_own_test() -> void {
     std::print("==== SMALL DATASET ====\n");

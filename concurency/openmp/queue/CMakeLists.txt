@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(queue CXX)
+project(omp_benchmark_queue CXX)
+
 
 include(CTest)
 enable_testing()
@@ -8,6 +9,8 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set build type to Release
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 
 # List of source files
 set(SOURCES
@@ -30,11 +33,9 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
 target_compile_options(${PROJECT_NAME} PRIVATE
-  -ftemplate-backtrace-limit=0
-  -O3
-  -Wall
-  -Wextra
-  -pedantic
+  -O3 
+  -march=native
+  -ftree-parallelize-loops=4
 )
 
 target_link_libraries(${PROJECT_NAME}
