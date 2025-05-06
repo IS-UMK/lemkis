@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(omp_benchmark_queue CXX)
-
+project(queue CXX)
 
 include(CTest)
 enable_testing()
@@ -9,37 +8,40 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set build type to Release
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-
-# List of source files
+# Lista plików źródłowych
 set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/main.cpp
   ${CMAKE_SOURCE_DIR}/src/Benchmark/omp_queue_test.cpp
   ${CMAKE_SOURCE_DIR}/src/Benchmark/test_own_example.cpp
 )
 
-# Corrected include directories
+# Katalogi nagłówków
 set(INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src/Benchmark
 )
 
+# Znajdź bibliotekę OpenMP
 find_package(OpenMP REQUIRED)
 
-# Create an executable
+# Utwórz plik wykonywalny
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+# Dołącz katalogi nagłówków
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
+# Opcje kompilatora
 target_compile_options(${PROJECT_NAME} PRIVATE
-  -O3 
-  -march=native
-  -ftree-parallelize-loops=4
+  -ftemplate-backtrace-limit=0
+  # -ffast-math
+  -Ofast
 )
 
+# Linkowanie bibliotek
 target_link_libraries(${PROJECT_NAME}
   OpenMP::OpenMP_CXX
+  tbb
 )
 
+# Instalacja binarki
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
