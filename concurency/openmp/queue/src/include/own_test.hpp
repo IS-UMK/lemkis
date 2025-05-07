@@ -3,7 +3,7 @@
 #include <string>
 
 constexpr size_t SMALL_SIZE = 10'000;
-constexpr size_t LARGE_SIZE = 100'000'000;
+constexpr size_t LARGE_SIZE = 300'000'000;
 
 void run_own_test();
 
