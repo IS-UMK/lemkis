@@ -193,3 +193,16 @@ if (pid == 0) {
 Create a program which given natural number `n`:
 1. the initial process creates `n` child processes
 2. the initial process creates child process `p1`, `p1` creates its child process `p2`, ..., `p_{n -1}` creates `p_n`.
+3. Where is the output of `execl`?
+
+<details><summary>redirect to file</summary><code>
+  pid_t pid = fork();
+if (pid == 0) {
+    int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644); // Open a file for writing
+    dup2(fd, STDOUT_FILENO);  // Redirect stdout to the file
+    close(fd);                // Close the file descriptor (no longer needed)
+    execl("/bin/ls", "ls", NULL);  // Replace process with `ls`
+    perror("execl failed");
+    return 1;
+}
+</code></details>
