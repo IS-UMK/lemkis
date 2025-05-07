@@ -207,69 +207,71 @@ if (pid == 0) {
 }
 </code></details>
 
-<details><summary>cascade</summary><code>
-  #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+<details><summary>cascade</summary>
+  <code>
 
-void create_process_chain(int current, int max_depth);
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <number_of_processes>\n", argv[0]);
-        return 1;
-    }
-
-    int n = atoi(argv[1]);
-    if (n <= 0) {
-        fprintf(stderr, "Number of processes must be positive\n");
-        return 1;
-    }
-
-    printf("Process chain starting with main process (PID: %d)\n", getpid());
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/wait.h>
     
-    // Start the process chain with the main process (process 0)
-    create_process_chain(0, n);
+    void create_process_chain(int current, int max_depth);
+
+    int main(int argc, char *argv[]) {
+        if (argc != 2) {
+            fprintf(stderr, "Usage: %s <number_of_processes>\n", argv[0]);
+            return 1;
+        }
     
-    return 0;
-}
-
-void create_process_chain(int current, int max_depth) {
-    if (current >= max_depth) {
-        // We've reached the desired depth, no more processes to create
-        printf("Process %d (PID: %d) - End of chain\n", current, getpid());
-        return;
-    }
-
-    printf("Process %d (PID: %d) is creating process %d\n", 
-           current, getpid(), current + 1);
-
-    // Fork a child process
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        // Error
-        perror("fork failed");
-        exit(1);
-    } else if (pid == 0) {
-        // Child process
-        printf("Process %d (PID: %d) was created by process %d\n", 
-               current + 1, getpid(), current);
+        int n = atoi(argv[1]);
+        if (n <= 0) {
+            fprintf(stderr, "Number of processes must be positive\n");
+            return 1;
+        }
+    
+        printf("Process chain starting with main process (PID: %d)\n", getpid());
         
-        // Recursive call to create the next process in the chain
-        create_process_chain(current + 1, max_depth);
+        // Start the process chain with the main process (process 0)
+        create_process_chain(0, n);
         
-        // Child exits after creating its child (if any)
-        exit(0);
-    } else {
-        // Parent process
-        // Wait for the child to complete its chain
-        int status;
-        waitpid(pid, &status, 0);
-        printf("Process %d (PID: %d) - Child %d (PID: %d) has completed\n", 
-               current, getpid(), current + 1, pid);
+        return 0;
+        }
+    
+    void create_process_chain(int current, int max_depth) {
+        if (current >= max_depth) {
+            // We've reached the desired depth, no more processes to create
+            printf("Process %d (PID: %d) - End of chain\n", current, getpid());
+            return;
+        }
+
+        printf("Process %d (PID: %d) is creating process %d\n", 
+               current, getpid(), current + 1);
+    
+        // Fork a child process
+        pid_t pid = fork();
+    
+        if (pid < 0) {
+            // Error
+            perror("fork failed");
+            exit(1);
+        } else if (pid == 0) {
+            // Child process
+            printf("Process %d (PID: %d) was created by process %d\n", 
+                   current + 1, getpid(), current);
+            
+            // Recursive call to create the next process in the chain
+            create_process_chain(current + 1, max_depth);
+            
+            // Child exits after creating its child (if any)
+            exit(0);
+        } else {
+            // Parent process
+            // Wait for the child to complete its chain
+            int status;
+            waitpid(pid, &status, 0);
+            printf("Process %d (PID: %d) - Child %d (PID: %d) has completed\n", 
+                   current, getpid(), current + 1, pid);
+        }
     }
-}
 </code></details>
