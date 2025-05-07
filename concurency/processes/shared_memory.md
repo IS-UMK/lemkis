@@ -306,7 +306,7 @@ Is this program correct? Does this code works? If not can you guess why not and 
 ---
 
 ### 1. **Reaping the Child Process**
-When a parent process creates a child process using `fork()`, the operating system keeps information about the child process (such as its exit status) in a data structure in memory until the parent explicitly reads it. This is known as a **zombie process**.
+When a parent process creates a child process using `fork()`, the operating system keeps information about the child process (such as its exit status) in a data structure in memory until the parent explicitly reads it. 
 
 - **Zombie Process**: A child process that has terminated but still occupies an entry in the process table because its parent has not yet retrieved its exit status.
 - By calling `wait(nullptr)`, the parent process reads the child's exit status and allows the operating system to clean up the data structure for the child process, preventing it from becoming a zombie.
