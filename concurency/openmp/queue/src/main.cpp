@@ -18,7 +18,7 @@ int main() {
         run_full_comparison(producers, consumers);
     }
 
-    //run_own_test();
+    run_own_test();
 
     return 0;
 }
