@@ -103,16 +103,6 @@ munmap(ptr, 4096); // Release virtual mapping
 
 ## Complete Workflow Example
 
-sequenceDiagram
-Process->>OS: shm_open("/mem", O_CREAT|O_RDWR, 0600)
-OS-->>Process: fd=3
-Process->>OS: ftruncate(3, 4096)
-Process->>OS: mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0)
-OS-->>Process: ptr=0x7f1234567890
-Process->>OS: shm_unlink("/mem")
-Process->>OS: munmap(0x7f1234567890, 4096)
-Process->>OS: close(3)
-
 
 **Typical Initialization Sequence**:  
 ```cpp
