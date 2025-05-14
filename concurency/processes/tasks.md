@@ -25,9 +25,9 @@ In a certain office, a group of clerks serves a group of clients. Each clerk has
 ```cpp
 process Clerk(int rank, int id) {
     while (true) {
-        Office.WantToWork(rank, id);
+        office::want_to_work(rank, id);
         // talking with a client
-        Office.Finished;
+        office::finished();
         // resting
     }
 }
@@ -35,9 +35,9 @@ process Clerk(int rank, int id) {
 process Client() {
     int c1, c2;
     while (true) {
-        Office.WantToHandleIssue(&c1, &c2);
+        office::want_to_handle_issue(c1, c2);
         // talking with clerks c1 and c2
-        Office.Handled;
+        office::handled();
         // own matters
     }
 }
