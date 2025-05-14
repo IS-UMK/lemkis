@@ -314,8 +314,8 @@ process P1() {
     while (true) {
         local_section;
         want1 = true;
-        whoseturn = 1;
-        while (want2 && (whoseturn == 1)) { }
+        whoseturn = 2;
+        while (want2 && (whoseturn == 2)) { }
         critical_section;
         want1 = false;
     }
@@ -325,8 +325,8 @@ process P2() {
     while (true) {
         local_section;
         want2 = true;
-        whoseturn = 2;
-        while (want1 && (whoseturn == 2)) { }
+        whoseturn = 1;
+        while (want1 && (whoseturn == 1)) { }
         critical_section;
         want2 = false;
     }
