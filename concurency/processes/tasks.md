@@ -1,4 +1,4 @@
-The task is to write example implementation of the following problem descriptions in c++ using processes (remember about technical aspects like a synchronization, 
+The tasks are to write example implementations of the following problem descriptions in c++ using processes (remember about technical aspects like a synchronization, 
 correctness of the solution and style requirements). Each of you is obliged to
 - smoothly explain what the problem is
 - how he solved it (give the solution idea)
