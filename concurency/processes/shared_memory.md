@@ -352,3 +352,209 @@ waitpid(pid, nullptr, 0); // Wait for a specific child process with PID 'pid' to
 
 ---
 
+
+# SOlution to homework - synchronization on shared memory
+
+```cpp
+#include <array>
+#include <chrono>
+#include <cstring>
+#include <exception>
+#include <fcntl.h> // For O_* constants
+#include <format>
+#include <iostream>
+#include <print>
+#include <ranges>
+#include <semaphore>
+#include <string>
+#include <string_view>
+#include <sys/mman.h>
+#include <sys/stat.h> // For mode constants
+#include <thread>
+#include <unistd.h>
+#include <vector>
+#include <wait.h>
+
+#include <semaphore.h>
+#include <stdexcept>
+#include <string>
+
+void print_table(std::string_view t) {
+  std::println("Process {}, table at address {}:\n{}\n", getpid(),
+               static_cast<const void *>(t.data()),
+               t | std::views::chunk(1) | std::views::join_with('|') |
+                   std::ranges::to<std::string>());
+}
+
+class shared_memory {
+public:
+  shared_memory(std::string_view name, size_t size) : name_(name), size_(size) {
+    fd_memory_ = shm_open(name_.data(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    if (fd_memory_ == -1) {
+      throw std::runtime_error("shm_open failed");
+    }
+
+    if (ftruncate(fd_memory_, size_) == -1) {
+      shm_unlink(name_.data());
+      throw std::runtime_error("ftruncate failed");
+    }
+
+    mapped_mem_ = static_cast<char *>(mmap(
+        nullptr, size_, PROT_READ | PROT_WRITE, MAP_SHARED, fd_memory_, 0));
+    if (mapped_mem_ == MAP_FAILED) {
+      shm_unlink(name_.data());
+      throw std::runtime_error("mmap failed");
+    }
+
+    close(fd_memory_);
+    shm_unlink(
+        name_.data()); // Remove the special file; memory is still accessible
+  }
+
+  ~shared_memory() {
+    if (mapped_mem_ != MAP_FAILED) {
+      munmap(mapped_mem_, size_);
+    }
+  }
+
+  char *get() const { return mapped_mem_; }
+  size_t size() const { return size_; }
+
+private:
+  std::string_view name_;
+  size_t size_;
+  int fd_memory_;
+  char *mapped_mem_;
+};
+
+class named_posix_semaphore {
+public:
+  explicit named_posix_semaphore(std::string_view name,
+                                 unsigned int initial_value = 0)
+      : name_(name), semaphore_(nullptr) {
+    // Create or open the semaphore
+    semaphore_ = sem_open(name.data(), O_CREAT | O_EXCL, 0644, initial_value);
+    if (semaphore_ == SEM_FAILED) {
+      throw std::runtime_error(
+          std::format("Failed to create semaphore: {}", name));
+    }
+  }
+
+  ~named_posix_semaphore() {
+    // Close the semaphore
+    if (semaphore_ != nullptr) {
+      sem_close(semaphore_);
+    }
+
+    // Unlink the semaphore from the system
+    sem_unlink(name_.data());
+  }
+
+  // Copy constructor and copy assignment are deleted to avoid accidental
+  // copying
+  named_posix_semaphore(const named_posix_semaphore &) = delete;
+  named_posix_semaphore &operator=(const named_posix_semaphore &) = delete;
+
+  // Move constructor
+  named_posix_semaphore(named_posix_semaphore &&other) noexcept
+      : name_(std::move(other.name_)), semaphore_(other.semaphore_) {
+    other.semaphore_ = nullptr;
+  }
+
+  // Move assignment operator
+  named_posix_semaphore &operator=(named_posix_semaphore &&other) noexcept {
+    if (this != &other) {
+      // Clean up existing semaphore
+      if (semaphore_ != nullptr) {
+        sem_close(semaphore_);
+        sem_unlink(name_.data());
+      }
+
+      // Move resources
+      name_ = std::move(other.name_);
+      semaphore_ = other.semaphore_;
+      other.semaphore_ = nullptr;
+    }
+    return *this;
+  }
+
+  // Wait (decrement semaphore)
+  void wait() {
+    if (sem_wait(semaphore_) == -1) {
+      throw std::runtime_error(
+          std::format("Failed to wait on semaphore: ", name_));
+    }
+  }
+
+  // Signal (increment semaphore)
+  void post() {
+    if (sem_post(semaphore_) == -1) {
+      throw std::runtime_error(
+          std::format("Failed to post to semaphore: ", name_));
+    }
+  }
+
+  // Try to wait without blocking
+  bool try_wait() { return sem_trywait(semaphore_) == 0; }
+
+private:
+  std::string_view name_; // Name of the semaphore
+  sem_t *semaphore_;      // POSIX semaphore handle
+};
+
+constexpr std::string_view SHM_NAME = "/practice_memory";
+constexpr std::string_view SEM_NAME = "/semaphore_name";
+constexpr int NAP_TIME = 2;
+constexpr std::string_view BUFF{"Ala ma kota"};
+constexpr size_t BUFF_SIZE = BUFF.size();
+
+inline std::counting_semaphore<1>
+    sync_semaphore(0); // Initialize the semaphore with 0.
+int main() {
+  try {
+
+    std::print("Page size is {} bytes\n", sysconf(_SC_PAGE_SIZE));
+
+    shared_memory shared_mem(SHM_NAME, BUFF_SIZE);
+    char *mapped_mem = shared_mem.get();
+
+    print_table(std::string_view(mapped_mem, BUFF_SIZE));
+
+    std::this_thread::sleep_for(std::chrono::seconds(NAP_TIME));
+    named_posix_semaphore sem{SEM_NAME};
+    const pid_t pid = fork();
+    const std::string_view mapped_mem_view(mapped_mem, BUFF_SIZE);
+    if (pid == -1) {
+      throw std::runtime_error("fork failed");
+    } else if (pid == 0) {
+      // Child process
+      // std::this_thread::sleep_for(std::chrono::seconds(NAP_TIME));
+      // print_table(mapped_mem_view);
+      // std::this_thread::sleep_for(std::chrono::seconds(2 * NAP_TIME));
+      // sync_semaphore.acquire();
+      sem.wait();
+      std::println("Child, acquired");
+      print_table(mapped_mem_view);
+      return 0;
+    } else {
+      // Parent process
+      std::println("Parent PID: {}, Child PID: {}", getpid(), pid);
+      // print_table(mapped_mem_view);
+      std::this_thread::sleep_for(std::chrono::seconds(2 * NAP_TIME));
+
+      std::ranges::copy(BUFF, mapped_mem);
+      std::println("Process {}, modified shared memory content", getpid());
+      print_table(mapped_mem_view);
+      // sync_semaphore.release();
+      sem.post();
+      wait(nullptr); // Wait for child process
+    }
+  } catch (const std::exception &ex) {
+    std::print("Error: {}\n", ex.what());
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+```
+
