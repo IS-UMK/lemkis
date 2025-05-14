@@ -62,9 +62,35 @@ We want to ensure that at most one of them executes the part of the program mark
 What instructions should be placed in the protocols to achieve this goal?  
 Assume that we do not have any synchronization mechanisms available, so the protocols should skillfully use global variables and programming language instructions.
 
-- Can the entry and exit protocols be left empty?
-- What does **safety** mean in the context of this problem?
-- What does **liveness** mean?
+- <details>
+  <summary>Can the entry and exit protocols be left empty?</summary>
+  <p>No, the entry and exit protocols <strong>cannot be left empty</strong> if you want to guarantee mutual exclusion.</p>
+  <p>The <em>entry protocol</em> ensures that a process waits until it is safe to enter the critical section (i.e., no other process is inside).</p>
+  <p>The <em>exit protocol</em> releases any locks or signals that allow other waiting processes to enter the critical section.</p>
+  <p>Without these protocols, multiple processes could enter the critical section simultaneously, violating the mutual exclusion property.</p>
+  <p>Thus, empty protocols mean no control over access, which breaks the mutual exclusion requirement.</p>
+</details>
+
+- <details>
+  <summary>What does safety mean in the context of this problem?</summary>
+  <p><strong>Safety</strong> means that the mutual exclusion property is preserved:</p>
+  <ul>
+    <li>At most one process can be executing in the critical section at any given time.</li>
+    <li>No two or more processes are allowed to be inside their critical sections simultaneously.</li>
+  </ul>
+  <p>This property prevents race conditions and inconsistent shared state.</p>
+</details>
+
+- <details>
+  <summary>What does liveness mean?</summary>
+  <p><strong>Liveness</strong> means that the system guarantees progress:</p>
+  <ul>
+    <li>If a process wants to enter the critical section, it will eventually be allowed to do so (no indefinite postponement or starvation).</li>
+    <li>The system avoids deadlocks (where processes wait forever) and starvation (where some processes are perpetually denied access).</li>
+    <li>Every request to enter the critical section eventually succeeds.</li>
+  </ul>
+</details>
+
 
 In the solution, we will use global and local variables.  
 A local variable may reside in the private address space of a process. Other processes do not have access to it and cannot read or modify it.  
