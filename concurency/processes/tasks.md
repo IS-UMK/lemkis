@@ -23,7 +23,7 @@ After the last process executing the procedure finishes, the processes from the 
 
 In a certain office, a group of clerks serves a group of clients. Each clerk has a unique identifier. The algorithms for clerks and clients are as follows:
 ```cpp
-process Clerk(int rank, int id) {
+process clerk(int rank, int id) {
     while (true) {
         office::want_to_work(rank, id);
         // talking with a client
@@ -32,7 +32,7 @@ process Clerk(int rank, int id) {
     }
 }
 
-process Client() {
+process client() {
     int c1, c2;
     while (true) {
         office::want_to_handle_issue(c1, c2);
