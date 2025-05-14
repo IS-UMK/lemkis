@@ -50,5 +50,5 @@ process client() {
 - Clerks within each group work according to the order in which they signal their availability to work.
 - Clients must find out which clerks they will talk to (i.e., they must learn their identifiers).
 - After the conversation is finished, clerks and clients may leave the chairs individually.
-- The office should operate in such a way that...
+- The office should operate in such a way as to serve the greatest possible number of clients, and **this is the priority in this task**.
 
