@@ -56,7 +56,8 @@ struct factory {
     std::condition_variable cv;
     std::vector<int> cookies{};
     int cookie_id{0};
-    public:
+
+  public:
     void produce_a_cookie() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         {
@@ -65,14 +66,13 @@ struct factory {
             std::println("a cookie {} is ready\n", cookie_id++);
         }
         cv.notify_one();
-
     }
 
-    void consume_a_cookie() {   
+    void consume_a_cookie() {
         std::println("cookies = {}", cookies.size());
         {
             std::unique_lock lk(m);
-            std::println("between lock and wait"); 
+            std::println("between lock and wait");
             cv.wait(lk, [this] { return !cookies.empty(); });
             /* tutaj mam mutex */
             int cookie = cookies.back();
@@ -81,8 +81,4 @@ struct factory {
         }
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
-    
 };
-
-
-

@@ -22,7 +22,7 @@ struct node {
 
 template <typename T>
 class stack {
-public:
+  public:
     std::atomic<node<T>*> head;
 
   public:
@@ -35,4 +35,3 @@ public:
                                            std::memory_order_relaxed)) {}
     }
 };
-
