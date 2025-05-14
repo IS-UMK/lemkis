@@ -1,5 +1,9 @@
 The task is to write example implementation of the following problem descriptions in c++ using processes (remember about technical aspects like a synchronization, 
-correctness of the solution and style requirements).
+correctness of the solution and style requirements). Each of you is obliged to
+- smoothly explain what the problem is
+- how he solved it (give the solution idea)
+- present the implementation code
+- test the code with in regular and extreme cases
 
 #  Dates
 
@@ -57,3 +61,16 @@ process client() {
 In an office building, there are `N` companies. There are also $`0 < K \le N`$ printers, which are shared by the employees of these companies. The rules for using the printers are as follows:
 
 Employees of different companies never use the same printer simultaneously (we assume there is a procedure `print(int printer_number)`, whose invocation means using the printer: sending a document, waiting for printing, and collecting the document from the printer). An employee of a given company cannot start printing unless they are certain that the printer to which they want to send their document is not being used by employees of other companies. Employees of the same company can use only one printer at a time. If there are many free printers, an employee whose company is not currently printing can choose any of them (we do not care about equal distribution of printer usage).
+
+
+
+# Basketball 
+
+There are $`N > 0`$ teams using a basketball court. Each team consists of $`K > 1`$ players, and each player is permanently assigned to a specific team.
+
+Upon arriving at the court, a player waits for all players from their team to arrive as well as for another complete team to form. A match can start only when there are two complete teams and the court is free. Each team must learn the number of the opposing team: each player calls the procedure `match(int opponent)`.
+
+A player can leave the court at any time (ending the execution of the `match` procedure). The remaining players continue the game, even if only one player remains on the court. A player who has finished the game cannot return to it; to start a new match, they must first wait until all players of their team and some opposing team gather again.
+
+Matches are played in a sports center with $$B$$ courts numbered from 0 to $$B - 1$$.
+
