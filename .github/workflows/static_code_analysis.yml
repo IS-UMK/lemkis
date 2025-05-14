@@ -36,7 +36,7 @@ jobs:
       run: ./scripts/make_debug.sh
     - name: Run clang-format on all module files
       run: |
-        if find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-format-18 --Werror --dry-run; then  
+        if find ./concurency -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-format-18 --Werror --dry-run; then  
           echo "clang-format-result=0" >>  $GITHUB_OUTPUT 
         else 
           echo "clang-format-result=1" >>  $GITHUB_OUTPUT 
@@ -45,7 +45,7 @@ jobs:
       id: run_clang_format
     - name: Run clang-tidy on all module files
       run: |
-        if find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26; then  
+        if find ./concurency -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26; then  
           echo "clang-tidy-result=0" >>  $GITHUB_OUTPUT 
         else 
           echo "clang-tidy-result=1" >>  $GITHUB_OUTPUT 
