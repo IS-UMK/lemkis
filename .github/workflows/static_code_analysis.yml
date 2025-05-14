@@ -26,7 +26,7 @@ jobs:
     - name: Install standard library headers for clang and clang tools
       run: sudo apt install clang-tidy-18 clang-format-18 libc++-18-dev 
     - name: Install the newest ninja
-      run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
+      run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip -f /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12' 
