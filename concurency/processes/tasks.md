@@ -1,5 +1,5 @@
 The tasks are to write example implementations of the following problem descriptions in c++ using processes (remember about technical aspects like a synchronization, 
-correctness of the solution and style requirements). Each of you is obliged to
+correctness of the solution and style requirements). Each of you during your presentation is obliged to
 - smoothly explain what the problem is
 - how he solved it (give the solution idea)
 - present the implementation code
