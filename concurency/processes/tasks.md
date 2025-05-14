@@ -5,6 +5,7 @@ correctness of the solution and style requirements). Each of you during your pre
 - present the implementation code
 - test the code with in regular and extreme cases
 
+Moreover, each solution must be a cmake project which is linked to the root CMakeLists.txt (use `add_subdirectory` in proper places). Moreover, github actions must pass (that is clang-format and clang-tidy do not throw any warnings/errors)
 #  Dates
 
 In the system, there are `N` pairs of processes. 
