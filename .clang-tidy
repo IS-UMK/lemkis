@@ -217,8 +217,8 @@ CheckOptions:
   readability-function-cognitive-complexity.DescribeBasicIncrements: 'true'
   readability-function-cognitive-complexity.IgnoreMacros: 'false'
   readability-function-cognitive-complexity.Threshold: '25'
-  readability-function-size.BranchThreshold: 4
-  readability-function-size.LineThreshold: 15
+  readability-function-size.BranchThreshold: 3
+  readability-function-size.LineThreshold: 10
   readability-function-size.NestingThreshold: 3
   readability-function-size.ParameterThreshold: none
   readability-function-size.StatementThreshold: '800'
@@ -285,8 +285,8 @@ CheckOptions:
   readability-magic-numbers.IgnorePowersOf2IntegerValues: 'false'
   readability-magic-numbers.IgnoreTypeAliases: 'false'
   readability-magic-numbers.IgnoreUserDefinedLiterals: 'false'
-  readability-magic-numbers.IgnoredFloatingPointValues: '1.0;100.0;'
-  readability-magic-numbers.IgnoredIntegerValues: '1;2;3;4;'
+  readability-magic-numbers.IgnoredFloatingPointValues: '0.0;'
+  readability-magic-numbers.IgnoredIntegerValues: '0;'
   readability-operators-representation.BinaryOperators: ''
   readability-operators-representation.OverloadedOperators: ''
   readability-qualified-auto.AddConstToQualified: 'true'
