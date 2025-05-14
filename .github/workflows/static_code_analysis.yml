@@ -24,7 +24,7 @@ jobs:
     # - name: Install  g++
     #   run: sudo apt update && sudo apt install g++ gcc && sudo apt upgrade
     - name: Install standard library headers for clang and clang tools
-      run: sudo apt install clang-tidy-18 clang-format-18 libc++-18-dev 
+      run: sudo apt install clang-tidy-19 clang-format-19 libc++-19-dev 
     - name: Install the newest ninja
       run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip -f /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
     - uses: actions/setup-python@v5
@@ -36,7 +36,7 @@ jobs:
       run: ./scripts/make_debug.sh
     - name: Run clang-format on all module files
       run: |
-        if find ./concurency -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-format-18 --Werror --dry-run; then  
+        if find ./concurency -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-format-19 --Werror --dry-run; then  
           echo "clang-format-result=0" >>  $GITHUB_OUTPUT 
         else 
           echo "clang-format-result=1" >>  $GITHUB_OUTPUT 
@@ -45,7 +45,7 @@ jobs:
       id: run_clang_format
     - name: Run clang-tidy on all module files
       run: |
-        if find ./concurency -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26; then  
+        if find ./concurency -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-tidy-19  -p ./build/debug/ --extra-arg=-std=c++26; then  
           echo "clang-tidy-result=0" >>  $GITHUB_OUTPUT 
         else 
           echo "clang-tidy-result=1" >>  $GITHUB_OUTPUT 
