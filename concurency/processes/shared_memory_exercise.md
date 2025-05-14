@@ -105,7 +105,7 @@ The situation is different with global variables: they are shared between proces
 
 Let’s first try to solve the problem by introducing a global variable `whoseturn`.  
 It will take values 1 or 2.  
-Value 1 means that process one must wait, and process two has the right to enter the critical section.
+Value 2 means that process one must wait, and process two has the right to enter the critical section.
 
 Waiting for entry is implemented by an empty loop whose only task is to repeatedly check the condition for entering the critical section.  
 A process that uses the critical section passes priority to its competitor.
@@ -117,18 +117,18 @@ int whoseturn = 1;
 process P1() {
     while (true) {
         local_section;
-        while (whoseturn == 1) { }
+        while (whoseturn == 2) { }
         critical_section;
-        whoseturn = 1;
+        whoseturn = 2;
     }
 }
 
 process P2() {
     while (true) {
         local_section;
-        while (whoseturn == 2) { }
+        while (whoseturn == 1) { }
         critical_section;
-        whoseturn = 2;
+        whoseturn = 1;
     }
 }
 
