@@ -107,6 +107,8 @@ int main(int argc, char* argv[]) {
     
     if (rank == 0) {
         std::cout << std::format("Directory contents:\n{}\n", exec_command("ls -la"))<< std::endl;;
+    } else {
+        std::cout << std::format("hellow from process with rank: {}\n", rank);
     }
     MPI_Finalize();
     return 0;
