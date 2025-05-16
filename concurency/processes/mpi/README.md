@@ -17,3 +17,8 @@ create `build` director `mkdir build` go to it `cd build` and execute
 ```bash
 CXX=mpicxx cmake .. && make
 ```
+
+# running
+```bash
+mpirun -n <number_of_processes_to_launch> <program>
+```
