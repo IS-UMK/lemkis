@@ -8,9 +8,9 @@ and update paths
  export LD_LIBRARY_PATH=/usr/lib64/mpi/gcc/openmpi5/lib64:$LD_LIBRARY_PATH
 ```
 
-# building
-
-just create `build` director `mkdir build` go to it `cd build` and execute
+# local building
+If you want to build locally (not whole lemkis) do this:
+create `build` director `mkdir build` go to it `cd build` and execute
 ```bash
 CXX=mpicxx cmake .. && make
 ```
