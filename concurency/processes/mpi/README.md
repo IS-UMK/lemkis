@@ -1,6 +1,9 @@
 # Configuration
 
-You may need to install ``openmpi openmpi-devel``.
+You may need to install ``openmpi openmpi-devel``. in my case i had to install manually [version 5](https://www.open-mpi.org/software/ompi/v5.0/) with configuration:
+```bash
+CC=clang-19 CXX=clang++-19 ./configure --prefix=$HOME/opt/openmpi --disable-mpi-fortran
+```
 
 and update paths
 ```bash
