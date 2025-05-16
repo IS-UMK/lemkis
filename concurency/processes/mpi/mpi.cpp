@@ -102,6 +102,7 @@ int main(int argc, char* argv[]) {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     
+    
     std::cout << std::format("Process {} started\n", rank);
     
     if (rank == 0) {

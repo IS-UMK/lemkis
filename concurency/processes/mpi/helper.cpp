@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm parent_comm;
     int rank;
     
+    
     // Initialize MPI
     MPI_Init(&argc, &argv);
     
