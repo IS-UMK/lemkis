@@ -28,7 +28,7 @@ mpirun -n <number_of_processes_to_launch> <program>
 ```
 
 
-# MPI Tutorial for Modern C++23
+# MPI Tutorial 
 
 ## Introduction to MPI
 
@@ -50,38 +50,6 @@ MPI is:
 - **Portability**: The same MPI code can run on different architectures
 - **Standardization**: Well-established standard with consistent APIs
 
-## Setting Up Your Environment
-
-To use MPI with C++, you'll need:
-
-1. An MPI implementation installed (e.g., Open MPI or MPICH)
-2. MPI headers included in your code
-3. MPI libraries linked during compilation
-
-### Installing MPI
-
-#### On Ubuntu/Debian:
-
-
-#### On macOS:
-```bash
-brew install open-mpi
-```
-
-#### On Windows:
-Install Microsoft MPI or build MPICH for Windows.
-
-### Compiling MPI Programs
-
-Use the MPI compiler wrappers for compilation:
-```bash
-mpic++ -std=c++20 mpi_program.cpp -o mpi_program
-```
-
-To run an MPI program:
-```bash
-mpirun -np 4 ./mpi_program  # Run with 4 processes
-```
 
 ## Basic MPI Concepts
 
