@@ -15,9 +15,9 @@ struct BenchmarkResult {
 // Benchmark z użyciem std::thread
 template <typename QueueType>
 double benchmark_stdjthread(const std::string& queue_name,
-                           int num_producers,
-                           int num_consumers,
-                           bool warmup = false);
+                            int num_producers,
+                            int num_consumers,
+                            bool warmup = false);
 
 // Benchmark z użyciem OpenMP
 template <typename QueueType>

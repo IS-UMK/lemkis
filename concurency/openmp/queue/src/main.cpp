@@ -1,12 +1,12 @@
+#include <print>
+#include <vector>
+
 #include "include/own_test.hpp"
 #include "include/queue_test.hpp"
-#include <vector>
-#include <print>
 
-int main() {
-
+auto main() -> int {
     // Common thread configurations
-    std::vector<std::pair<int, int>> configs = {
+    std::vector<std::pair<int, int>> const configs = {
         {1, 1},  // SPSC - Single Producer, Single Consumer
         {1, 4},  // SPMC - Single Producer, Multiple Consumers
         {4, 1},  // MPSC - Multiple Producers, Single Consumer
@@ -18,7 +18,11 @@ int main() {
         run_full_comparison(producers, consumers);
     }
 
+<<<<<<< Updated upstream
     run_own_test();
+=======
+    // run_own_test();
+>>>>>>> Stashed changes
 
     return 0;
 }

@@ -15,19 +15,19 @@ set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/Benchmark/test_own_example.cpp
 )
 
-# Katalogi nagłówków
+# Katalogi nag��wk�w
 set(INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src/Benchmark
 )
 
-# Znajdź bibliotekę OpenMP
+# Znajd� bibliotek� OpenMP
 find_package(OpenMP REQUIRED)
 
-# Utwórz plik wykonywalny
+# Utw�rz plik wykonywalny
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-# Dołącz katalogi nagłówków
+# Do��cz katalogi nag��wk�w
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
 # Opcje kompilatora

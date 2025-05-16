@@ -10,37 +10,37 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <print>
 #include <string>
 #include <thread>
 #include <vector>
-#include <print>
 
 #include "../include/concurrent_queue.hpp"
 
-constexpr int NUM_OPERATIONS = 1000000;    // Number of operations per test
-constexpr int WARMUP_ITERATIONS = 2;       // Number of warm-up iterations
-constexpr int MEASUREMENT_ITERATIONS = 5;  // Number of measurement iterations
+constexpr int num_operations = 1000000;    // Number of operations per test
+constexpr int warmup_iterations = 2;       // Number of warm-up iterations
+constexpr int measurement_iterations = 5;  // Number of measurement iterations
 
 // Wrapper for concurrent_queue to standardize interface
-class ConcurrentQueueWrapper {
+class concurrent_queue_wrapper {
   private:
     concurrent_queue<int> queue;
 
   public:
     void push(const int& item) { queue.push(item); }
 
-    bool pop(int& result) {
+    static auto pop(int& result) -> bool {
         if (queue.try_peek(result)) { return queue.try_pop(); }
         return false;
     }
 
-    bool empty() const { return queue.empty(); }
+    [[nodiscard]] auto empty() const -> bool { return queue.empty(); }
 
-    std::size_t size() const { return queue.size(); }
+    [[nodiscard]] std::size_t size() const { return queue.size(); }
 };
 
 // Result structure to store benchmark data
-struct BenchmarkResult {
+struct benchmark_result {
     double mean_time_ms;
     double median_time_ms;
     double stddev_ms;
@@ -51,18 +51,18 @@ struct BenchmarkResult {
 
 // Function to run a single benchmark iteration using std::jthread
 template <typename QueueType>
-double benchmark_stdjthread(const std::string& queue_name,
-                            int num_producers,
-                            int num_consumers,
-                            bool warmup = false) {
+auto benchmark_stdjthread(const std::string& queue_name,
+                          int num_producers,
+                          int num_consumers,
+                          bool warmup = false) -> double {
     QueueType queue;
     std::atomic<int> items_produced(0);
     std::atomic<int> items_consumed(0);
     std::atomic<bool> production_complete(false);
     std::vector<std::jthread> threads;
 
-    int items_per_producer = NUM_OPERATIONS / num_producers;
-    int total_items = items_per_producer * num_producers;
+    int const items_per_producer = num_operations / num_producers;
+    int const total_items = items_per_producer * num_producers;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -94,9 +94,9 @@ double benchmark_stdjthread(const std::string& queue_name,
     }
 
     auto end_time = std::chrono::high_resolution_clock::now();
-    double elapsed_ms =
-        std::chrono::duration<double, std::milli>(end_time - start_time)
-            .count();
+    double elapsed_ms = std::chrono::duration < double;
+    double std::milli > (end_time - start_time).count();
+    (end_time - start_time).count();
 
     if (!warmup) {
         std::print(
@@ -115,17 +115,17 @@ double benchmark_stdjthread(const std::string& queue_name,
 
 // Function to run a single benchmark iteration using OpenMP
 template <typename QueueType>
-double benchmark_openmp(const std::string& queue_name,
-                        int num_producers,
-                        int num_consumers,
-                        bool warmup = false) {
+auto benchmark_openmp(const std::string& queue_name,
+                      int num_producers,
+                      int num_consumers,
+                      bool warmup = false) -> double {
     QueueType queue;
     int items_produced = 0;
     int items_consumed = 0;
 
     // Calculate workload per producer
-    int items_per_producer = NUM_OPERATIONS / num_producers;
-    int total_items = items_per_producer * num_producers;
+    int const items_per_producer = num_operations / num_producers;
+    int const total_items = items_per_producer * num_producers;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -172,9 +172,9 @@ double benchmark_openmp(const std::string& queue_name,
     }
 
     auto end_time = std::chrono::high_resolution_clock::now();
-    double elapsed_ms =
-        std::chrono::duration<double, std::milli>(end_time - start_time)
-            .count();
+    double elapsed_ms = std::chrono::duration < double;
+    double std::milli > (end_time - start_time).count();
+    (end_time - start_time).count();
 
     // Only print results if this isn't a warmup run
     if (!warmup) {
@@ -186,7 +186,6 @@ double benchmark_openmp(const std::string& queue_name,
             num_consumers,
             elapsed_ms,
             (total_items * 1000.0 / elapsed_ms));
-
     }
 
     return elapsed_ms;
@@ -194,27 +193,27 @@ double benchmark_openmp(const std::string& queue_name,
 
 // Function to run multiple iterations and calculate statistics
 template <typename QueueType, typename BenchmarkFunc>
-BenchmarkResult run_benchmark_suite(const std::string& queue_name,
-                                    int num_producers,
-                                    int num_consumers,
-                                    BenchmarkFunc benchmark_function) {
+benchmark_result run_benchmark_suite(const std::string& queue_name,
+                                     int num_producers,
+                                     int num_consumers,
+                                     BenchmarkFunc benchmark_function) {
     std::vector<double> times;
 
     // Warm-up runs
-    for (int i = 0; i < WARMUP_ITERATIONS; i++) {
+    for (int i = 0; i < warmup_iterations; i++) {
         benchmark_function(std::format("{} (warmup)", queue_name),
                            num_producers,
                            num_consumers,
                            true);
-
     }
 
     // Measurement runs
-    for (int i = 0; i < MEASUREMENT_ITERATIONS; i++) {
-        double time = benchmark_function(
-            std::format("{} (run {})", queue_name, i + 1),
-            num_producers,
-            num_consumers, false);
+    for (int i = 0; i < measurement_iterations; i++) {
+        double time =
+            benchmark_function(std::format("{} (run {})", queue_name, i + 1),
+                               num_producers,
+                               num_consumers,
+                               false);
         times.push_back(time);
     }
 
