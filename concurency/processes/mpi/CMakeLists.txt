@@ -1,4 +1,7 @@
-# set(MPI_CXX_COMPILER "/usr/lib64/mpi/gcc/openmpi5/bin/mpic++" CACHE FILEPATH "MPI C++ compiler wrapper")
+cmake_minimum_required(VERSION 3.28)
+# set(MPI_CXX_COMPILER "/usr/bin/mpic++" CACHE FILEPATH "MPI C++ compiler wrapper")
+# set(CXX_COMPILER "/usr/local/bin/g++" CACHE FILEPATH "MPI C++ compiler wrapper")
+# set(C_COMPILER "/usr/local/bin/gcc" CACHE FILEPATH "MPI C++ compiler wrapper")
 
 # set (CXX)
 # Set C++23 as the standard for all targets
