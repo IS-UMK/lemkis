@@ -1,6 +1,6 @@
 # Configuration
 
-You may need to install
+You may need to install ``openmpi openmpi-devel``.
 
 and update paths
 ```bash
