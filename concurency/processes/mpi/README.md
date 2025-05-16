@@ -1,3 +1,8 @@
+# Exercise for today 
+
+Implement matrix multiplication algorithm.
+
+
 # Configuration
 
 You may need to install ``openmpi openmpi-devel``, e.g.
