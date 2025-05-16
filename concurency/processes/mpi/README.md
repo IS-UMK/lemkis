@@ -1,7 +1,47 @@
 # Exercise for today 
 
-Implement matrix multiplication algorithm.
+Implement matrix multiplication algorithm. Check out the following c++20 [wrapper](https://github.com/acdemiralp/mpi) **(i have not tested it nor check if it is safe to use it!)**:
 
+Example program for the wrapper
+```cpp
+#include <acdemiralp/mpi/mpi.hpp>
+#include <iostream>
+#include <format>
+
+constexpr int sender_rank   = 0;
+constexpr int receiver_rank = 1;
+constexpr int tag           = 0;
+
+int main(int argc, char** argv) {
+    // Initialize MPI using the wrapper
+    acdemiralp::mpi::environment env(argc, argv);
+    acdemiralp::mpi::communicator world;
+
+    int rank = world.rank();
+    int size = world.size();
+
+    if (size < 2) {
+        if (rank == sender_rank) {
+            std::cout << "This program requires at least 2 processes!\n";
+        }
+        return 1;
+    }
+
+    if (rank == sender_rank) {
+        int value_to_send = 42;
+        world.send(&value_to_send, 1, receiver_rank, tag);
+        std::cout << std::format("Sender (rank {}): Sent value {}\n", sender_rank, value_to_send);
+    }
+    else if (rank == receiver_rank) {
+        int received_value = 0;
+        world.receive(&received_value, 1, sender_rank, tag);
+        std::cout << std::format("Receiver (rank {}): Received value {}\n", receiver_rank, received_value);
+    }
+
+    // MPI environment will be finalized automatically by RAII
+    return 0;
+}
+```
 
 # Configuration
 
