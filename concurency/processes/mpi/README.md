@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
     // Finalize the MPI environment
     MPI_Finalize();
-    return 0;
+    return EXIT_SUCCESS;  // Use standard constant instead of 0
 }
 ```
 
@@ -99,6 +99,17 @@ MPI supports direct communication between processes using `MPI_Send` and `MPI_Re
 #include <vector>
 #include <mpi.h>
 
+// Process ranks
+enum ProcessRank {
+    SENDER = 0,
+    RECEIVER = 1
+};
+
+// MPI constants
+enum MPIConstants {
+    DEFAULT_TAG = 0
+};
+
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
@@ -106,35 +117,45 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    // We need at least 2 processes for this example
-    if (world_size < 2) {
-        std::cout << "This example requires at least 2 processes\n";
+    // Define minimum required processes
+    constexpr int MIN_REQUIRED_PROCESSES = 2;
+    
+    if (world_size < MIN_REQUIRED_PROCESSES) {
+        std::cout << "This example requires at least " << MIN_REQUIRED_PROCESSES << " processes\n";
         MPI_Finalize();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     constexpr int MAX_NUMBERS = 100;
     std::vector<int> numbers;
     
-    if (world_rank == 0) {
-        // Process 0 sends data to process 1
+    if (world_rank == ProcessRank::SENDER) {
+        // Process SENDER sends data to process RECEIVER
         numbers.resize(MAX_NUMBERS);
         for (int i = 0; i < MAX_NUMBERS; i++) {
             numbers[i] = i;
         }
-        std::cout << std::format("Process 0 sending data to process 1\n");
-        MPI_Send(numbers.data(), MAX_NUMBERS, MPI_INT, 1, 0, MPI_COMM_WORLD);
-    } else if (world_rank == 1) {
-        // Process 1 receives data from process 0
+        std::cout << std::format("Process {} sending data to process {}\n", 
+                  ProcessRank::SENDER, ProcessRank::RECEIVER);
+                  
+        MPI_Send(numbers.data(), MAX_NUMBERS, MPI_INT, 
+                ProcessRank::RECEIVER, MPIConstants::DEFAULT_TAG, MPI_COMM_WORLD);
+                
+    } else if (world_rank == ProcessRank::RECEIVER) {
+        // Process RECEIVER receives data from process SENDER
         numbers.resize(MAX_NUMBERS);
         MPI_Status status;
-        MPI_Recv(numbers.data(), MAX_NUMBERS, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-        std::cout << std::format("Process 1 received data from process 0. Last number: {}\n", 
-                               numbers[MAX_NUMBERS - 1]);
+        
+        MPI_Recv(numbers.data(), MAX_NUMBERS, MPI_INT, 
+                ProcessRank::SENDER, MPIConstants::DEFAULT_TAG, MPI_COMM_WORLD, &status);
+                
+        std::cout << std::format("Process {} received data from process {}. Last number: {}\n", 
+                              ProcessRank::RECEIVER, ProcessRank::SENDER, 
+                              numbers[MAX_NUMBERS - 1]);
     }
 
     MPI_Finalize();
-    return 0;
+    return EXIT_SUCCESS;
 }
 ```
 
@@ -219,6 +240,11 @@ Sends data from one process to all others.
 #include <vector>
 #include <mpi.h>
 
+// MPI process roles
+enum ProcessRole {
+    ROOT = 0  // Process that initiates the broadcast
+};
+
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
@@ -226,27 +252,39 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+    // Define array parameters
     constexpr int ARRAY_SIZE = 10;
+    constexpr int FIRST_ELEMENT_INDEX = 0;
+    constexpr int SECOND_ELEMENT_INDEX = 1;
+    constexpr int THIRD_ELEMENT_INDEX = 2;
+    constexpr int MULTIPLIER = 100;  // Used to generate sample data
+    
     std::vector<int> data(ARRAY_SIZE);
     
-    if (world_rank == 0) {
-        // Process 0 initializes the data
+    if (world_rank == ProcessRole::ROOT) {
+        // ROOT process initializes the data
         for (int i = 0; i < ARRAY_SIZE; i++) {
-            data[i] = i * 100;
+            data[i] = i * MULTIPLIER;
         }
-        std::cout << std::format("Process 0 broadcasting data: {}, {}, {}...\n", 
-                               data[0], data[1], data[2]);
+        std::cout << std::format("Process {} broadcasting data: {}, {}, {}...\n", 
+                               ProcessRole::ROOT, 
+                               data[FIRST_ELEMENT_INDEX], 
+                               data[SECOND_ELEMENT_INDEX], 
+                               data[THIRD_ELEMENT_INDEX]);
     }
     
-    // Broadcast data from process 0 to all processes
-    MPI_Bcast(data.data(), ARRAY_SIZE, MPI_INT, 0, MPI_COMM_WORLD);
+    // Broadcast data from ROOT process to all processes
+    MPI_Bcast(data.data(), ARRAY_SIZE, MPI_INT, ProcessRole::ROOT, MPI_COMM_WORLD);
     
     // Now all processes have the data
     std::cout << std::format("Process {}: After broadcast, first three values: {}, {}, {}\n",
-                           world_rank, data[0], data[1], data[2]);
+                           world_rank, 
+                           data[FIRST_ELEMENT_INDEX], 
+                           data[SECOND_ELEMENT_INDEX], 
+                           data[THIRD_ELEMENT_INDEX]);
 
     MPI_Finalize();
-    return 0;
+    return EXIT_SUCCESS;
 }
 ```
 
@@ -465,16 +503,34 @@ int main(int argc, char** argv) {
 #include <chrono>
 #include <mpi.h>
 
+// Process roles
+enum ProcessRole {
+    ROOT = 0  // Coordinator process
+};
+
+// MPI constants
+enum MPIConstants {
+    DEFAULT_TAG = 0
+};
+
+// Matrix operation constants
+struct MatrixConstants {
+    static constexpr int DEFAULT_PREVIEW_SIZE = 3;  // Number of rows/columns to display
+};
+
 void initialize_matrix(std::vector<double>& matrix, int rows, int cols) {
+    constexpr double ROW_FACTOR = 0.1;    // Multiplier for row index
+    constexpr double COL_FACTOR = 0.01;   // Multiplier for column index
+    
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            matrix[i * cols + j] = i * 0.1 + j * 0.01;
+            matrix[i * cols + j] = i * ROW_FACTOR + j * COL_FACTOR;
         }
     }
 }
 
 void print_matrix_part(const std::vector<double>& matrix, int rows, int cols, 
-                       const std::string& name, int max_print = 3) {
+                       const std::string& name, int max_print = MatrixConstants::DEFAULT_PREVIEW_SIZE) {
     std::cout << name << " (showing up to " << max_print << "x" << max_print << "):\n";
     int print_rows = std::min(rows, max_print);
     int print_cols = std::min(cols, max_print);
@@ -497,13 +553,13 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     // Matrix dimensions
-    constexpr int M = 1000;  // A: M x K
-    constexpr int K = 1000;  // B: K x N
-    constexpr int N = 1000;  // C: M x N
+    constexpr int M = 1000;  // A: M x K (rows x cols)
+    constexpr int K = 1000;  // B: K x N (rows x cols)
+    constexpr int N = 1000;  // C: M x N (rows x cols)
     
     // Root process initializes matrices A and B
     std::vector<double> A, B, C;
-    if (world_rank == 0) {
+    if (world_rank == ProcessRole::ROOT) {
         A.resize(M * K);
         B.resize(K * N);
         C.resize(M * N, 0.0);
@@ -517,12 +573,12 @@ int main(int argc, char** argv) {
     
     // Broadcast matrix B to all processes
     // (We're dividing matrix A, but all processes need all of matrix B)
-    if (world_rank == 0) {
+    if (world_rank == ProcessRole::ROOT) {
         std::cout << "Broadcasting matrix B to all processes...\n";
     }
     
     B.resize(K * N); // All processes need space for B
-    MPI_Bcast(B.data(), K * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(B.data(), K * N, MPI_DOUBLE, ProcessRole::ROOT, MPI_COMM_WORLD);
     
     // Determine how many rows each process gets
     int rows_per_process = M / world_size;
@@ -543,30 +599,29 @@ int main(int argc, char** argv) {
     std::vector<double> local_C(my_rows * N, 0.0);
     
     // Scatter rows of A to all processes
-    if (world_rank == 0) {
+    if (world_rank == ProcessRole::ROOT) {
         std::cout << "Scattering matrix A to all processes...\n";
         
         // First, send my own portion to local_A
         std::copy(A.begin(), A.begin() + my_rows * K, local_A.begin());
         
         // Send portions to other processes
-        int offset = my_rows * K;
-        for (int i = 1; i < world_size; i++) {
-            int rows_for_i = (i < leftover_rows) ? 
+        for (int proc_id = 1; proc_id < world_size; proc_id++) {
+            int rows_for_proc = (proc_id < leftover_rows) ? 
                              rows_per_process + 1 : rows_per_process;
-            int row_start_i = i < leftover_rows ?
-                             i * (rows_per_process + 1) :
+            int row_start_proc = proc_id < leftover_rows ?
+                             proc_id * (rows_per_process + 1) :
                              leftover_rows * (rows_per_process + 1) + 
-                             (i - leftover_rows) * rows_per_process;
+                             (proc_id - leftover_rows) * rows_per_process;
             
-            MPI_Send(&A[row_start_i * K], rows_for_i * K, MPI_DOUBLE, 
-                    i, 0, MPI_COMM_WORLD);
+            MPI_Send(&A[row_start_proc * K], rows_for_proc * K, MPI_DOUBLE, 
+                    proc_id, MPIConstants::DEFAULT_TAG, MPI_COMM_WORLD);
         }
     } else {
-        // Receive my portion from process 0
+        // Receive my portion from process ROOT
         MPI_Status status;
         MPI_Recv(local_A.data(), my_rows * K, MPI_DOUBLE, 
-                0, 0, MPI_COMM_WORLD, &status);
+                ProcessRole::ROOT, MPIConstants::DEFAULT_TAG, MPI_COMM_WORLD, &status);
     }
     
     // Perform local matrix multiplication
@@ -588,39 +643,40 @@ int main(int argc, char** argv) {
     std::cout << std::format("Process {}: Computed {} rows in {:.6f} seconds\n", 
                            world_rank, my_rows, elapsed.count());
     
-    // Gather results back to process 0
-    if (world_rank == 0) {
-        std::cout << "Gathering results back to process 0...\n";
+    // Gather results back to process ROOT
+    if (world_rank == ProcessRole::ROOT) {
+        std::cout << "Gathering results back to process ROOT...\n";
         
         // First, copy my results to C
         std::copy(local_C.begin(), local_C.end(), C.begin());
         
         // Receive results from other processes
-        for (int i = 1; i < world_size; i++) {
-            int rows_for_i = (i < leftover_rows) ? 
+        for (int proc_id = 1; proc_id < world_size; proc_id++) {
+            int rows_for_proc = (proc_id < leftover_rows) ? 
                              rows_per_process + 1 : rows_per_process;
-            int row_start_i = i < leftover_rows ?
-                             i * (rows_per_process + 1) :
+            int row_start_proc = proc_id < leftover_rows ?
+                             proc_id * (rows_per_process + 1) :
                              leftover_rows * (rows_per_process + 1) + 
-                             (i - leftover_rows) * rows_per_process;
+                             (proc_id - leftover_rows) * rows_per_process;
             
-            std::vector<double> temp_C(rows_for_i * N);
+            std::vector<double> temp_C(rows_for_proc * N);
             MPI_Status status;
-            MPI_Recv(temp_C.data(), rows_for_i * N, MPI_DOUBLE, 
-                    i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(temp_C.data(), rows_for_proc * N, MPI_DOUBLE, 
+                    proc_id, MPIConstants::DEFAULT_TAG, MPI_COMM_WORLD, &status);
             
             // Copy received data to the main result matrix
             std::copy(temp_C.begin(), temp_C.end(), 
-                     C.begin() + row_start_i * N);
+                     C.begin() + row_start_proc * N);
         }
         
         print_matrix_part(C, M, N, "Result Matrix C");
     } else {
-        // Send results to process 0
-        MPI_Send(local_C.data(), my_rows * N, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+        // Send results to process ROOT
+        MPI_Send(local_C.data(), my_rows * N, MPI_DOUBLE, 
+               ProcessRole::ROOT, MPIConstants::DEFAULT_TAG, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
-    return 0;
+    return EXIT_SUCCESS;
 }
 ```
