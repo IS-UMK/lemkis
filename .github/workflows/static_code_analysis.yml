@@ -24,7 +24,7 @@ jobs:
     # - name: Install  g++
     #   run: sudo apt update && sudo apt install g++ gcc && sudo apt upgrade
     - name: Install standard library headers for clang and clang tools
-      run: sudo apt install clang-tidy-19 clang-format-19 libc++-19-dev libomp-dev-19
+      run: sudo apt install clang-tidy-19 clang-format-19 libc++-19-dev 
     - name: Install the newest ninja
       run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip -f /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
     - uses: actions/setup-python@v5
