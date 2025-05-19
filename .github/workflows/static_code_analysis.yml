@@ -24,7 +24,7 @@ jobs:
     # - name: Install  g++
     #   run: sudo apt update && sudo apt install g++ gcc && sudo apt upgrade
     - name: Install standard library headers for clang and clang tools
-      run: sudo apt install clang-tidy-19 clang-format-19 libc++-19-dev libomp-dev
+      run: sudo apt install clang-tidy-19 clang-format-19 libc++-19-dev libomp-dev-19
     - name: Install the newest ninja
       run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip -f /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
     - uses: actions/setup-python@v5
@@ -32,6 +32,18 @@ jobs:
         python-version: '3.12' 
     - name: Configure
       run: pip install cpplint 
+    - name: Setup OpenMP headers
+      run: |
+        # Install specific OpenMP dev package for clang-19
+        sudo apt-get update
+        sudo apt-get install -y libomp-19-dev || sudo apt-get install -y libomp-dev
+        # Find omp.h
+        OMP_INCLUDE_PATH=$(find /usr -name "omp.h" | grep -v "android" | head -1 | xargs dirname)
+        echo "Found omp.h at: $OMP_INCLUDE_PATH"
+        # Make omp.h available to clang-19
+        sudo ln -sf $OMP_INCLUDE_PATH/omp.h /usr/include/omp.h || true
+        # Show debug info
+        ls -la /usr/include/omp.h || echo "Failed to create symlink"
     - name: Setup correct OpenMP library path
       run: |
         # Find the system libomp
