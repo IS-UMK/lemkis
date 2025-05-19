@@ -7,7 +7,30 @@ enable_testing()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Find libomp dynamically
+execute_process(
+  COMMAND find /usr -name "libomp.so*" 
+  OUTPUT_VARIABLE LIBOMP_PATHS
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+# Parse the output to get the first path
+string(REPLACE "\n" ";" LIBOMP_PATH_LIST "${LIBOMP_PATHS}")
+list(GET LIBOMP_PATH_LIST 0 LIBOMP_PATH)
+get_filename_component(LIBOMP_DIR "${LIBOMP_PATH}" DIRECTORY)
+
+# Set OpenMP configuration
+set(OpenMP_C_FLAGS "-fopenmp=libomp" CACHE STRING "OpenMP C flags")
+set(OpenMP_CXX_FLAGS "-fopenmp=libomp" CACHE STRING "OpenMP C++ flags") 
+set(OpenMP_C_LIB_NAMES "omp" CACHE STRING "OpenMP C libraries")
+set(OpenMP_CXX_LIB_NAMES "omp" CACHE STRING "OpenMP C++ libraries")
+set(OpenMP_omp_LIBRARY "${LIBOMP_PATH}" CACHE FILEPATH "Path to the omp library")
+
+# Add the directory to runtime path
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${LIBOMP_DIR}")
+
+message(STATUS "Found libomp at: ${LIBOMP_PATH}")
+message(STATUS "Adding rpath: ${LIBOMP_DIR}")
 # For newer clang versions
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE CLANG_VERSION)
