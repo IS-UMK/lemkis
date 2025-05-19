@@ -32,6 +32,14 @@ jobs:
         python-version: '3.12' 
     - name: Configure
       run: pip install cpplint 
+    - name: Setup correct OpenMP library path
+      run: |
+        # Find the system libomp
+        SYSTEM_LIBOMP=$(find /usr/lib -name "libomp.so*" | grep -v "android" | head -1)
+        echo "System OpenMP library: $SYSTEM_LIBOMP"
+        # Create symlink
+        sudo mkdir -p /usr/lib || true
+        sudo ln -sf $SYSTEM_LIBOMP /usr/lib/libomp.so
     - name: Build project
       run: ./scripts/make_debug.sh
     - name: Run clang-format on all module files
