@@ -8,7 +8,10 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(OpenMP_CXX_FLAGS "-fopenmp=libomp")
+    set(OpenMP_CXX_LIB_NAMES "omp")
+endif()
 # Corrected include directories
 set(INCLUDE_DIRS
   ${CURRENT_CMAKE_SOURCE_DIR}/include
