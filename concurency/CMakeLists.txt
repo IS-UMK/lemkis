@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.23)
 project(concurrency C CXX)
 
 set(CMAKE_CXX_STANDARD 26)
-# add_subdirectory(./mutex)
-# add_subdirectory(./compare_and_swap)
+add_subdirectory(./mutex)
+add_subdirectory(./compare_and_swap)
 # add_subdirectory(./processes/mpi)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++26")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra --pedantic -g3 -ggdb")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra --pedantic -g3 -ggdb -fexperimental-library")
 
 
 add_executable(
