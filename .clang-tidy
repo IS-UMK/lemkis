@@ -220,7 +220,7 @@ CheckOptions:
   readability-function-size.BranchThreshold: 3
   readability-function-size.LineThreshold: 10
   readability-function-size.NestingThreshold: 3
-  readability-function-size.ParameterThreshold: none
+  readability-function-size.ParameterThreshold: 4
   readability-function-size.StatementThreshold: '800'
   readability-function-size.VariableThreshold: none
   readability-identifier-naming.AggressiveDependentMemberLookup: 'false'
