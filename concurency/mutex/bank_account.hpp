@@ -1,18 +1,15 @@
 #pragma once
 
-#include <print>
-
-
 #include <mutex>
-#include <thread>
 #include <print>
+#include <thread>
 
 class BankAccount {
-private:
+  private:
     double balance;
     std::mutex mtx;
 
-public:
+  public:
     BankAccount(double initial_balance) : balance(initial_balance) {}
 
     void withdraw(double amount) {
@@ -31,16 +28,17 @@ public:
         // DEADLOCK DANGER: If two threads call transfer in opposite directions
         // Thread 1: account1.transfer(account2, amount)
         // Thread 2: account2.transfer(account1, amount)
-        // They will deadlock because each thread holds one mutex and waits for the other
+        // They will deadlock because each thread holds one mutex and waits for
+        // the other
         std::lock_guard<std::mutex> lock_from(mtx);
         std::print("Locked source account\n");
-        
+
         // Simulate some processing time before acquiring the second lock
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        
+
         std::lock_guard<std::mutex> lock_to(to.mtx);
         std::print("Locked destination account\n");
-        
+
         if (balance >= amount) {
             balance -= amount;
             to.balance += amount;
@@ -50,12 +48,13 @@ public:
         }
     }
 
-    // A safer way to transfer that prevents deadlock using std::scoped_lock (C++17)
+    // A safer way to transfer that prevents deadlock using std::scoped_lock
+    // (C++17)
     void safe_transfer(BankAccount& to, double amount) {
-        // std::scoped_lock automatically locks all mutexes without risk of deadlock
-        // and unlocks them when it goes out of scope
+        // std::scoped_lock automatically locks all mutexes without risk of
+        // deadlock and unlocks them when it goes out of scope
         std::scoped_lock lock(mtx, to.mtx);
-        
+
         if (balance >= amount) {
             balance -= amount;
             to.balance += amount;
@@ -75,17 +74,15 @@ public:
 void deadlock_example() {
     BankAccount account1(1000);
     BankAccount account2(1000);
-    
+
     std::print("Demonstrating deadlock problem:\n");
-    
-    std::thread t1([&account1, &account2]() {
-        account1.transfer(account2, 500);
-    });
-    
-    std::thread t2([&account1, &account2]() {
-        account2.transfer(account1, 300);
-    });
-    
+
+    std::thread t1(
+        [&account1, &account2]() { account1.transfer(account2, 500); });
+
+    std::thread t2(
+        [&account1, &account2]() { account2.transfer(account1, 300); });
+
     t1.join();
     t2.join();
 }
@@ -94,17 +91,15 @@ void deadlock_example() {
 void safe_example() {
     BankAccount account1(1000);
     BankAccount account2(1000);
-    
+
     std::print("Demonstrating deadlock prevention with std::scoped_lock:\n");
-    
-    std::thread t1([&account1, &account2]() {
-        account1.safe_transfer(account2, 500);
-    });
-    
-    std::thread t2([&account1, &account2]() {
-        account2.safe_transfer(account1, 300);
-    });
-    
+
+    std::thread t1(
+        [&account1, &account2]() { account1.safe_transfer(account2, 500); });
+
+    std::thread t2(
+        [&account1, &account2]() { account2.safe_transfer(account1, 300); });
+
     t1.join();
     t2.join();
 }

@@ -4,9 +4,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # include_directories(./include/node)
 
-add_library(mutex INTERFACE bank_account.hpp condition_variable.hpp)
-target_link_libraries(mutex INTERFACE)
-target_include_directories(mutex INTERFACE
+add_library(cas INTERFACE cas.hpp)
+target_link_libraries(cas INTERFACE)
+target_include_directories(cas INTERFACE
                             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                             $<INSTALL_INTERFACE:include>
                            )
