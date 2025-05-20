@@ -2,6 +2,8 @@
 
 #include <atomic>
 #include <string>
+#include <thread>
+#include <vector>
 
 namespace old_benchmark {
     template <typename Func>
