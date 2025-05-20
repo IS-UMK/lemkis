@@ -9,7 +9,7 @@ namespace benchmark {
 
     auto benchmark_queue(int N) -> void;
 
-    auto run_benchmarks(int N) -> void;
+    auto run_old_benchmarks(int N) -> void;
 
-    auto run_benchmarks_new(int N) -> void;
+    auto run_new_benchmarks(int N) -> void;
 }  // namespace benchmark

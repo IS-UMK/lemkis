@@ -18,229 +18,132 @@
 #include "libs/readerwriterqueue.h"
 
 namespace benchmark {
-    template <typename Func>
-    static auto measure_time(const std::string& name, Func&& func) -> void {
-        auto start = std::chrono::high_resolution_clock::now();
-        func();
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration =
-            std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::println("{}: {} ms", name, duration.count());
+    template <typename StructType>
+    static void run_producers(StructType& s,
+                              std::atomic<int>& produced_count,
+                              int n_producers,
+                              int total_items,
+                              std::vector<std::jthread>& producers) {
+        for (int p = 0; p < n_producers; ++p) {
+            producers.emplace_back([&](const std::stop_token& stoken) {
+                while (produced_count < total_items &&
+                       !stoken.stop_requested()) {
+                    s.push(produced_count);
+                    produced_count++;
+                }
+            });
+        }
     }
 
-    auto benchmark_concurrent_stack(int N) -> void {
-        concurrent_stack<int> stack;
+    template <typename StructType>
+    static void run_consumers(StructType& s,
+                              std::atomic<int>& consumed_count,
+                              int n_consumers,
+                              int total_items,
+                              std::vector<std::jthread>& consumers) {
+        for (int p = 0; p < n_consumers; ++p) {
+            consumers.emplace_back([&](const std::stop_token& stoken) {
+                while (consumed_count < total_items &&
+                       !stoken.stop_requested()) {
+                    if (!s.empty()) {
+                        s.pop();
+                        consumed_count++;
+                    }
+                }
+            });
+        }
+    }
+
+    static void join_threads(auto& threads) {
+        for (auto& thread : threads) { thread.join(); }
+    }
+
+    static void print_results(const std::string& struct_name,
+                              int n_producers,
+                              int n_consumers,
+                              int total_items,
+                              auto duration) {
+        std::print(
+            "{}: {} producers, {} consumers, {} items total - completed in {} "
+            "ms\n",
+            struct_name,
+            n_producers,
+            n_consumers,
+            total_items,
+            duration.count());
+    }
+
+    template <typename StructType>
+    static void benchmark_old_concurrent_structure(
+        const std::string& struct_name,
+        int n_producers,
+        int n_consumers,
+        int total_items) {
+        StructType s;
+        std::atomic<int> produced_count(0);
+        std::atomic<int> consumed_count(0);
+        std::vector<std::jthread> producers;
+        std::vector<std::jthread> consumers;
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+
+        run_producers(s, produced_count, n_producers, total_items, producers);
+        run_consumers(s, consumed_count, n_consumers, total_items, consumers);
+
+        join_threads(producers);
+        join_threads(consumers);
+
+        auto end_time = std::chrono::high_resolution_clock::now();
+        print_results(struct_name,
+                      n_producers,
+                      n_consumers,
+                      total_items,
+                      end_time - start_time);
+    }
+
+    template <typename StructType>
+    auto benchmark_old_structure(const std::string& struct_name,
+                                 int n_producers,
+                                 int n_consumers,
+                                 int total_items) {
+        StructType s;
         std::atomic<int> push_count(0);
         std::atomic<int> pop_count(0);
 
-        measure_time("concurrent_stack (Push)", [&] {
-            std::vector<std::jthread> threads;
-            threads.reserve(2);
-            for (int i = 0; i < 2; ++i) {
-                threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (push_count < N && !stoken.stop_requested()) {
-                        stack.push(push_count);
-                        push_count++;
-                    }
-                });
-            }
+        auto start_time = std::chrono::high_resolution_clock::now();
 
-            while (push_count < N) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-        });
+        while (push_count < total_items) {
+            s.push(push_count);
+            push_count++;
+        }
+        while (pop_count < total_items) {
+            s.pop();
+            pop_count++;
+        }
 
-        measure_time("concurrent_stack (Pop)", [&] {
-            std::vector<std::jthread> threads;
-            threads.reserve(2);
-            for (int i = 0; i < 2; ++i) {
-                threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (pop_count < N && !stoken.stop_requested()) {
-                        if (!stack.empty()) {
-                            stack.pop();
-                            pop_count++;
-                        }
-                    }
-                });
-            }
+        auto end_time = std::chrono::high_resolution_clock::now();
 
-            while (pop_count < N) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-        });
-
-        std::println("Pushed: {} items", push_count.load());
-        std::println("Popped: {} items", pop_count.load());
+        print_results(struct_name,
+                      n_producers,
+                      n_consumers,
+                      total_items,
+                      end_time - start_time);
     }
 
-    static auto benchmark_concurrent_stack_producer_consumer(int N) -> void {
-        concurrent_stack<int> stack;
-        std::atomic<int> push_count(0);
-        std::atomic<int> pop_count(0);
-
-        measure_time("concurrent_stack (Producer-Consumer)", [&] {
-            std::vector<std::jthread> prod_threads;
-            prod_threads.reserve(1);
-            for (int i = 0; i < 1; ++i) {
-                prod_threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (push_count < N && !stoken.stop_requested()) {
-                        stack.push(push_count);
-                        push_count++;
-                    }
-                });
+    auto run_old_benchmarks(int item_count) -> void {
+        for (int const p : {1, 2, 4}) {
+            for (int const c : {1, 2, 4}) {
+                benchmark_old_concurrent_structure<concurrent_queue<int>>(
+                    "Old concurrent queue", p, c, item_count);
+                benchmark_old_concurrent_structure<concurrent_stack<int>>(
+                    "Old concurrent queue", p, c, item_count);
             }
+        }
 
-            std::vector<std::jthread> cons_threads;
-            cons_threads.reserve(1);
-            for (int i = 0; i < 1; ++i) {
-                cons_threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (pop_count < N && !stoken.stop_requested()) {
-                        if (!stack.empty()) {
-                            stack.pop();
-                            pop_count++;
-                        }
-                    }
-                });
-            }
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) { break; }
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) { break; }
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-        });
-
-        std::println("Pushed: {} items", push_count.load());
-        std::println("Popped: {} items", pop_count.load());
-    }
-
-    auto benchmark_concurrent_queue(int N) -> void {
-        concurrent_queue<int> queue;
-        std::atomic<int> push_count(0);
-        std::atomic<int> pop_count(0);
-
-        measure_time("concurrent_queue (Push)", [&] {
-            std::vector<std::jthread> threads;
-            threads.reserve(2);
-            for (int i = 0; i < 2; ++i) {
-                threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (push_count < N && !stoken.stop_requested()) {
-                        queue.push(push_count);
-                        push_count++;
-                    }
-                });
-            }
-            while (push_count < N) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-        });
-
-        measure_time("concurrent_queue (Pop)", [&] {
-            std::vector<std::jthread> threads;
-            threads.reserve(2);
-            for (int i = 0; i < 2; ++i) {
-                threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (pop_count < N && !stoken.stop_requested()) {
-                        if (queue.try_pop()) { pop_count++; }
-                    }
-                });
-            }
-            while (pop_count < N) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-        });
-
-        std::println("Pushed: {} items", push_count.load());
-        std::println("Popped: {} items", pop_count.load());
-    }
-
-    static auto benchmark_concurrent_queue_producer_consumer(int N) -> void {
-        concurrent_queue<int> queue;
-        std::atomic<int> push_count(0);
-        std::atomic<int> pop_count(0);
-
-        measure_time("concurrent_queue (Producer-Consumer)", [&] {
-            std::vector<std::jthread> prod_threads;
-            prod_threads.reserve(1);
-            for (int i = 0; i < 1; ++i) {
-                prod_threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (push_count < N && !stoken.stop_requested()) {
-                        queue.push(push_count);
-                        push_count++;
-                    }
-                });
-            }
-
-            std::vector<std::jthread> cons_threads;
-            cons_threads.reserve(1);
-            for (int i = 0; i < 1; ++i) {
-                cons_threads.emplace_back([&](const std::stop_token& stoken) {
-                    while (pop_count < N && !stoken.stop_requested()) {
-                        if (queue.try_pop()) { pop_count++; }
-                    }
-                });
-            }
-            while (push_count < N || pop_count < N) {
-                if (push_count >= N && pop_count >= N) { break; }
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-        });
-
-        std::println("Pushed: {} items", push_count.load());
-        std::println("Popped: {} items", pop_count.load());
-    }
-
-    auto benchmark_stack(int N) -> void {
-        stack<int> stack;
-        std::atomic<int> push_count(0);
-        std::atomic<int> pop_count(0);
-
-        measure_time("stack (Push)", [&] {
-            while (push_count < N) {
-                stack.push(push_count);
-                push_count++;
-            }
-        });
-
-        measure_time("stack (Pop)", [&] {
-            while (pop_count < N) {
-                stack.pop();
-                pop_count++;
-            }
-        });
-    }
-
-    auto benchmark_queue(int N) -> void {
-        queue<int> queue;
-        std::atomic<int> push_count(0);
-        std::atomic<int> pop_count(0);
-
-        measure_time("queue (Push)", [&] {
-            while (push_count < N) {
-                queue.push(push_count);
-                push_count++;
-            }
-        });
-
-        measure_time("queue (Pop)", [&] {
-            while (pop_count < N) {
-                queue.pop();
-                pop_count++;
-            }
-        });
-    }
-
-    auto run_benchmarks(int N) -> void {
-        std::println("\n=== Benchmarking with N = {} ===\n", N);
-
-        benchmark_concurrent_stack(N);
-        benchmark_concurrent_stack_producer_consumer(N);
-        benchmark_concurrent_queue(N);
-        benchmark_concurrent_queue_producer_consumer(N);
-        benchmark_stack(N);
-        benchmark_queue(N);
+        benchmark_old_structure<queue<int>>(
+            "Old concurrent queue", 1, 1, item_count);
+        benchmark_old_structure<stack<int>>(
+            "Old concurrent queue", 1, 1, item_count);
     }
 
     template <typename StackType>
@@ -529,7 +432,7 @@ namespace benchmark {
             duration.count());
     }
 
-    auto run_benchmarks_new(int N) -> void {
+    auto run_new_benchmarks(int N) -> void {
         // Configuration
         const int total_items = N;
 
@@ -543,31 +446,31 @@ namespace benchmark {
 
                 // Vector stack with mutex
                 benchmark_stack_new<vector_stack<int>>("vector_stack",
-                                                      "mutex",
-                                                      producers,
-                                                      consumers,
-                                                      items_per_producer);
+                                                       "mutex",
+                                                       producers,
+                                                       consumers,
+                                                       items_per_producer);
 
                 // Vector stack with condition variables
                 benchmark_stack_new<vector_stack<int>>("vector_stack",
-                                                      "cv",
-                                                      producers,
-                                                      consumers,
-                                                      items_per_producer);
+                                                       "cv",
+                                                       producers,
+                                                       consumers,
+                                                       items_per_producer);
 
                 // List stack with mutex
                 benchmark_stack_new<list_stack<int>>("list_stack",
-                                                    "mutex",
-                                                    producers,
-                                                    consumers,
-                                                    items_per_producer);
+                                                     "mutex",
+                                                     producers,
+                                                     consumers,
+                                                     items_per_producer);
 
                 // List stack with condition variables
                 benchmark_stack_new<list_stack<int>>("list_stack",
-                                                    "cv",
-                                                    producers,
-                                                    consumers,
-                                                    items_per_producer);
+                                                     "cv",
+                                                     producers,
+                                                     consumers,
+                                                     items_per_producer);
 
                 std::print("\n");
             }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.26)
 project(StackAndQueue C CXX)
 
 set(CMAKE_CXX_STANDARD 26)
@@ -17,7 +17,7 @@ set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/main.cpp
   ${CMAKE_SOURCE_DIR}/src/stack_test.cpp
   ${CMAKE_SOURCE_DIR}/src/queue_test.cpp
-  ${CMAKE_SOURCE_DIR}/src/benchmark.cpp
+  ${CMAKE_SOURCE_DIR}/src/old_benchmark.cpp
 )
 
 set(INCLUDE_DIRS
@@ -28,7 +28,7 @@ set(INCLUDE_DIRS
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -ftemplate-backtrace-limit=0 -O3 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++26 -ftemplate-backtrace-limit=0 -O3 ")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_X_FLAGS_DEBUG} -Wall --pedantic -g3 -ggdb")
 
 find_package(Threads REQUIRED)
