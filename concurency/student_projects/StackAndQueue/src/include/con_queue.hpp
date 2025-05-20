@@ -71,13 +71,19 @@ class concurrent_queue {
         unsafe_pop();
     }
 
+    // Access the front element
+    auto unsafe_peek() const -> T& { return front_->data; }
+
     // Try to peek at front element without removing
     auto try_peek(T& value) const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
         if (unsafe_empty()) { return false; }
-        value = front_->data;
+        value = unsafe_peek();
         return true;
     }
+
+    // Alias for try_peek
+    auto try_top(T& value) const -> bool { return try_peek(value); }
 
     // Helper method to check if queue is empty when lock is already held
     auto unsafe_empty() const -> bool { return front_ == nullptr; }

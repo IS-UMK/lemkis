@@ -60,7 +60,7 @@ class concurrent_stack {
     }
 
     // Access the top element
-    auto unsafe_top() -> T& { return top_->data; }
+    auto unsafe_top() const -> T& { return top_->data; }
 
     // Try to peek at top element without removing
     auto try_top(T& value) const -> bool {
