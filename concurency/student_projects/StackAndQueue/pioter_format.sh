@@ -1,1 +1,1 @@
-find ./concurency/student_projects/StackAndQueue/ -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-format-19 --Werror --dry-run
+clang-format-19 "$1" --Werror --dry-run
