@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.23)
 project(StackAndQueue C CXX)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_program(CLANG_TIDY NAMES clang-tidy)
-if(CLANG_TIDY)
-  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
-  message(STATUS "Clang-tidy enabled")
-else()
-  message(WARNING "Clang-tidy not found, checks disabled")
-endif()
+# find_program(CLANG_TIDY NAMES clang-tidy)
+# if(CLANG_TIDY)
+#   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
+#   message(STATUS "Clang-tidy enabled")
+# else()
+#   message(WARNING "Clang-tidy not found, checks disabled")
+# endif()
 
 set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/main.cpp

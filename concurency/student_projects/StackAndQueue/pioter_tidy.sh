@@ -1,0 +1,1 @@
+find ./concurency/student_projects/StackAndQueue/ -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-tidy-19  -p ./build/debug/ --extra-arg=-std=c++26 --config-file=./.clang-tidy
