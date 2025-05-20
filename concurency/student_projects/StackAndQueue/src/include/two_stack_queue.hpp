@@ -54,7 +54,7 @@ class two_stack_queue {
     }
 
     // Safe methods using mutex
-    void mutex_enqueue(T value) {
+    auto mutex_enqueue(T value) -> void {
         std::lock_guard<std::mutex> lock(m_mutex);
         unsafe_enqueue(std::move(value));
     }
@@ -65,7 +65,7 @@ class two_stack_queue {
     }
 
     // Safe methods using condition variable
-    void cv_enqueue(T value) {
+    auto cv_enqueue(T value) -> void {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             unsafe_enqueue(std::move(value));

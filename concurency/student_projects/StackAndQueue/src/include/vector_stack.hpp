@@ -30,7 +30,7 @@ class vector_stack {
     auto unsafe_size() const -> size_t { return m_data.size(); }
 
     // Safe methods using mutex
-    void mutex_push(T value) {
+    auto mutex_push(T value) -> void {
         std::lock_guard<std::mutex> lock(m_mutex);
         unsafe_push(std::move(value));
     }
@@ -41,7 +41,7 @@ class vector_stack {
     }
 
     // Safe methods using condition variable
-    void cv_push(T value) {
+    auto cv_push(T value) -> void {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             unsafe_push(std::move(value));

@@ -1,3 +1,5 @@
+set(CMAKE_CXX_COMPILER "g++-14")
+
 cmake_minimum_required(VERSION 3.26)
 project(StackAndQueue C CXX)
 
@@ -33,5 +35,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_X_FLAGS_DEBUG} -Wall --pedantic -g3 -ggdb")
 
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_compile_options(StackAndQueue PRIVATE -std=c++2c)
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
