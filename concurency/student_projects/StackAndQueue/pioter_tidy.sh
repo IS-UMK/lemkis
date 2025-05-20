@@ -1,1 +1,1 @@
-clang-tidy-19 "$1" -p ../../../build/debug/ --extra-arg=-std=c++26 --config-file=../../../.clang-tidy
+clang-tidy-19 "$1" -p ../../../build/debug/ --extra-arg=-std=c++26 --config-file=../../../.clang-tidy --header-filter='^/src/include' --extra-arg=-isystem='/src/include'

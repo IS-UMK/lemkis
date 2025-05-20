@@ -39,13 +39,10 @@ class concurrent_stack {
     }
 
     // Remove the top element (non-blocking)
-    auto try_pop(T& value) -> bool {
+    auto try_pop() -> bool {
         const std::lock_guard<std::mutex> lock(mutex_);
         if (unsafe_empty()) { return false; }
-
-        value = std::move(top_->data);
-        top_ = std::move(top_->next);
-        size_--;
+        unsafe_pop();
         return true;
     }
 

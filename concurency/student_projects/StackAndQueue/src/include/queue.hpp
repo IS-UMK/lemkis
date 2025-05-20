@@ -18,7 +18,6 @@ class queue {
 
     auto push(T value) -> void {
         auto new_node = std::make_unique<node<T>>(std::move(value));
-
         if (empty()) {
             front_ = std::move(new_node);
             rear_ = front_.get();
@@ -26,14 +25,11 @@ class queue {
             rear_->next = std::move(new_node);
             rear_ = rear_->next.get();
         }
-
         size_++;
     }
 
     auto pop() -> void {
-
         if (front_.get() == rear_) { rear_ = nullptr; }
-
         front_ = std::move(front_->next);
         size_--;
     }
