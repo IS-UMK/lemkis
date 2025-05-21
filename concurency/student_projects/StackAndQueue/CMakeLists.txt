@@ -17,8 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/main.cpp
-  ${CMAKE_SOURCE_DIR}/src/struct_test.cpp
-  ${CMAKE_SOURCE_DIR}/src/old_benchmark.cpp
+  ${CMAKE_SOURCE_DIR}/src/benchmark.cpp
 )
 
 set(INCLUDE_DIRS
