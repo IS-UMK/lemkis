@@ -1,0 +1,1 @@
+find . -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-format-19 --Werror --dry-run
