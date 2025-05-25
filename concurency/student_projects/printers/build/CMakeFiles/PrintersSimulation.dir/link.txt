@@ -1,1 +1,0 @@
-/usr/bin/g++   -std=c++26 CMakeFiles/PrintersSimulation.dir/main.cpp.o -o PrintersSimulation 
