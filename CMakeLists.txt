@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++26 -fexperimental
 # Create a library
 
 add_subdirectory(./algebra2)
+add_subdirectory(./discrete_math)
 add_subdirectory(./tests)
 add_subdirectory(./concurency)
 
@@ -29,7 +30,7 @@ add_subdirectory(./concurency)
 # Create an executable
 add_executable(${PROJECT_NAME} main.cxx)
 # Link to the library foo
-target_link_libraries(${PROJECT_NAME} libmatrix libexpect)
+target_link_libraries(${PROJECT_NAME} libmatrix libexpect libpolynomial)
 
 
 # add_executable(matrix_test matrix_test.cxx)
