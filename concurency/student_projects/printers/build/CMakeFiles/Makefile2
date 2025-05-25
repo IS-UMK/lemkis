@@ -64,32 +64,15 @@ CMAKE_BINARY_DIR = /home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects
 
 # The main recursive "all" target.
 all: CMakeFiles/PrintersSimulation.dir/all
-all: lib/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
-preinstall: lib/preinstall
+preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: CMakeFiles/PrintersSimulation.dir/clean
-clean: lib/clean
 .PHONY : clean
-
-#=============================================================================
-# Directory level rules for directory lib
-
-# Recursive "all" directory target.
-lib/all:
-.PHONY : lib/all
-
-# Recursive "preinstall" directory target.
-lib/preinstall:
-.PHONY : lib/preinstall
-
-# Recursive "clean" directory target.
-lib/clean:
-.PHONY : lib/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/PrintersSimulation.dir
