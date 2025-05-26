@@ -2,8 +2,8 @@
 
 #include "Office.h"
 
-auto constexpr num_companies = 3;
-auto constexpr num_printers = 2;
+auto constexpr num_companies = 20;
+auto constexpr num_printers = 9;
 auto constexpr num_of_all_employees = 6;
 auto constexpr invalid_params_exit_code = -2;
 auto constexpr unexpected_exception_exit_code = 2;

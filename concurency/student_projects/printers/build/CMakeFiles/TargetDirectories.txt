@@ -1,0 +1,3 @@
+/home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/build/CMakeFiles/PrintersSimulation.dir
+/home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/build/CMakeFiles/edit_cache.dir
+/home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/build/CMakeFiles/rebuild_cache.dir
