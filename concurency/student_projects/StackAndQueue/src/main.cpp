@@ -1,14 +1,14 @@
-#include "include/benchmark.hpp"
-#include "include/old_benchmark.hpp"
-#include "include/struct_test.hpp"
+#include <vector>
+
+#include "benchmark_script.hpp"
 
 auto main() -> int {
+    const std::vector<int> prod_counts = {1, 2, 4};
+    const std::vector<int> cons_counts = {1, 2, 4};
     const int benchmark_count = 1000;
 
-    struct_test::run_queue_test();
-    struct_test::run_stack_test();
-    old_benchmark::run_old_benchmarks(benchmark_count);
-    benchmark::run_new_benchmarks(benchmark_count);
+    benchmark_script::run_all_benchmarks(
+        prod_counts, cons_counts, benchmark_count);
 
     return 0;
 }
