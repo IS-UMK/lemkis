@@ -66,6 +66,7 @@
         "locale": "cpp",
         "queue": "cpp",
         "bitset": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "version": "cpp"
     }
 }
