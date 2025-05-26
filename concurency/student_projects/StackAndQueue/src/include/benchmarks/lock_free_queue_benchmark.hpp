@@ -2,52 +2,50 @@
 
 #include <string_view>
 
-#include "concurrentqueue.h"
 #include "benchmark_base.hpp"
+#include "concurrentqueue.h"
 
-class LockFreeQueueBenchmark : public BenchmarkBase {
+class lock_free_queue_benchmark : public benchmark_base {
   private:
     moodycamel::ConcurrentQueue<int> m_queue;
 
   public:
-    LockFreeQueueBenchmark(std::string_view name,
-                           int producers,
-                           int consumers,
-                           int total_items)
-        : BenchmarkBase("moodycamel:ConcurrentQueue",
-                        producers,
-                        consumers,
-                        total_items) {}
+    lock_free_queue_benchmark(std::string_view name,
+                              int producers,
+                              int consumers,
+                              int total_items)
+        : benchmark_base(name, producers, consumers, total_items) {}
 
   private:
-    void producer_loop() override {
+    auto producer_loop() override -> void {
         for (int j = 0; j < m_items_per_producer; ++j) {
             m_queue.enqueue(j);
-            m_produced_count.fetch_add(1, std::memory_order_relaxed);
+            m_produced_count.fetch_add(m_one, std::memory_order_relaxed);
         }
     }
 
-    void consumer_loop(int items_to_process) override {
+    auto consumer_loop() override -> void {
         int count = 0;
-        while (count < items_to_process) {
-            if (try_consume())
+        while (count < m_items_per_consumer) {
+            if (try_consume()) {
                 ++count;
-            else if (should_break())
+            } else if (should_break()) {
                 break;
-            else
+            } else {
                 std::this_thread::yield();
+            }
         }
     }
 
-    bool try_consume() {
+    auto try_consume() -> bool {
         int value;
         bool success = m_queue.try_dequeue(value);
-        if (!success) return false;
-        m_consumed_count.fetch_add(1, std::memory_order_relaxed);
+        if (!success) { return false; }
+        m_consumed_count.fetch_add(m_one, std::memory_order_relaxed);
         return true;
     }
 
-    bool should_break() const {
+    auto should_break() const -> bool {
         return m_producers_done.load(std::memory_order_acquire) &&
                m_consumed_count.load(std::memory_order_relaxed) >=
                    m_total_items;

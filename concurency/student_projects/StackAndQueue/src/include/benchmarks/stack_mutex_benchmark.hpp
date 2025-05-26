@@ -5,16 +5,16 @@
 #include "benchmark_base.hpp"
 
 template <typename StackType>
-class StackMutexBenchmark : public BenchmarkBase {
+class stack_mutex_benchmark : public benchmark_base {
   private:
     StackType m_stack;
 
   public:
-    StackMutexBenchmark(std::string_view name,
-                        int producers,
-                        int consumers,
-                        int total_items)
-        : BenchmarkBase(name, producers, consumers, total_items) {}
+    stack_mutex_benchmark(std::string_view name,
+                          int producers,
+                          int consumers,
+                          int total_items)
+        : benchmark_base(name, producers, consumers, total_items) {}
 
   private:
     void producer_loop() override {
@@ -27,18 +27,19 @@ class StackMutexBenchmark : public BenchmarkBase {
     void consumer_loop(int items_to_process) override {
         int count = 0;
         while (count < items_to_process) {
-            if (try_consume())
+            if (try_consume()) {
                 ++count;
-            else if (should_break())
+            } else if (should_break()) {
                 break;
-            else
+            } else {
                 std::this_thread::yield();
+            }
         }
     }
 
     bool try_consume() {
         auto item = m_stack.mutex_pop();
-        if (!item) return false;
+        if (!item) { return false; }
         m_consumed_count.fetch_add(1, std::memory_order_relaxed);
         return true;
     }

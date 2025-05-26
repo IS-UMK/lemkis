@@ -6,10 +6,11 @@
 #include <string_view>
 #include <vector>
 
-class BenchmarkBase {
+class benchmark_base {
   protected:
     using Clock = std::chrono::high_resolution_clock;
     using Duration = std::chrono::milliseconds;
+    constexpr int m_one = 1;
 
     int m_num_producers;
     int m_num_consumers;
@@ -27,17 +28,20 @@ class BenchmarkBase {
     std::vector<std::jthread> m_consumers;
 
   public:
-    BenchmarkBase(std::string_view name, int producers, int consumers, int total_items);
-    virtual ~BenchmarkBase() = default;
-    void run();
+    benchmark_base(std::string_view name,
+                   int producers,
+                   int consumers,
+                   int total_items);
+    virtual ~benchmark_base() = default;
+    auto run() -> void;
 
   protected:
-    virtual void producer_loop() = 0;
-    virtual void consumer_loop(int items_to_process) = 0;
+    virtual auto producer_loop() -> void;
+    virtual auto consumer_loop() -> void;
 
   private:
-    void prepare_threads();
-    void launch_threads();
-    void wait_for_completion();
-    void print_result(Duration duration) const;
+    auto prepare_threads() -> void;
+    auto launch_threads() -> void;
+    auto wait_for_completion() -> void;
+    auto print_result(Duration duration) -> void;
 };

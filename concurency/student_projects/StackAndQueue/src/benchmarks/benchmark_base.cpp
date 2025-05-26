@@ -2,7 +2,7 @@
 
 #include <print>
 
-BenchmarkBase::BenchmarkBase(std::string_view name,
+benchmark_base::benchmark_base(std::string_view name,
                              int producers,
                              int consumers,
                              int total_items)
@@ -14,7 +14,7 @@ BenchmarkBase::BenchmarkBase(std::string_view name,
     m_items_per_consumer = total_items / consumers;
 }
 
-void BenchmarkBase::run() {
+auto benchmark_base::run() -> void {
     prepare_threads();
     const auto start = Clock::now();
     launch_threads();
@@ -23,12 +23,12 @@ void BenchmarkBase::run() {
     print_result(std::chrono::duration_cast<Duration>(end - start));
 }
 
-void BenchmarkBase::prepare_threads() {
+auto benchmark_base::prepare_threads() -> void {
     m_producers.reserve(m_num_producers);
     m_consumers.reserve(m_num_consumers);
 }
 
-void BenchmarkBase::launch_threads() {
+auto benchmark_base::launch_threads() const -> void {
     for (int i = 0; i < m_num_producers; ++i) {
         m_producers.emplace_back([this] { producer_loop(); });
     }
@@ -38,13 +38,13 @@ void BenchmarkBase::launch_threads() {
     }
 }
 
-void BenchmarkBase::wait_for_completion() {
+auto benchmark_base::wait_for_completion() -> void {
     for (auto& p : m_producers) p.join();
     m_producers_done.store(true, std::memory_order_release);
     for (auto& c : m_consumers) c.join();
 }
 
-void BenchmarkBase::print_result(Duration duration) const {
+auto benchmark_base::print_result(Duration duration) -> void {
     std::print("{}: {} producers, {} consumers, {} items total - {} ms\n",
                m_name,
                m_num_producers,
