@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/build",
-  "command": "/usr/bin/g++  -I/home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/lib   -std=c++26 -std=gnu++23 -o CMakeFiles/PrintersSimulation.dir/main.cpp.o -c /home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/main.cpp",
-  "file": "/home/jakub/is_s2_ji/PRWLG/lemkis/concurency/student_projects/printers/main.cpp",
-  "output": "CMakeFiles/PrintersSimulation.dir/main.cpp.o"
-}
-]

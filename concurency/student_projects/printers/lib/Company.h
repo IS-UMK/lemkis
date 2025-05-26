@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <condition_variable>
+#include <iostream>
 #include <vector>
 
 #include "Printer.h"
@@ -23,15 +24,14 @@ class company {
     void acquire_printer(std::vector<printer>& printers,
                          std::mutex& mtx,
                          std::condition_variable& cv);
-    auto release_printer(std::vector<printer>& printers,
+    void release_printer(std::vector<printer>& printers,
                          std::mutex& mtx,
-                         std::condition_variable& cv) -> bool;
+                         std::condition_variable& cv);
 
   private:
     auto can_use_assigned_printer(std::vector<printer>& printers) const -> bool;
     auto try_acquire_any_available_printer(std::vector<printer>& printers)
         -> bool;
-    auto check_printer(printer& current_printer, size_t i) -> bool;
     auto try_get_printer(printer& printer, size_t i) -> bool;
     void acquire_printer(printer& printer, size_t i);
     void check_and_release_printer(printer& printer,
@@ -68,32 +68,12 @@ inline auto company::can_use_assigned_printer(
 inline auto company::try_acquire_any_available_printer(
     std::vector<printer>& printers) -> bool {
     for (size_t i = 0; i < printers.size(); i++) {
-        auto& current_printer = printers.at(i);
+        auto& current_printer = printers[i];
         const std::unique_lock<std::mutex> printer_lock(*current_printer.mtx);
 
-        if (check_printer(current_printer, i)) { return true; }
+        if (try_get_printer(current_printer, i)) { return true; }
     }
 
-    return false;
-}
-
-/// <summary>
-/// if (assigned_printer == current_printer.printer_id) -> we found our
-/// companies printer, while searching the office if (assigned_printer !=
-/// utility::no_printer) { return false; } -> we need to find our companies
-/// printer further
-/// </summary>
-/// <param name="current_printer"></param>
-/// <param name="i"></param>
-/// <returns></returns>
-inline auto company::check_printer(printer& current_printer,
-                                   const size_t i) -> bool {
-    if (assigned_printer == current_printer.printer_id) {
-        current_printer.usage_count++;
-        return true;
-    }
-    if (assigned_printer != utility::no_printer) { return false; }
-    if (try_get_printer(current_printer, i)) { return true; }
     return false;
 }
 
@@ -111,6 +91,7 @@ inline auto company::try_get_printer(printer& printer, const size_t i) -> bool {
 
 inline void company::acquire_printer(printer& printer, const size_t i) {
     const auto int_i = static_cast<int>(i);
+
     printer.current_company = company_id;
     printer.usage_count++;
     assigned_printer = int_i;
@@ -125,16 +106,15 @@ inline void company::acquire_printer(printer& printer, const size_t i) {
 /// <param name="printers"> all printers in office </param>
 /// <param name="mtx"> companies mutex </param>
 /// <param name="cv"> companies condition_variable </param>
-inline auto company::release_printer(std::vector<printer>& printers,
+inline void company::release_printer(std::vector<printer>& printers,
                                      std::mutex& mtx,
-                                     std::condition_variable& cv) -> bool {
+                                     std::condition_variable& cv) {
+
     const std::unique_lock<std::mutex> lock(mtx);  // start lock
     const auto p =
         assigned_printer;  // getting printer_id from the assigned printer
-    auto& printer = printers.at(p);
+    auto& printer = printers[p];
     check_and_release_printer(printer, cv);
-    return printer.usage_count ==
-           0;  // return true if printer is no longer in use
 }
 
 inline void company::check_and_release_printer(printer& printer,

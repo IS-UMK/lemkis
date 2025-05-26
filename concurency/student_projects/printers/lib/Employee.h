@@ -45,23 +45,15 @@ class employee {
     }
 
     void release(const int printer_id) const {
-        const auto is_printer_empty = company_->release_printer(
+        company_->release_printer(
             *printers_,
             *mtx_,
             *cv_);  // we are done, so we can release the printer
-        release_info(is_printer_empty, printer_id);  // print release info
-    }
 
-    void release_info(const bool is_printer_empty, const int printer_id) const {
         std::printf("Employee %d from company %d released printer %d\n",
                     employee_id_,
                     company_->company_id,
                     printer_id);
-        if (is_printer_empty) {
-            std::printf("Company %d released printer %d\n",
-                        company_->company_id,
-                        printer_id);
-        }
     }
 
   private:
