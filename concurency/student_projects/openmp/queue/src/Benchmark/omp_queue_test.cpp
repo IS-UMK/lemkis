@@ -32,7 +32,7 @@ class concurrent_queue_wrapper {
   public:
     void push(const int& item) { queue.push(item); }
 
-    static auto pop(int& result) -> bool {
+    auto pop(int& result) -> bool {
         if (queue.try_peek(result)) { return queue.try_pop(); }
         return false;
     }
@@ -59,9 +59,9 @@ auto benchmark_stdthread(const std::string& queue_name,
                          int num_consumers,
                          bool warmup = false) -> double {
     QueueType queue;
-    std::atomic<int> const items_produced(0);
-    std::atomic<int> const items_consumed(0);
-    std::atomic<bool> const production_complete(false);
+    std::atomic<int> items_produced(0);
+    std::atomic<int> items_consumed(0);
+    std::atomic<bool> production_complete(false);
     std::vector<std::thread> threads;
     barrier.store(0);
 
