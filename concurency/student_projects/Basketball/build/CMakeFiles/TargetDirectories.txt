@@ -1,0 +1,5 @@
+/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/build/CMakeFiles/Basketball.dir
+/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/build/CMakeFiles/edit_cache.dir
+/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/build/CMakeFiles/rebuild_cache.dir
+/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/build/lib/CMakeFiles/edit_cache.dir
+/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/build/lib/CMakeFiles/rebuild_cache.dir

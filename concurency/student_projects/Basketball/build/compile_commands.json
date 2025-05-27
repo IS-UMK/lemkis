@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/build",
+  "command": "/usr/bin/g++  -I/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/lib   -std=c++26 -std=gnu++23 -o CMakeFiles/Basketball.dir/main.cpp.o -c /home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/main.cpp",
+  "file": "/home/tymek/lemkys2/lemkis/concurency/student_projects/Basketball/main.cpp",
+  "output": "CMakeFiles/Basketball.dir/main.cpp.o"
+}
+]
