@@ -1,11 +1,13 @@
 #ifndef SEMAPHORES_H
 #define SEMAPHORES_H
 
-#include <array>
 #include <semaphore.h>
+
+#include <array>
+
 #include "prelude.h"
 
-extern std::array<sem_t*, number_of_workers> ready;
+extern std::array<sem_t *, number_of_workers> ready;
 
 void init_semaphores();
 
