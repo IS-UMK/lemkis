@@ -1,18 +1,23 @@
-#include "include/own_test.hpp"
-#include "include/queue_test.hpp"
+#include <print>
 #include <vector>
 
-int main() {
-    const std::vector<int> producer_counts = {1, 2, 4};
-    const std::vector<int> consumer_counts = {1, 2, 4};
+#include "include/own_test.hpp"
+#include "include/queue_test.hpp"
 
-     for (int producers : producer_counts) {
-         for (int consumers : consumer_counts) {
-             run_sequential_ompqueue_test(producers, consumers);
-             run_parallel_ompqueue_test(producers, consumers);
-             run_jthread_concurrentqueue_test(producers, consumers);
-         }
-     }
+auto main() -> int {
+    // Common thread configurations
+    std::vector<std::pair<int, int>> const configs = {
+        {1, 1},  // SPSC - Single Producer, Single Consumer
+        {1, 4},  // SPMC - Single Producer, Multiple Consumers
+        {4, 1},  // MPSC - Multiple Producers, Single Consumer
+        {2, 2},  // Balanced small
+        {4, 4}   // Balanced medium
+    };
+
+    for (const auto& [producers, consumers] : configs) {
+        run_full_comparison(producers, consumers);
+    }
+
     run_own_test();
 
     return 0;

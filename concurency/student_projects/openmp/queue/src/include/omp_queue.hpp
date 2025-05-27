@@ -1,24 +1,21 @@
 #ifndef OMP_QUEUE_HPP
 #define OMP_QUEUE_HPP
 
-#include <queue>
 #include <omp.h>
-#include <cstddef>
 
-template<typename T>
+#include <cstddef>
+#include <queue>
+
+template <typename T>
 class OMPQueue {
-private:
+  private:
     std::queue<T> queue;
     omp_lock_t lock;
 
-public:
-    OMPQueue() {
-        omp_init_lock(&lock);
-    }
+  public:
+    OMPQueue() { omp_init_lock(&lock); }
 
-    ~OMPQueue() {
-        omp_destroy_lock(&lock);
-    }
+    ~OMPQueue() { omp_destroy_lock(&lock); }
 
     void push(const T& item) {
         omp_set_lock(&lock);
@@ -53,5 +50,4 @@ public:
     }
 };
 
-#endif // OMP_QUEUE_HPP
-
+#endif  // OMP_QUEUE_HPP

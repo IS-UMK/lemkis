@@ -1,178 +1,374 @@
 #include "../include/omp_queue.hpp"
 
-#include <chrono>
-#include <format>
-#include <iostream>
-#include <print>
+#include <omp.h>
 
-#include "../include/concurrent_queue.hpp"
-#include <mutex>
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <string>
 #include <thread>
-#include <utility>
 #include <vector>
 
+#include "../include/concurrent_queue.hpp"
 
-constexpr int item_limit = 1000000;
-constexpr int id_offset = 10000;
+// Benchmark configuration
+constexpr int num_operations = 1000000;    // Number of operations per test
+constexpr int warmup_iterations = 2;       // Number of warm-up iterations
+constexpr int measurement_iterations = 5;  // Number of measurement iterations
 
+// Synchronization barrier for std::thread tests
+std::atomic<int> barrier(0);
 
-// Measures and prints performance metrics of a queue test
-void print_performance(const std::string& label,
-                       int pushed,
-                       int popped,
-                       std::size_t remaining,
-                       double time_seconds) {
-    std::print("\n{}\n", label);
-    std::print("Pushed: {}, Popped: {}, Remaining: {}, Time: {:.4f} s\n",
-               pushed,
-               popped,
-               remaining,
-               time_seconds);
-}
-
-
-// Runs producer and consumer logic for OMPQueue without OpenMP
-void run_sequential_ompqueue_test(int producers, int consumers) {
-    OMPQueue<int> queue;
-    int pushed_count = 0;
-    int popped_count = 0;
-
-    const auto start = std::chrono::high_resolution_clock::now();
-
-    for (int producer_id = 0; producer_id < producers; ++producer_id) {
-        for (int j = 0; j < item_limit / producers; ++j) {
-            queue.push(j + producer_id * id_offset);
-            ++pushed_count;
-        }
-    }
-
-    for (int consumer_id = 0; consumer_id < consumers; ++consumer_id) {
-        int value = 0;
-        while (popped_count < item_limit) {
-            if (queue.pop(value)) { ++popped_count; }
-        }
-
-    }
-
-    const auto end = std::chrono::high_resolution_clock::now();
-
-    print_performance(
-        std::format("[OMPQueue] No OpenMP - Producers: {}, Consumers: {}",
-                    producers,
-                    consumers),
-        pushed_count,
-        popped_count,
-        queue.size(),
-        std::chrono::duration<double>(end - start).count());
-}
-
-
-// Runs OpenMP-based producer-consumer logic using OMPQueue
-void run_parallel_ompqueue_test(int producers, int consumers) {
-    OMPQueue<int> queue;
-    int pushed_count = 0;
-    int popped_count = 0;
-
-    const int items_per_producer = item_limit / producers;
-    const int total_to_push = items_per_producer * producers;
-
-    const auto start = std::chrono::high_resolution_clock::now();
-
-#pragma omp parallel num_threads(producers + consumers)
-    {
-        const int thread_id = omp_get_thread_num();
-
-        if (thread_id < producers) {
-            for (int i = 0; i < items_per_producer; ++i) {
-                queue.push(i + thread_id * id_offset);
-#pragma omp atomic
-                ++pushed_count;
-            }
-        } else {
-            int value = 0;
-            while (true) {
-                int current;
-#pragma omp atomic read
-                current = popped_count;
-                if (current >= total_to_push) { break; }
-
-                if (queue.pop(value)) {
-#pragma omp atomic
-                    ++popped_count;
-                } else {
-#pragma omp taskyield
-                }
-            }
-        }
-    }
-
-    const auto end = std::chrono::high_resolution_clock::now();
-
-    print_performance(
-        std::format("[OMPQueue] With OpenMP - Producers: {}, Consumers: {}",
-                    producers,
-                    consumers),
-        pushed_count,
-        popped_count,
-        queue.size(),
-        std::chrono::duration<double>(end - start).count());
-}
-
-
-
-// Runs jthread-based producer-consumer logic using concurrent_queue and
-// stop_token
-void run_jthread_concurrentqueue_test(int producers, int consumers) {
+// Wrapper for concurrent_queue to standardize interface
+class concurrent_queue_wrapper {
+  private:
     concurrent_queue<int> queue;
-    std::atomic<int> pushed_count{0};
-    std::atomic<int> popped_count{0};
-    std::atomic<bool> producers_done{false};
-    std::vector<std::jthread> threads;
 
-    const int items_per_producer = item_limit / producers;
-    const auto start = std::chrono::high_resolution_clock::now();
+  public:
+    void push(const int& item) { queue.push(item); }
 
-    // Create producers
-    for (int i = 0; i < producers; ++i) {
-        threads.emplace_back([&, i] {
-            for (int j = 0; j < items_per_producer; ++j) {
-                queue.push(j + i * id_offset);
-                pushed_count.fetch_add(1, std::memory_order_relaxed);
+    static auto pop(int& result) -> bool {
+        if (queue.try_peek(result)) { return queue.try_pop(); }
+        return false;
+    }
+
+    [[nodiscard]] auto empty() const -> bool { return queue.empty(); }
+
+    [[nodiscard]] auto size() const -> std::size_t { return queue.size(); }
+};
+
+// Result structure to store benchmark data
+struct benchmark_result {
+    double mean_time_ms;
+    double median_time_ms;
+    double stddev_ms;
+    double cv_percent;
+    double throughput_ops_sec;
+    std::vector<double> raw_times;
+};
+
+// Function to run a single benchmark iteration using std::thread
+template <typename QueueType>
+auto benchmark_stdthread(const std::string& queue_name,
+                         int num_producers,
+                         int num_consumers,
+                         bool warmup = false) -> double {
+    QueueType queue;
+    std::atomic<int> const items_produced(0);
+    std::atomic<int> const items_consumed(0);
+    std::atomic<bool> const production_complete(false);
+    std::vector<std::thread> threads;
+    barrier.store(0);
+
+    // Calculate workload per producer
+    int const items_per_producer = num_operations / num_producers;
+    int total_items = items_per_producer * num_producers;
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    // Create producer threads
+    for (int i = 0; i < num_producers; i++) {
+        threads.emplace_back([&, i]() {
+            // Synchronize thread start
+            barrier.fetch_add(1);
+            while (barrier.load() < num_producers + num_consumers) {
+                std::this_thread::yield();
             }
-            // Last producer to finish sets the flag
-            if (pushed_count.load() >= item_limit) {
-                producers_done.store(true);
+
+            // Produce items
+            for (int j = 0; j < items_per_producer; j++) {
+                queue.push(i * items_per_producer + j);
+                items_produced.fetch_add(1);
             }
         });
     }
 
-    // Create consumers
-    for (int i = 0; i < consumers; ++i) {
-        threads.emplace_back([&] {
-            while (true) {
-                // Exit only when all producers are done AND queue is empty
-                if (producers_done.load() && queue.empty()) { break; }
+    // Create consumer threads
+    for (int i = 0; i < num_consumers; i++) {
+        threads.emplace_back([&]() {
+            // Synchronize thread start
+            barrier.fetch_add(1);
+            while (barrier.load() < num_producers + num_consumers) {
+                std::this_thread::yield();
+            }
 
-                if (queue.try_pop()) {
-                    popped_count.fetch_add(1, std::memory_order_relaxed);
+            // Consume items
+            int value;
+            while (items_consumed.load() < total_items) {
+                if (queue.pop(value)) {
+                    items_consumed.fetch_add(1);
                 } else {
+                    if (items_produced.load() == total_items && queue.empty()) {
+                        // Double-check to prevent race conditions
+                        if (items_consumed.load() >= total_items) { break; }
+                    }
                     std::this_thread::yield();
                 }
             }
         });
     }
 
-    // Wait for all threads to finish naturally
-    threads.clear();  // This joins all threads
+    // Join all threads
+    for (auto& t : threads) {
+        if (t.joinable()) { t.join(); }
+    }
 
-    const auto end = std::chrono::high_resolution_clock::now();
+    auto end_time = std::chrono::high_resolution_clock::now();
+    double elapsed_ms =
+        std::chrono::duration<double, std::milli>(end_time - start_time)
+            .count();
 
-    print_performance(std::format("[ConcurrentQueue] With std::jthread - "
-                                  "Producers: {}, Consumers: {}",
-                                  producers,
-                                  consumers),
-                      pushed_count.load(),
-                      popped_count.load(),
-                      queue.size(),
-                      std::chrono::duration<double>(end - start).count());
+    // Only print results if this isn't a warmup run
+    if (!warmup) {
+        std::cout << std::left << std::setw(25) << queue_name
+                  << " | P: " << std::setw(2) << num_producers
+                  << " | C: " << std::setw(2) << num_consumers
+                  << " | Time: " << std::fixed << std::setprecision(2)
+                  << elapsed_ms << " ms" << " | Throughput: " << std::fixed
+                  << std::setprecision(2) << (total_items * 1000.0 / elapsed_ms)
+                  << " ops/sec" << std::endl;
+    }
+
+    return elapsed_ms;
+}
+
+// Function to run a single benchmark iteration using OpenMP
+template <typename QueueType>
+auto benchmark_openmp(const std::string& queue_name,
+                      int num_producers,
+                      int num_consumers,
+                      bool warmup = false) -> double {
+    QueueType queue;
+    int items_produced = 0;
+    int items_consumed = 0;
+
+    // Calculate workload per producer
+    int const items_per_producer = num_operations / num_producers;
+    int const total_items = items_per_producer * num_producers;
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+#pragma omp parallel num_threads(num_producers + num_consumers)
+    {
+        int thread_id = omp_get_thread_num();
+
+        if (thread_id < num_producers) {
+            // Producer thread
+            for (int j = 0; j < items_per_producer; j++) {
+                queue.push(thread_id * items_per_producer + j);
+#pragma omp atomic
+                items_produced++;
+            }
+        } else {
+            // Consumer thread
+            int value;
+            while (true) {
+                int current_consumed;
+                int current_produced;
+
+#pragma omp atomic read
+                current_consumed = items_consumed;
+
+                if (current_consumed >= total_items) { break; }
+
+                if (queue.pop(value)) {
+#pragma omp atomic
+                    items_consumed++;
+                } else {
+#pragma omp atomic read
+                    current_produced = items_produced;
+
+                    if (current_produced == total_items && queue.empty()) {
+#pragma omp atomic read
+                        current_consumed = items_consumed;
+
+                        if (current_consumed >= total_items) { break; }
+                    }
+#pragma omp taskyield
+                }
+            }
+        }
+    }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    double elapsed_ms =
+        std::chrono::duration<double, std::milli>(end_time - start_time)
+            .count();
+
+    // Only print results if this isn't a warmup run
+    if (!warmup) {
+        std::cout << std::left << std::setw(25) << queue_name
+                  << " | P: " << std::setw(2) << num_producers
+                  << " | C: " << std::setw(2) << num_consumers
+                  << " | Time: " << std::fixed << std::setprecision(2)
+                  << elapsed_ms << " ms" << " | Throughput: " << std::fixed
+                  << std::setprecision(2) << (total_items * 1000.0 / elapsed_ms)
+                  << " ops/sec" << std::endl;
+    }
+
+    return elapsed_ms;
+}
+
+// Function to run multiple iterations and calculate statistics
+template <typename QueueType, typename BenchmarkFunc>
+benchmark_result run_benchmark_suite(const std::string& queue_name,
+                                     int num_producers,
+                                     int num_consumers,
+                                     BenchmarkFunc benchmark_function) {
+    std::vector<double> times;
+
+    // Warm-up runs
+    for (int i = 0; i < warmup_iterations; i++) {
+        benchmark_function(
+            queue_name + " (warmup)", num_producers, num_consumers, true);
+    }
+
+    // Measurement runs
+    for (int i = 0; i < measurement_iterations; i++) {
+        double time = benchmark_function(
+            queue_name + " (run " + std::to_string(i + 1) + ")",
+            num_producers,
+            num_consumers,
+            false);
+        times.push_back(time);
+    }
+
+    // Calculate statistics
+    double sum = std::accumulate(times.begin(), times.end(), 0.0);
+    double mean = sum / times.size();
+
+    std::vector<double> diff(times.size());
+    std::transform(times.begin(), times.end(), diff.begin(), [mean](double x) {
+        return x - mean;
+    });
+    double sq_sum =
+        std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+    double stddev = std::sqrt(sq_sum / times.size());
+
+    // Sort times for percentiles
+    std::vector<double> sorted_times = times;
+    std::sort(sorted_times.begin(), sorted_times.end());
+    double median = sorted_times[sorted_times.size() / 2];
+    double cv_percent = (stddev / mean) * 100;
+    double throughput = (num_operations * 1000.0 / mean);
+
+    benchmark_result result;
+    result.mean_time_ms = mean;
+    result.median_time_ms = median;
+    result.stddev_ms = stddev;
+    result.cv_percent = cv_percent;
+    result.throughput_ops_sec = throughput;
+    result.raw_times = times;
+
+    // Print statistics
+    std::cout << "\n--- " << queue_name << " Statistics ---" << std::endl;
+    std::cout << "Mean: " << std::fixed << std::setprecision(2) << mean << " ms"
+              << std::endl;
+    std::cout << "Median: " << std::fixed << std::setprecision(2) << median
+              << " ms" << std::endl;
+    std::cout << "StdDev: " << std::fixed << std::setprecision(2) << stddev
+              << " ms" << std::endl;
+    std::cout << "Coefficient of Variation: " << std::fixed
+              << std::setprecision(2) << cv_percent << "%" << std::endl;
+    std::cout << "Throughput: " << std::fixed << std::setprecision(2)
+              << throughput << " ops/sec" << std::endl;
+    std::cout << "---------------------------\n" << std::endl;
+
+    return result;
+}
+
+// Function to run a full comparison and print a summary
+void run_full_comparison(int num_producers, int num_consumers) {
+    std::cout << "\n====================================================="
+              << std::endl;
+    std::cout << "Running benchmark with " << num_producers << " producers and "
+              << num_consumers << " consumers" << std::endl;
+    std::cout << "====================================================="
+              << std::endl;
+
+    // Run all four combinations
+    auto result1 =
+        run_benchmark_suite<OMPQueue<int>>("OMPQueue + std::thread",
+                                           num_producers,
+                                           num_consumers,
+                                           benchmark_stdthread<OMPQueue<int>>);
+
+    auto result2 =
+        run_benchmark_suite<OMPQueue<int>>("OMPQueue + OpenMP",
+                                           num_producers,
+                                           num_consumers,
+                                           benchmark_openmp<OMPQueue<int>>);
+
+    auto result3 = run_benchmark_suite<concurrent_queue_wrapper>(
+        "ConcurrentQueue + std::thread",
+        num_producers,
+        num_consumers,
+        benchmark_stdthread<concurrent_queue_wrapper>);
+
+    auto result4 = run_benchmark_suite<concurrent_queue_wrapper>(
+        "ConcurrentQueue + OpenMP",
+        num_producers,
+        num_consumers,
+        benchmark_openmp<concurrent_queue_wrapper>);
+
+    // Print comparison table
+    std::cout << "\n--- COMPARISON SUMMARY ---" << std::endl;
+    std::cout << "Configuration: " << num_producers << " producers, "
+              << num_consumers << " consumers" << std::endl;
+    std::cout << std::left << std::setw(30) << "Implementation" << std::setw(15)
+              << "Mean Time (ms)" << std::setw(15) << "Throughput"
+              << std::setw(15) << "CV (%)" << std::endl;
+    std::cout << std::string(75, '-') << std::endl;
+
+    std::cout << std::left << std::setw(30) << "OMPQueue + std::thread"
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result1.mean_time_ms << std::setw(15) << std::fixed
+              << std::setprecision(2) << result1.throughput_ops_sec
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result1.cv_percent << std::endl;
+
+    std::cout << std::left << std::setw(30) << "OMPQueue + OpenMP"
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result2.mean_time_ms << std::setw(15) << std::fixed
+              << std::setprecision(2) << result2.throughput_ops_sec
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result2.cv_percent << std::endl;
+
+    std::cout << std::left << std::setw(30) << "ConcurrentQueue + std::thread"
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result3.mean_time_ms << std::setw(15) << std::fixed
+              << std::setprecision(2) << result3.throughput_ops_sec
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result3.cv_percent << std::endl;
+
+    std::cout << std::left << std::setw(30) << "ConcurrentQueue + OpenMP"
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result4.mean_time_ms << std::setw(15) << std::fixed
+              << std::setprecision(2) << result4.throughput_ops_sec
+              << std::setw(15) << std::fixed << std::setprecision(2)
+              << result4.cv_percent << std::endl;
+
+    std::cout << "\n---------------------------\n" << std::endl;
+
+    // Calculate relative performance
+    double baseline = result1.mean_time_ms;
+    std::cout << "Relative Performance (lower is better, OMPQueue + "
+                 "std::thread = 1.0):"
+              << std::endl;
+    std::cout << "OMPQueue + OpenMP: " << std::fixed << std::setprecision(2)
+              << result2.mean_time_ms / baseline << "x" << std::endl;
+    std::cout << "ConcurrentQueue + std::thread: " << std::fixed
+              << std::setprecision(2) << result3.mean_time_ms / baseline << "x"
+              << std::endl;
+    std::cout << "ConcurrentQueue + OpenMP: " << std::fixed
+              << std::setprecision(2) << result4.mean_time_ms / baseline << "x"
+              << std::endl;
+
+    std::cout << "\n====================================================="
+              << std::endl;
 }
