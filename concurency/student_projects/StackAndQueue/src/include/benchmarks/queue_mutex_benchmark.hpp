@@ -2,8 +2,8 @@
 
 #include <string_view>
 
-#include "benchmark_base.hpp"
 #include "../structures/two_stack_queue.hpp"
+#include "benchmark_base.hpp"
 
 class queue_mutex_benchmark : public benchmark_base {
   private:

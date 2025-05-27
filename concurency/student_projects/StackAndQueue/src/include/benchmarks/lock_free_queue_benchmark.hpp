@@ -2,8 +2,8 @@
 
 #include <string_view>
 
-#include "benchmark_base.hpp"
 #include "../moodycamel/concurrentqueue.h"
+#include "benchmark_base.hpp"
 
 class lock_free_queue_benchmark : public benchmark_base {
   private:
