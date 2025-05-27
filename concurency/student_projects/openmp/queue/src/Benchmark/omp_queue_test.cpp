@@ -13,6 +13,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <print>
 
 #include "../include/concurrent_queue.hpp"
 
@@ -61,7 +62,6 @@ auto benchmark_stdthread(const std::string& queue_name,
     QueueType queue;
     std::atomic<int> items_produced(0);
     std::atomic<int> items_consumed(0);
-    std::atomic<bool> production_complete(false);
     std::vector<std::thread> threads;
     barrier.store(0);
 
@@ -125,13 +125,8 @@ auto benchmark_stdthread(const std::string& queue_name,
 
     // Only print results if this isn't a warmup run
     if (!warmup) {
-        std::cout << std::left << std::setw(25) << queue_name
-                  << " | P: " << std::setw(2) << num_producers
-                  << " | C: " << std::setw(2) << num_consumers
-                  << " | Time: " << std::fixed << std::setprecision(2)
-                  << elapsed_ms << " ms" << " | Throughput: " << std::fixed
-                  << std::setprecision(2) << (total_items * 1000.0 / elapsed_ms)
-                  << " ops/sec" << std::endl;
+        std::print("{:<25} | P: {:>2} | C: {:>2} | Time: {:.2f} ms | Throughput: {:.2f} ops/sec\n",
+                   queue_name, num_producers, num_consumers, elapsed_ms, (total_items * 1000.0 / elapsed_ms));
     }
 
     return elapsed_ms;
@@ -202,13 +197,8 @@ auto benchmark_openmp(const std::string& queue_name,
 
     // Only print results if this isn't a warmup run
     if (!warmup) {
-        std::cout << std::left << std::setw(25) << queue_name
-                  << " | P: " << std::setw(2) << num_producers
-                  << " | C: " << std::setw(2) << num_consumers
-                  << " | Time: " << std::fixed << std::setprecision(2)
-                  << elapsed_ms << " ms" << " | Throughput: " << std::fixed
-                  << std::setprecision(2) << (total_items * 1000.0 / elapsed_ms)
-                  << " ops/sec" << std::endl;
+        std::print("{:<25} | P: {:>2} | C: {:>2} | Time: {:.2f} ms | Throughput: {:.2f} ops/sec\n",
+                   queue_name, num_producers, num_consumers, elapsed_ms, (total_items * 1000.0 / elapsed_ms));
     }
 
     return elapsed_ms;
@@ -266,43 +256,35 @@ benchmark_result run_benchmark_suite(const std::string& queue_name,
     result.raw_times = times;
 
     // Print statistics
-    std::cout << "\n--- " << queue_name << " Statistics ---" << std::endl;
-    std::cout << "Mean: " << std::fixed << std::setprecision(2) << mean << " ms"
-              << std::endl;
-    std::cout << "Median: " << std::fixed << std::setprecision(2) << median
-              << " ms" << std::endl;
-    std::cout << "StdDev: " << std::fixed << std::setprecision(2) << stddev
-              << " ms" << std::endl;
-    std::cout << "Coefficient of Variation: " << std::fixed
-              << std::setprecision(2) << cv_percent << "%" << std::endl;
-    std::cout << "Throughput: " << std::fixed << std::setprecision(2)
-              << throughput << " ops/sec" << std::endl;
-    std::cout << "---------------------------\n" << std::endl;
+    std::print("\n--- {} Statistics ---\n", queue_name);
+    std::print("Mean: {:.2f} ms\n", mean);
+    std::print("Median: {:.2f} ms\n", median);
+    std::print("StdDev: {:.2f} ms\n", stddev);
+    std::print("Coefficient of Variation: {:.2f}%\n", cv_percent);
+    std::print("Throughput: {:.2f} ops/sec\n", throughput);
+    std::print("---------------------------\n\n");
 
     return result;
 }
 
 // Function to run a full comparison and print a summary
 void run_full_comparison(int num_producers, int num_consumers) {
-    std::cout << "\n====================================================="
-              << std::endl;
-    std::cout << "Running benchmark with " << num_producers << " producers and "
-              << num_consumers << " consumers" << std::endl;
-    std::cout << "====================================================="
-              << std::endl;
+    std::print("\n=====================================================\n");
+    std::print("Running benchmark with {} producers and {} consumers\n", num_producers, num_consumers);
+    std::print("=====================================================\n");
 
     // Run all four combinations
     auto result1 =
-        run_benchmark_suite<OMPQueue<int>>("OMPQueue + std::thread",
+        run_benchmark_suite<omp_queue<int>>("omp_queue + std::thread",
                                            num_producers,
                                            num_consumers,
-                                           benchmark_stdthread<OMPQueue<int>>);
+                                           benchmark_stdthread<omp_queue<int>>);
 
     auto result2 =
-        run_benchmark_suite<OMPQueue<int>>("OMPQueue + OpenMP",
+        run_benchmark_suite<omp_queue<int>>("omp_queue + OpenMP",
                                            num_producers,
                                            num_consumers,
-                                           benchmark_openmp<OMPQueue<int>>);
+                                           benchmark_openmp<omp_queue<int>>);
 
     auto result3 = run_benchmark_suite<concurrent_queue_wrapper>(
         "ConcurrentQueue + std::thread",
@@ -317,58 +299,31 @@ void run_full_comparison(int num_producers, int num_consumers) {
         benchmark_openmp<concurrent_queue_wrapper>);
 
     // Print comparison table
-    std::cout << "\n--- COMPARISON SUMMARY ---" << std::endl;
-    std::cout << "Configuration: " << num_producers << " producers, "
-              << num_consumers << " consumers" << std::endl;
-    std::cout << std::left << std::setw(30) << "Implementation" << std::setw(15)
-              << "Mean Time (ms)" << std::setw(15) << "Throughput"
-              << std::setw(15) << "CV (%)" << std::endl;
-    std::cout << std::string(75, '-') << std::endl;
+    std::print("\n--- COMPARISON SUMMARY ---\n");
+    std::print("Configuration: {} producers, {} consumers\n", num_producers, num_consumers);
+    std::print("{:<30}{:<15}{:<15}{:<15}\n", "Implementation", "Mean Time (ms)", "Throughput", "CV (%)");
+    std::print("{}\n", std::string(75, '-'));
 
-    std::cout << std::left << std::setw(30) << "OMPQueue + std::thread"
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result1.mean_time_ms << std::setw(15) << std::fixed
-              << std::setprecision(2) << result1.throughput_ops_sec
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result1.cv_percent << std::endl;
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "omp_queue + std::thread",
+               result1.mean_time_ms, result1.throughput_ops_sec, result1.cv_percent);
 
-    std::cout << std::left << std::setw(30) << "OMPQueue + OpenMP"
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result2.mean_time_ms << std::setw(15) << std::fixed
-              << std::setprecision(2) << result2.throughput_ops_sec
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result2.cv_percent << std::endl;
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "omp_queue + OpenMP",
+               result2.mean_time_ms, result2.throughput_ops_sec, result2.cv_percent);
 
-    std::cout << std::left << std::setw(30) << "ConcurrentQueue + std::thread"
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result3.mean_time_ms << std::setw(15) << std::fixed
-              << std::setprecision(2) << result3.throughput_ops_sec
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result3.cv_percent << std::endl;
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "ConcurrentQueue + std::thread",
+               result3.mean_time_ms, result3.throughput_ops_sec, result3.cv_percent);
 
-    std::cout << std::left << std::setw(30) << "ConcurrentQueue + OpenMP"
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result4.mean_time_ms << std::setw(15) << std::fixed
-              << std::setprecision(2) << result4.throughput_ops_sec
-              << std::setw(15) << std::fixed << std::setprecision(2)
-              << result4.cv_percent << std::endl;
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "ConcurrentQueue + OpenMP",
+               result4.mean_time_ms, result4.throughput_ops_sec, result4.cv_percent);
 
-    std::cout << "\n---------------------------\n" << std::endl;
+    std::print("\n---------------------------\n\n");
 
     // Calculate relative performance
     double baseline = result1.mean_time_ms;
-    std::cout << "Relative Performance (lower is better, OMPQueue + "
-                 "std::thread = 1.0):"
-              << std::endl;
-    std::cout << "OMPQueue + OpenMP: " << std::fixed << std::setprecision(2)
-              << result2.mean_time_ms / baseline << "x" << std::endl;
-    std::cout << "ConcurrentQueue + std::thread: " << std::fixed
-              << std::setprecision(2) << result3.mean_time_ms / baseline << "x"
-              << std::endl;
-    std::cout << "ConcurrentQueue + OpenMP: " << std::fixed
-              << std::setprecision(2) << result4.mean_time_ms / baseline << "x"
-              << std::endl;
+    std::print("Relative Performance (lower is better, omp_queue + std::thread = 1.0):\n");
+    std::print("omp_queue + OpenMP: {:.2f}x\n", result2.mean_time_ms / baseline);
+    std::print("ConcurrentQueue + std::thread: {:.2f}x\n", result3.mean_time_ms / baseline);
+    std::print("ConcurrentQueue + OpenMP: {:.2f}x\n", result4.mean_time_ms / baseline);
 
-    std::cout << "\n====================================================="
-              << std::endl;
+    std::print("\n=====================================================\n");
 }

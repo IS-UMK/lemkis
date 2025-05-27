@@ -1,9 +1,11 @@
 #pragma once
 
+#include <vector>
+#include <string>
 // Benchmark configuration
 
 // Struktura wyników benchmarku
-struct BenchmarkResult {
+struct benchmark_result {
     double mean_time_ms;
     double median_time_ms;
     double stddev_ms;
@@ -14,24 +16,24 @@ struct BenchmarkResult {
 
 // Benchmark z użyciem std::thread
 template <typename QueueType>
-double benchmark_stdjthread(const std::string& queue_name,
+auto benchmark_stdjthread(const std::string& queue_name,
                             int num_producers,
                             int num_consumers,
-                            bool warmup = false);
+                            bool warmup = false) -> double;
 
 // Benchmark z użyciem OpenMP
 template <typename QueueType>
-double benchmark_openmp(const std::string& queue_name,
+auto benchmark_openmp(const std::string& queue_name,
                         int num_producers,
                         int num_consumers,
-                        bool warmup = false);
+                        bool warmup = false) -> double;
 
 // Uruchomienie serii benchmarków i zebranie statystyk
 template <typename QueueType, typename BenchmarkFunc>
-BenchmarkResult run_benchmark_suite(const std::string& queue_name,
+auto run_benchmark_suite(const std::string& queue_name,
                                     int num_producers,
                                     int num_consumers,
-                                    BenchmarkFunc benchmark_function);
+                                    BenchmarkFunc benchmark_function) -> benchmark_result;
 
 // Porównanie pełne — uruchamia wszystkie kombinacje kolejek i metod
-void run_full_comparison(int num_producers, int num_consumers);
+auto run_full_comparison(int num_producers, int num_consumers) -> void;

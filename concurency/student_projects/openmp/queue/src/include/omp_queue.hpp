@@ -7,23 +7,23 @@
 #include <queue>
 
 template <typename T>
-class OMPQueue {
+class omp_queue {
   private:
     std::queue<T> queue;
     omp_lock_t lock;
 
   public:
-    OMPQueue() { omp_init_lock(&lock); }
+    omp_queue() { omp_init_lock(&lock); }
 
-    ~OMPQueue() { omp_destroy_lock(&lock); }
+    ~omp_queue() { omp_destroy_lock(&lock); }
 
-    void push(const T& item) {
+    auto push(const T& item) -> void{
         omp_set_lock(&lock);
         queue.push(item);
         omp_unset_lock(&lock);
     }
 
-    bool pop(T& result) {
+    auto pop(T& result) -> bool{
         omp_set_lock(&lock);
         if (!queue.empty()) {
             result = queue.front();
@@ -35,14 +35,14 @@ class OMPQueue {
         return false;
     }
 
-    bool empty() {
+    auto empty() -> bool {
         omp_set_lock(&lock);
         bool isEmpty = queue.empty();
         omp_unset_lock(&lock);
         return isEmpty;
     }
 
-    size_t size() {
+    auto size() -> size_t {
         omp_set_lock(&lock);
         size_t s = queue.size();
         omp_unset_lock(&lock);
