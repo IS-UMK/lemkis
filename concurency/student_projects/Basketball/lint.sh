@@ -19,6 +19,7 @@ for file in $clang_format_targets; do
     echo "Formatted: $file"
 done
 
+
 echo -e "${GREEN}Generating compile_commands.json...${NC}"
 
 rm -rf build
