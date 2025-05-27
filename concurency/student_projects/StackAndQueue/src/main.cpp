@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <exception>
 #include <print>
 
@@ -21,7 +22,9 @@ auto main() noexcept -> int {
         run_all_configurations();
         return zero;
     } catch (const std::exception& e) {
-        std::print("Unhandled std::exception: {}\n", e.what());
-    } catch (...) { std::print("Unhandled unknown exception\n"); }
+        std::fputs("Unhandled std::exception: ", stdout);
+        std::fputs(e.what(), stdout);
+        std::fputs("\n", stdout);
+    } catch (...) { std::fputs("Unhandled unknown exception\n", stdout); }
     return one;
 }
