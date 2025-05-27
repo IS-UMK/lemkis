@@ -14,16 +14,14 @@ namespace {
         benchmark_script::run_all_benchmarks(
             producer_counts, consumer_counts, benchmark_count);
     }
-
-    inline auto exception_wrapper() noexcept -> int {
-        try {
-            run_all_configurations();
-            return zero;
-        } catch (const std::exception& e) {
-            std::print("Unhandled std::exception: {}\n", e.what());
-        } catch (...) { std::print("Unhandled unknown exception\n"); }
-        return one;
-    }
 }  // namespace
 
-auto main() noexcept -> int { exception_wrapper(); }
+auto main() noexcept -> int {
+    try {
+        run_all_configurations();
+        return zero;
+    } catch (const std::exception& e) {
+        std::print("Unhandled std::exception: {}\n", e.what());
+    } catch (...) { std::print("Unhandled unknown exception\n"); }
+    return one;
+}
