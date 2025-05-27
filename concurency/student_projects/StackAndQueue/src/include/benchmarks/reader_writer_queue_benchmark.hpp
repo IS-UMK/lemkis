@@ -3,8 +3,8 @@
 #include <string_view>
 #include <thread>
 
+#include "../moodycamel/readerwriterqueue.h"
 #include "benchmark_base.hpp"
-#include "readerwriterqueue.h"
 
 class reader_writer_queue_benchmark : public benchmark_base {
   private:

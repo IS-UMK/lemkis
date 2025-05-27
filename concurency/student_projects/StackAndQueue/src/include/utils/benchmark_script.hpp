@@ -4,14 +4,14 @@
 #include <print>
 #include <vector>
 
-#include "list_stack.hpp"
-#include "lock_free_queue_benchmark.hpp"
-#include "queue_cv_benchmark.hpp"
-#include "queue_mutex_benchmark.hpp"
-#include "reader_writer_queue_benchmark.hpp"
-#include "stack_cv_benchmark.hpp"
-#include "stack_mutex_benchmark.hpp"
-#include "vector_stack.hpp"
+#include "../benchmarks/lock_free_queue_benchmark.hpp"
+#include "../benchmarks/queue_cv_benchmark.hpp"
+#include "../benchmarks/queue_mutex_benchmark.hpp"
+#include "../benchmarks/reader_writer_queue_benchmark.hpp"
+#include "../benchmarks/stack_cv_benchmark.hpp"
+#include "../benchmarks/stack_mutex_benchmark.hpp"
+#include "../structures/list_stack.hpp"
+#include "../structures/vector_stack.hpp"
 
 namespace benchmark_script {
     using vector_stack_t = vector_stack<int>;

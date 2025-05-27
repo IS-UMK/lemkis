@@ -1,9 +1,9 @@
 #include <exception>
 #include <print>
 
-#include "benchmark_script.hpp"
+#include "include/utils/benchmark_script.hpp"
 
-constexpr int benchmark_count = 1000;
+constexpr int benchmark_count = 20000;
 constexpr int zero = 0;
 constexpr int one = 1;
 
@@ -14,14 +14,16 @@ namespace {
         benchmark_script::run_all_benchmarks(
             producer_counts, consumer_counts, benchmark_count);
     }
+
+    inline auto exception_wrapper() noexcept -> int {
+        try {
+            run_all_configurations();
+            return zero;
+        } catch (const std::exception& e) {
+            std::print("Unhandled std::exception: {}\n", e.what());
+        } catch (...) { std::print("Unhandled unknown exception\n"); }
+        return one;
+    }
 }  // namespace
 
-auto main() noexcept -> int {
-    try {
-        run_all_configurations();
-        return zero;
-    } catch (const std::exception& e) {
-        std::print("Unhandled std::exception: {}\n", e.what());
-    } catch (...) { std::print("Unhandled unknown exception\n"); }
-    return one;
-}
+auto main() noexcept -> int { exception_wrapper(); }
