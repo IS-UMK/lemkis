@@ -20,14 +20,14 @@ class queue_cv_benchmark : public benchmark_base {
     void producer_loop() override {
         for (int j = 0; j < m_items_per_producer; ++j) {
             m_queue.cv_enqueue(j);
-            m_produced_count.fetch_add(m_one, std::memory_order_relaxed);
+            m_produced_count.fetch_add(one, std::memory_order_relaxed);
         }
     }
 
     void consumer_loop() override {
         for (int j = 0; j < m_items_per_consumer; ++j) {
             m_queue.cv_dequeue_wait();
-            m_consumed_count.fetch_add(m_one, std::memory_order_relaxed);
+            m_consumed_count.fetch_add(one, std::memory_order_relaxed);
         }
     }
 };

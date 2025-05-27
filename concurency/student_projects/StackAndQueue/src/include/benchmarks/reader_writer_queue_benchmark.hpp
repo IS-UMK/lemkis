@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <thread>
 
 #include "benchmark_base.hpp"
 #include "readerwriterqueue.h"
@@ -11,32 +12,31 @@ class reader_writer_queue_benchmark : public benchmark_base {
 
   public:
     reader_writer_queue_benchmark(std::string_view name, int total_items)
-        : benchmark_base(name, m_one, m_one, total_items) {}
+        : benchmark_base(name, one, one, total_items) {}
 
   private:
-    void producer_loop() override {
-        for (int j = 0; j < m_total_items; ++j) {
+    auto producer_loop() -> void override {
+        for (int j = 0; j < m_items_per_producer; ++j) {
             m_queue.enqueue(j);
-            m_produced_count.fetch_add(m_one, std::memory_order_relaxed);
+            m_produced_count.fetch_add(one, std::memory_order_relaxed);
         }
     }
 
-    void consumer_loop(int items_to_process) override {
+    auto consumer_loop() -> void override {
         int count = 0;
-        while (count < items_to_process) {
+        while (count < m_items_per_consumer) {
             if (try_consume()) {
                 ++count;
-            } else {
-                std::this_thread::yield();
+                continue;
             }
+            std::this_thread::yield();
         }
     }
 
-    bool try_consume() {
+    auto try_consume() -> bool {
         int value;
-        bool success = m_queue.try_dequeue(value);
-        if (!success) { return false; }
-        m_consumed_count.fetch_add(1, std::memory_order_relaxed);
+        if (!m_queue.try_dequeue(value)) { return false; }
+        m_consumed_count.fetch_add(one, std::memory_order_relaxed);
         return true;
     }
 };

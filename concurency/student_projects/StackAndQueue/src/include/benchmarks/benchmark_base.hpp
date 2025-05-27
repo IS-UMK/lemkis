@@ -2,15 +2,15 @@
 
 #include <atomic>
 #include <chrono>
-#include <jthread>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 class benchmark_base {
   protected:
     using Clock = std::chrono::high_resolution_clock;
     using Duration = std::chrono::milliseconds;
-    constexpr int m_one = 1;
+    static constexpr int one = 1;
 
     int m_num_producers;
     int m_num_consumers;
@@ -36,8 +36,8 @@ class benchmark_base {
     auto run() -> void;
 
   protected:
-    virtual auto producer_loop() -> void;
-    virtual auto consumer_loop() -> void;
+    virtual auto producer_loop() -> void = 0;
+    virtual auto consumer_loop() -> void = 0;
 
   private:
     auto prepare_threads() -> void;

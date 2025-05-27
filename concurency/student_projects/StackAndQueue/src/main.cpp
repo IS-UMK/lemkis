@@ -1,14 +1,27 @@
-#include <vector>
+#include <exception>
+#include <print>
 
 #include "benchmark_script.hpp"
 
-auto main() -> int {
-    const std::vector<int> prod_counts = {1, 2, 4};
-    const std::vector<int> cons_counts = {1, 2, 4};
-    const int benchmark_count = 1000;
+constexpr int benchmark_count = 1000;
+constexpr int zero = 0;
+constexpr int one = 1;
 
-    benchmark_script::run_all_benchmarks(
-        prod_counts, cons_counts, benchmark_count);
+namespace {
+    inline auto run_all_configurations() -> void {
+        const std::vector<int> producer_counts{1, 2, 4};
+        const std::vector<int> consumer_counts{1, 2, 4};
+        benchmark_script::run_all_benchmarks(
+            producer_counts, consumer_counts, benchmark_count);
+    }
+}  // namespace
 
-    return 0;
+auto main() noexcept -> int {
+    try {
+        run_all_configurations();
+        return zero;
+    } catch (const std::exception& e) {
+        std::print("Unhandled std::exception: {}\n", e.what());
+    } catch (...) { std::print("Unhandled unknown exception\n"); }
+    return one;
 }
