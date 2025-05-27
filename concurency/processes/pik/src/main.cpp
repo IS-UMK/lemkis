@@ -1,12 +1,16 @@
-#include "prelude.h"
 #include "helper.h"
 #include "pipes.h"
+#include "prelude.h"
 #include "semaphores.h"
 #include "worker.h"
 
-auto main() -> int{
-    create_pipes();
-    init_semaphores();
+void end_program() {
+    close_pipes_parent();
+    for (int i = 0; i < number_of_all_processe; ++i) { wait(nullptr); }
+    cleanup_semaphores();
+}
+
+void create_helpers() {
     for (int i = 0; i < number_of_workers; ++i) {
         const pid_t pid = fork();
         if (pid == 0) {
@@ -14,6 +18,9 @@ auto main() -> int{
             exit(0);
         }
     }
+}
+
+void create_workers() {
     for (int i = 0; i < number_of_workers; ++i) {
         const pid_t pid = fork();
         if (pid == 0) {
@@ -21,8 +28,13 @@ auto main() -> int{
             exit(0);
         }
     }
-    close_pipes_parent();
-    for (int i = 0; i < number_two * number_of_workers; ++i) { wait(nullptr); }
-    cleanup_semaphores();
+}
+
+auto main() -> int {
+    create_pipes();
+    init_semaphores();
+    create_helpers();
+    create_workers();
+    end_program();
     return 0;
 }
