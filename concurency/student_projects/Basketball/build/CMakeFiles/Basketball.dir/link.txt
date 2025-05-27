@@ -1,1 +1,0 @@
-/usr/bin/g++   -std=c++26 CMakeFiles/Basketball.dir/main.cpp.o -o Basketball 
