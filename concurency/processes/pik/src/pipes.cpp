@@ -1,12 +1,10 @@
 #include "pipes.h"
+
 #include "prelude.h"
 
-std::array<std::array<int, 2>, number_of_workers>
-    wt_helper;
-std::array<std::array<int, 2>, number_of_workers>
-    ht_worker;
-std::array<std::array<int, 2>, number_of_workers>
-    ht_helper;
+std::array<std::array<int, pipes_ends_number>, number_of_workers> wt_helper;
+std::array<std::array<int, pipes_ends_number>, number_of_workers> ht_worker;
+std::array<std::array<int, pipes_ends_number>, number_of_workers> ht_helper;
 
 void create_pipes() {
     for (int i = 0; i < number_of_workers; ++i) {
