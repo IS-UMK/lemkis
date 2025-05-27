@@ -1,22 +1,23 @@
 #ifndef PRELUDE_H
 #define PRELUDE_H
 
-#include <iostream>
-#include <array>
-#include <vector>
-#include <string>
-#include <unistd.h>
 #include <fcntl.h>
+#include <semaphore.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <semaphore.h>
+#include <unistd.h>
+
+#include <array>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <cerrno>
 #include <ctime>
+#include <iostream>
 #include <print>
+#include <string>
+#include <vector>
 
 // Własne nagłówki
 #include "common.h"
 
-#endif // PRELUDE_H
+#endif  // PRELUDE_H
