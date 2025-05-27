@@ -21,6 +21,15 @@ class utility {
         return dist(generator());
     }
 
+    auto static are_params_ok(const int num_companies,
+                              const int num_printers,
+                              const int num_of_all_employees) -> bool {
+        // All values must be positive and there must be at least as many
+        // printers as companies
+        return num_printers <= num_companies && num_printers > 0 &&
+               num_companies > 0 && num_of_all_employees > 0;
+    }
+
   private:
     // Random number generator and mutex for thread-safe access
     static auto generator() -> std::mt19937& {

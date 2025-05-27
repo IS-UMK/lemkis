@@ -6,13 +6,6 @@ auto constexpr num_of_all_employees = 1000;
 auto constexpr invalid_params_exit_code = -2;
 auto constexpr unexpected_exception_exit_code = 2;
 
-auto are_params_ok() -> bool {
-    // All values must be positive and there must be at least as many printers
-    // as companies
-    return num_printers <= num_companies && num_printers > 0 &&
-           num_companies > 0 && num_of_all_employees > 0;
-}
-
 /// <summary>
 /// W office znajduje sie $num_companies firm oraz dostepne jest $num_printers
 /// drukarek, ktore sa wspoldzielone przez pracownikow tych firm.
@@ -38,7 +31,10 @@ auto are_params_ok() -> bool {
 /// </summary>
 auto main() noexcept -> int {
     try {
-        if (!are_params_ok()) { return invalid_params_exit_code; }
+        if (!utility::are_params_ok(
+                num_companies, num_printers, num_of_all_employees)) {
+            return invalid_params_exit_code;
+        }
         office my_office;
         my_office.run_chaos(num_companies, num_printers, num_of_all_employees);
         return 0;
