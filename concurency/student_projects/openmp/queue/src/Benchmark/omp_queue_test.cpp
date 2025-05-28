@@ -285,7 +285,7 @@ auto static run_benchmark_suite(const std::string& queue_name,
 }
 
 // Function to run a full comparison and print a summary
-void static run_full_comparison(int num_producers, int num_consumers) {
+void run_full_comparison(int num_producers, int num_consumers) {
     std::print("\n=====================================================\n");
     std::print("Running benchmark with {} producers and {} consumers\n",
                num_producers,
