@@ -28,7 +28,9 @@ const int one_hundred = 100;
 const double one_thousand = 1000.0;
 
 // Synchronization barrier for std::thread tests
-std::atomic<int> static barrier(0);
+namespace {
+    std::atomic<int> barrier(0);
+
 
 // Wrapper for concurrent_queue to standardize interface
 class concurrent_queue_wrapper {
@@ -368,4 +370,5 @@ void run_full_comparison(int num_producers, int num_consumers) {
                result4.mean_time_ms / baseline);
 
     std::print("\n=====================================================\n");
+}
 }
