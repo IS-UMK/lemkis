@@ -276,7 +276,7 @@ auto static run_benchmark_suite(const std::string& queue_name,
     std::print("\n--- {} Statistics ---\n", queue_name);
     std::print("Mean: {:.2f} ms\n", mean);
     std::print("Median: {:.2f} ms\n", median);
-    std::print("StdDev: {:.2f} ms\n", stddev);
+    std::print("StdDev: {} ms\n", stddev);
     std::print("Coefficient of Variation: {:.2f}%\n", cv_percent);
     std::print("Throughput: {:.2f} ops/sec\n", throughput);
     std::print("---------------------------\n\n");
