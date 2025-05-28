@@ -37,6 +37,13 @@ class omp_queue {
         omp_set_lock(&lock);
         bool is_empty = queue.empty();
         omp_unset_lock(&lock);
+        return is_empty;
+    }
+    auto size() -> size_t {
+        omp_set_lock(&lock);
+        size_t s = queue.size();
+        omp_unset_lock(&lock);
+        return s;
     }
 };
 

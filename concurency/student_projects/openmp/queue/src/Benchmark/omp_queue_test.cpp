@@ -21,9 +21,14 @@
 constexpr int num_operations = 1000000;    // Number of operations per test
 constexpr int warmup_iterations = 2;       // Number of warm-up iterations
 constexpr int measurement_iterations = 5;  // Number of measurement iterations
+const int number_one = 1;
+const int number_two = 2;
+const int number_seventy_five = 75;
+const int one_hundred = 100;
+const double one_thousand = 1000.0;
 
 // Synchronization barrier for std::thread tests
-std::atomic<int> barrier(0);
+std::atomic<int> static barrier(0);
 
 // Wrapper for concurrent_queue to standardize interface
 class concurrent_queue_wrapper {
@@ -55,7 +60,7 @@ struct benchmark_result {
 
 // Function to run a single benchmark iteration using std::thread
 template <typename QueueType>
-auto benchmark_stdthread(const std::string& queue_name,
+auto static benchmark_stdthread(const std::string& queue_name,
                          int num_producers,
                          int num_consumers,
                          bool warmup = false) -> double {
@@ -75,15 +80,15 @@ auto benchmark_stdthread(const std::string& queue_name,
     for (int i = 0; i < num_producers; i++) {
         threads.emplace_back([&, i]() {
             // Synchronize thread start
-            barrier.fetch_add(1);
+            barrier.fetch_add(number_one);
             while (barrier.load() < num_producers + num_consumers) {
                 std::this_thread::yield();
             }
 
             // Produce items
             for (int j = 0; j < items_per_producer; j++) {
-                queue.push(i * items_per_producer + j);
-                items_produced.fetch_add(1);
+                queue.push((i * items_per_producer) + j);
+                items_produced.fetch_add(number_one);
             }
         });
     }
@@ -92,7 +97,7 @@ auto benchmark_stdthread(const std::string& queue_name,
     for (int i = 0; i < num_consumers; i++) {
         threads.emplace_back([&]() {
             // Synchronize thread start
-            barrier.fetch_add(1);
+            barrier.fetch_add(number_one);
             while (barrier.load() < num_producers + num_consumers) {
                 std::this_thread::yield();
             }
@@ -101,7 +106,7 @@ auto benchmark_stdthread(const std::string& queue_name,
             int value;
             while (items_consumed.load() < total_items) {
                 if (queue.pop(value)) {
-                    items_consumed.fetch_add(1);
+                    items_consumed.fetch_add(number_one);
                 } else {
                     if (items_produced.load() == total_items && queue.empty()) {
                         // Double-check to prevent race conditions
@@ -132,7 +137,7 @@ auto benchmark_stdthread(const std::string& queue_name,
             num_producers,
             num_consumers,
             elapsed_ms,
-            (total_items * 1000.0 / elapsed_ms));
+            (total_items * one_thousand / elapsed_ms));
     }
 
     return elapsed_ms;
@@ -140,7 +145,7 @@ auto benchmark_stdthread(const std::string& queue_name,
 
 // Function to run a single benchmark iteration using OpenMP
 template <typename QueueType>
-auto benchmark_openmp(const std::string& queue_name,
+auto static benchmark_openmp(const std::string& queue_name,
                       int num_producers,
                       int num_consumers,
                       bool warmup = false) -> double {
@@ -161,7 +166,7 @@ auto benchmark_openmp(const std::string& queue_name,
         if (thread_id < num_producers) {
             // Producer thread
             for (int j = 0; j < items_per_producer; j++) {
-                queue.push(thread_id * items_per_producer + j);
+                queue.push((thread_id * items_per_producer) + j);
 #pragma omp atomic
                 items_produced++;
             }
@@ -210,7 +215,7 @@ auto benchmark_openmp(const std::string& queue_name,
             num_producers,
             num_consumers,
             elapsed_ms,
-            (total_items * 1000.0 / elapsed_ms));
+            (total_items * one_thousand / elapsed_ms));
     }
 
     return elapsed_ms;
@@ -218,7 +223,7 @@ auto benchmark_openmp(const std::string& queue_name,
 
 // Function to run multiple iterations and calculate statistics
 template <typename QueueType, typename BenchmarkFunc>
-auto run_benchmark_suite(const std::string& queue_name,
+auto static run_benchmark_suite(const std::string& queue_name,
                          int num_producers,
                          int num_consumers,
                          BenchmarkFunc benchmark_function) -> benchmark_result {
@@ -250,14 +255,14 @@ auto run_benchmark_suite(const std::string& queue_name,
     });
     double const sq_sum =
         std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-    double stddev = std::sqrt(sq_sum / times.size());
+    unsigned long stddev = std::sqrt(sq_sum / times.size());
 
     // Sort times for percentiles
     std::vector<double> sorted_times = times;
-    std::sort(sorted_times.begin(), sorted_times.end());
-    double median = sorted_times[sorted_times.size() / 2];
-    double cv_percent = (stddev / mean) * 100;
-    double throughput = (num_operations * 1000.0 / mean);
+    std::ranges::sort(sorted_times);
+    double median = sorted_times[sorted_times.size() / number_two];
+    double cv_percent = (stddev / mean) * one_hundred;
+    double throughput = (num_operations * one_thousand / mean);
 
     benchmark_result result;
     result.mean_time_ms = mean;
@@ -280,7 +285,7 @@ auto run_benchmark_suite(const std::string& queue_name,
 }
 
 // Function to run a full comparison and print a summary
-void run_full_comparison(int num_producers, int num_consumers) {
+void static run_full_comparison(int num_producers, int num_consumers) {
     std::print("\n=====================================================\n");
     std::print("Running benchmark with {} producers and {} consumers\n",
                num_producers,
@@ -322,7 +327,7 @@ void run_full_comparison(int num_producers, int num_consumers) {
                "Mean Time (ms)",
                "Throughput",
                "CV (%)");
-    std::print("{}\n", std::string(75, '-'));
+    std::print("{}\n", std::string(number_seventy_five, '-'));
 
     std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n",
                "omp_queue + std::thread",

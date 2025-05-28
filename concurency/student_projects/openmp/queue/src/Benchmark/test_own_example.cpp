@@ -34,7 +34,7 @@ auto benchmark(const std::string& name, Func func) -> void {
 }
 
 // Sequential transform benchmark
-auto benchmark_transform_seq(const std::vector<double>& input,
+auto static benchmark_transform_seq(const std::vector<double>& input,
                              std::vector<double>& output) -> void {
     benchmark("std::transform (seq)", [&]() {
         std::transform(std::execution::seq,
@@ -46,7 +46,7 @@ auto benchmark_transform_seq(const std::vector<double>& input,
 }
 
 // Parallel transform benchmark
-auto benchmark_transform_par(const std::vector<double>& input,
+auto static benchmark_transform_par(const std::vector<double>& input,
                              std::vector<double>& output) -> void {
     benchmark("std::transform (par)", [&]() {
         std::transform(std::execution::par,
@@ -58,7 +58,7 @@ auto benchmark_transform_par(const std::vector<double>& input,
 }
 
 // Parallel unsequenced transform benchmark
-auto benchmark_transform_par_unseq(const std::vector<double>& input,
+auto static benchmark_transform_par_unseq(const std::vector<double>& input,
                                    std::vector<double>& output) -> void {
     benchmark("std::transform (par_unseq)", [&]() {
         std::transform(std::execution::par_unseq,
@@ -70,7 +70,7 @@ auto benchmark_transform_par_unseq(const std::vector<double>& input,
 }
 
 // OpenMP transform benchmark
-auto benchmark_transform_openmp(const std::vector<double>& input,
+auto static benchmark_transform_openmp(const std::vector<double>& input,
                                 std::vector<double>& output) -> void {
     benchmark("OpenMP transform", [&]() {
 #pragma omp parallel for
@@ -89,7 +89,7 @@ auto test_transform(const std::vector<double>& input,
 }
 
 // Sequential dot product benchmark
-auto benchmark_dot_product_seq(const std::vector<double>& a,
+auto static benchmark_dot_product_seq(const std::vector<double>& a,
                                const std::vector<double>& b) -> void {
     benchmark("std::inner_product (seq)", [&]() {
         double result = std::inner_product(a.begin(), a.end(), b.begin(), 0.0);
@@ -98,7 +98,7 @@ auto benchmark_dot_product_seq(const std::vector<double>& a,
 }
 
 // Parallel dot product benchmark
-auto benchmark_dot_product_par(const std::vector<double>& a,
+auto static benchmark_dot_product_par(const std::vector<double>& a,
                                const std::vector<double>& b) -> void {
     benchmark("std::transform_reduce (par)", [&]() {
         double result = std::transform_reduce(
@@ -108,7 +108,7 @@ auto benchmark_dot_product_par(const std::vector<double>& a,
 }
 
 // Parallel unsequenced dot product benchmark
-auto benchmark_dot_product_par_unseq(const std::vector<double>& a,
+auto static benchmark_dot_product_par_unseq(const std::vector<double>& a,
                                      const std::vector<double>& b) -> void {
     benchmark("std::transform_reduce (par_unseq)", [&]() {
         double result = std::transform_reduce(
@@ -118,7 +118,7 @@ auto benchmark_dot_product_par_unseq(const std::vector<double>& a,
 }
 
 // OpenMP dot product benchmark
-auto benchmark_dot_product_openmp(const std::vector<double>& a,
+auto static benchmark_dot_product_openmp(const std::vector<double>& a,
                                   const std::vector<double>& b) -> void {
     benchmark("OpenMP dot product", [&]() {
         double res = 0.0;
@@ -139,21 +139,19 @@ auto test_dot_product(const std::vector<double>& a,
 }
 
 // Test small dataset
-auto run_small_dataset_tests() -> void {
+auto static run_small_dataset_tests() -> void {
     std::print("==== SMALL DATASET ====\n");
     auto a_small = generate_random_vector(small_size);
     auto b_small = generate_random_vector(small_size);
     std::vector<double> output_small(small_size);
-
     std::print("\n= Testing Transform Product =\n");
     test_transform(a_small, output_small);
-
     std::print("\n= Testing DOT Product =\n");
     test_dot_product(a_small, b_small);
 }
 
 // Test large dataset
-auto run_large_dataset_tests() -> void {
+auto static run_large_dataset_tests() -> void {
     std::print("\n==== LARGE DATASET ====\n");
     auto a_large = generate_random_vector(large_size);
     auto b_large = generate_random_vector(large_size);
