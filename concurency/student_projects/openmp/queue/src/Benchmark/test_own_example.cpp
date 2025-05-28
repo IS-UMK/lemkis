@@ -15,26 +15,27 @@
 constexpr int random_seed = 42;
 constexpr double distribution_min = 0.0;
 constexpr double distribution_max = 1.0;
+namespace{
+    generate_random_vector(std::size_t size)->std::vector<double> {
+        std::vector<double> vec(size);
+        std::mt19937 gen(random_seed);
+        std::uniform_real_distribution<> dis(distribution_min,
+                                             distribution_max);
+        std::ranges::generate(vec, [&]() { return dis(gen); });
+        return vec;
+    }
 
-static auto generate_random_vector(std::size_t size) -> std::vector<double> {
-    std::vector<double> vec(size);
-    std::mt19937 gen(random_seed);
-    std::uniform_real_distribution<> dis(distribution_min, distribution_max);
-    std::ranges::generate(vec, [&]() { return dis(gen); });
-    return vec;
-}
-
-template <typename Func>
-static auto benchmark(const std::string& name, Func func) -> void {
-    auto start = std::chrono::high_resolution_clock::now();
-    func();
-    auto end = std::chrono::high_resolution_clock::now();
-    const std::chrono::duration<double> diff = end - start;
-    std::print("{} time: {} s\n", name, diff.count());
-}
+    template <typename Func>
+    benchmark(const std::string& name, Func func)->void {
+        auto start = std::chrono::high_resolution_clock::now();
+        func();
+        auto end = std::chrono::high_resolution_clock::now();
+        const std::chrono::duration<double> diff = end - start;
+        std::print("{} time: {} s\n", name, diff.count());
+    }
 
 // Sequential transform benchmark
-auto static benchmark_transform_seq(const std::vector<double>& input,
+auto benchmark_transform_seq(const std::vector<double>& input,
                                     std::vector<double>& output) -> void {
     benchmark("std::transform (seq)", [&]() {
         std::transform(std::execution::seq,
@@ -46,7 +47,7 @@ auto static benchmark_transform_seq(const std::vector<double>& input,
 }
 
 // Parallel transform benchmark
-auto static benchmark_transform_par(const std::vector<double>& input,
+auto benchmark_transform_par(const std::vector<double>& input,
                                     std::vector<double>& output) -> void {
     benchmark("std::transform (par)", [&]() {
         std::transform(std::execution::par,
@@ -58,7 +59,7 @@ auto static benchmark_transform_par(const std::vector<double>& input,
 }
 
 // Parallel unsequenced transform benchmark
-auto static benchmark_transform_par_unseq(const std::vector<double>& input,
+auto benchmark_transform_par_unseq(const std::vector<double>& input,
                                           std::vector<double>& output) -> void {
     benchmark("std::transform (par_unseq)", [&]() {
         std::transform(std::execution::par_unseq,
@@ -70,7 +71,7 @@ auto static benchmark_transform_par_unseq(const std::vector<double>& input,
 }
 
 // OpenMP transform benchmark
-auto static benchmark_transform_openmp(const std::vector<double>& input,
+auto benchmark_transform_openmp(const std::vector<double>& input,
                                        std::vector<double>& output) -> void {
     benchmark("OpenMP transform", [&]() {
 #pragma omp parallel for
@@ -80,8 +81,8 @@ auto static benchmark_transform_openmp(const std::vector<double>& input,
     });
 }
 
-static auto test_transform(const std::vector<double>& input,
-                           std::vector<double>& output) -> void {
+test_transform(const std::vector<double>& input, std::vector<double>& output)
+    ->void {
     benchmark_transform_seq(input, output);
     benchmark_transform_par(input, output);
     benchmark_transform_par_unseq(input, output);
@@ -89,7 +90,7 @@ static auto test_transform(const std::vector<double>& input,
 }
 
 // Sequential dot product benchmark
-auto static benchmark_dot_product_seq(const std::vector<double>& a,
+auto benchmark_dot_product_seq(const std::vector<double>& a,
                                       const std::vector<double>& b) -> void {
     benchmark("std::inner_product (seq)", [&]() {
         double result = std::inner_product(a.begin(), a.end(), b.begin(), 0.0);
@@ -98,7 +99,7 @@ auto static benchmark_dot_product_seq(const std::vector<double>& a,
 }
 
 // Parallel dot product benchmark
-auto static benchmark_dot_product_par(const std::vector<double>& a,
+auto benchmark_dot_product_par(const std::vector<double>& a,
                                       const std::vector<double>& b) -> void {
     benchmark("std::transform_reduce (par)", [&]() {
         double result = std::transform_reduce(
@@ -108,7 +109,7 @@ auto static benchmark_dot_product_par(const std::vector<double>& a,
 }
 
 // Parallel unsequenced dot product benchmark
-auto static benchmark_dot_product_par_unseq(const std::vector<double>& a,
+auto benchmark_dot_product_par_unseq(const std::vector<double>& a,
                                             const std::vector<double>& b)
     -> void {
     benchmark("std::transform_reduce (par_unseq)", [&]() {
@@ -119,7 +120,7 @@ auto static benchmark_dot_product_par_unseq(const std::vector<double>& a,
 }
 
 // OpenMP dot product benchmark
-auto static benchmark_dot_product_openmp(const std::vector<double>& a,
+auto benchmark_dot_product_openmp(const std::vector<double>& a,
                                          const std::vector<double>& b) -> void {
     benchmark("OpenMP dot product", [&]() {
         double const res = 0.0;
@@ -131,8 +132,8 @@ auto static benchmark_dot_product_openmp(const std::vector<double>& a,
     });
 }
 
-static auto test_dot_product(const std::vector<double>& a,
-                             const std::vector<double>& b) -> void {
+test_dot_product(const std::vector<double>& a, const std::vector<double>& b)
+    ->void {
     benchmark_dot_product_seq(a, b);
     benchmark_dot_product_par(a, b);
     benchmark_dot_product_par_unseq(a, b);
@@ -140,7 +141,7 @@ static auto test_dot_product(const std::vector<double>& a,
 }
 
 // Test small dataset
-auto static run_small_dataset_tests() -> void {
+auto run_small_dataset_tests() -> void {
     std::print("==== SMALL DATASET ====\n");
     auto a_small = generate_random_vector(small_size);
     auto b_small = generate_random_vector(small_size);
@@ -152,15 +153,13 @@ auto static run_small_dataset_tests() -> void {
 }
 
 // Test large dataset
-auto static run_large_dataset_tests() -> void {
+auto run_large_dataset_tests() -> void {
     std::print("\n==== LARGE DATASET ====\n");
     auto a_large = generate_random_vector(large_size);
     auto b_large = generate_random_vector(large_size);
     std::vector<double> output_large(large_size);
-
     std::print("\n= Testing Transform Product =\n");
     test_transform(a_large, output_large);
-
     std::print("\n= Testing DOT Product =\n");
     test_dot_product(a_large, b_large);
 }
@@ -168,4 +167,5 @@ auto static run_large_dataset_tests() -> void {
 auto run_own_test() -> void {
     run_small_dataset_tests();
     run_large_dataset_tests();
+}
 }
