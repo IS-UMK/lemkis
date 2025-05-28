@@ -7,7 +7,7 @@ constexpr size_t large_size = 300'000'000;
 
 void run_own_test();
 
-std::vector<double> generate_random_vector(size_t size);
+auto generate_random_vector(size_t size) -> std::vector<double>;
 
 template <typename Func>
 void benchmark(const std::string& name, Func func);

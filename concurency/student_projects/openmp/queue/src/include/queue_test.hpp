@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 // Benchmark configuration
 
 // Struktura wyników benchmarku
@@ -17,23 +17,23 @@ struct benchmark_result {
 // Benchmark z użyciem std::thread
 template <typename QueueType>
 auto benchmark_stdjthread(const std::string& queue_name,
-                            int num_producers,
-                            int num_consumers,
-                            bool warmup = false) -> double;
+                          int num_producers,
+                          int num_consumers,
+                          bool warmup = false) -> double;
 
 // Benchmark z użyciem OpenMP
 template <typename QueueType>
 auto benchmark_openmp(const std::string& queue_name,
-                        int num_producers,
-                        int num_consumers,
-                        bool warmup = false) -> double;
+                      int num_producers,
+                      int num_consumers,
+                      bool warmup = false) -> double;
 
 // Uruchomienie serii benchmarków i zebranie statystyk
 template <typename QueueType, typename BenchmarkFunc>
 auto run_benchmark_suite(const std::string& queue_name,
-                                    int num_producers,
-                                    int num_consumers,
-                                    BenchmarkFunc benchmark_function) -> benchmark_result;
+                         int num_producers,
+                         int num_consumers,
+                         BenchmarkFunc benchmark_function) -> benchmark_result;
 
 // Porównanie pełne — uruchamia wszystkie kombinacje kolejek i metod
 auto run_full_comparison(int num_producers, int num_consumers) -> void;

@@ -10,10 +10,10 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <print>
 #include <string>
 #include <thread>
 #include <vector>
-#include <print>
 
 #include "../include/concurrent_queue.hpp"
 
@@ -67,7 +67,7 @@ auto benchmark_stdthread(const std::string& queue_name,
 
     // Calculate workload per producer
     int const items_per_producer = num_operations / num_producers;
-    int total_items = items_per_producer * num_producers;
+    int const total_items = items_per_producer * num_producers;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -125,8 +125,14 @@ auto benchmark_stdthread(const std::string& queue_name,
 
     // Only print results if this isn't a warmup run
     if (!warmup) {
-        std::print("{:<25} | P: {:>2} | C: {:>2} | Time: {:.2f} ms | Throughput: {:.2f} ops/sec\n",
-                   queue_name, num_producers, num_consumers, elapsed_ms, (total_items * 1000.0 / elapsed_ms));
+        std::print(
+            "{:<25} | P: {:>2} | C: {:>2} | Time: {:.2f} ms | Throughput: "
+            "{:.2f} ops/sec\n",
+            queue_name,
+            num_producers,
+            num_consumers,
+            elapsed_ms,
+            (total_items * 1000.0 / elapsed_ms));
     }
 
     return elapsed_ms;
@@ -150,7 +156,7 @@ auto benchmark_openmp(const std::string& queue_name,
 
 #pragma omp parallel num_threads(num_producers + num_consumers)
     {
-        int thread_id = omp_get_thread_num();
+        int const thread_id = omp_get_thread_num();
 
         if (thread_id < num_producers) {
             // Producer thread
@@ -197,8 +203,14 @@ auto benchmark_openmp(const std::string& queue_name,
 
     // Only print results if this isn't a warmup run
     if (!warmup) {
-        std::print("{:<25} | P: {:>2} | C: {:>2} | Time: {:.2f} ms | Throughput: {:.2f} ops/sec\n",
-                   queue_name, num_producers, num_consumers, elapsed_ms, (total_items * 1000.0 / elapsed_ms));
+        std::print(
+            "{:<25} | P: {:>2} | C: {:>2} | Time: {:.2f} ms | Throughput: "
+            "{:.2f} ops/sec\n",
+            queue_name,
+            num_producers,
+            num_consumers,
+            elapsed_ms,
+            (total_items * 1000.0 / elapsed_ms));
     }
 
     return elapsed_ms;
@@ -206,10 +218,10 @@ auto benchmark_openmp(const std::string& queue_name,
 
 // Function to run multiple iterations and calculate statistics
 template <typename QueueType, typename BenchmarkFunc>
-benchmark_result run_benchmark_suite(const std::string& queue_name,
-                                     int num_producers,
-                                     int num_consumers,
-                                     BenchmarkFunc benchmark_function) {
+auto run_benchmark_suite(const std::string& queue_name,
+                         int num_producers,
+                         int num_consumers,
+                         BenchmarkFunc benchmark_function) -> benchmark_result {
     std::vector<double> times;
 
     // Warm-up runs
@@ -220,7 +232,7 @@ benchmark_result run_benchmark_suite(const std::string& queue_name,
 
     // Measurement runs
     for (int i = 0; i < measurement_iterations; i++) {
-        double time = benchmark_function(
+        double const time = benchmark_function(
             queue_name + " (run " + std::to_string(i + 1) + ")",
             num_producers,
             num_consumers,
@@ -229,14 +241,14 @@ benchmark_result run_benchmark_suite(const std::string& queue_name,
     }
 
     // Calculate statistics
-    double sum = std::accumulate(times.begin(), times.end(), 0.0);
+    double const sum = std::accumulate(times.begin(), times.end(), 0.0);
     double mean = sum / times.size();
 
     std::vector<double> diff(times.size());
     std::transform(times.begin(), times.end(), diff.begin(), [mean](double x) {
         return x - mean;
     });
-    double sq_sum =
+    double const sq_sum =
         std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
     double stddev = std::sqrt(sq_sum / times.size());
 
@@ -270,21 +282,23 @@ benchmark_result run_benchmark_suite(const std::string& queue_name,
 // Function to run a full comparison and print a summary
 void run_full_comparison(int num_producers, int num_consumers) {
     std::print("\n=====================================================\n");
-    std::print("Running benchmark with {} producers and {} consumers\n", num_producers, num_consumers);
+    std::print("Running benchmark with {} producers and {} consumers\n",
+               num_producers,
+               num_consumers);
     std::print("=====================================================\n");
 
     // Run all four combinations
-    auto result1 =
-        run_benchmark_suite<omp_queue<int>>("omp_queue + std::thread",
-                                           num_producers,
-                                           num_consumers,
-                                           benchmark_stdthread<omp_queue<int>>);
+    auto result1 = run_benchmark_suite<omp_queue<int>>(
+        "omp_queue + std::thread",
+        num_producers,
+        num_consumers,
+        benchmark_stdthread<omp_queue<int>>);
 
     auto result2 =
         run_benchmark_suite<omp_queue<int>>("omp_queue + OpenMP",
-                                           num_producers,
-                                           num_consumers,
-                                           benchmark_openmp<omp_queue<int>>);
+                                            num_producers,
+                                            num_consumers,
+                                            benchmark_openmp<omp_queue<int>>);
 
     auto result3 = run_benchmark_suite<concurrent_queue_wrapper>(
         "ConcurrentQueue + std::thread",
@@ -300,30 +314,53 @@ void run_full_comparison(int num_producers, int num_consumers) {
 
     // Print comparison table
     std::print("\n--- COMPARISON SUMMARY ---\n");
-    std::print("Configuration: {} producers, {} consumers\n", num_producers, num_consumers);
-    std::print("{:<30}{:<15}{:<15}{:<15}\n", "Implementation", "Mean Time (ms)", "Throughput", "CV (%)");
+    std::print("Configuration: {} producers, {} consumers\n",
+               num_producers,
+               num_consumers);
+    std::print("{:<30}{:<15}{:<15}{:<15}\n",
+               "Implementation",
+               "Mean Time (ms)",
+               "Throughput",
+               "CV (%)");
     std::print("{}\n", std::string(75, '-'));
 
-    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "omp_queue + std::thread",
-               result1.mean_time_ms, result1.throughput_ops_sec, result1.cv_percent);
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n",
+               "omp_queue + std::thread",
+               result1.mean_time_ms,
+               result1.throughput_ops_sec,
+               result1.cv_percent);
 
-    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "omp_queue + OpenMP",
-               result2.mean_time_ms, result2.throughput_ops_sec, result2.cv_percent);
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n",
+               "omp_queue + OpenMP",
+               result2.mean_time_ms,
+               result2.throughput_ops_sec,
+               result2.cv_percent);
 
-    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "ConcurrentQueue + std::thread",
-               result3.mean_time_ms, result3.throughput_ops_sec, result3.cv_percent);
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n",
+               "ConcurrentQueue + std::thread",
+               result3.mean_time_ms,
+               result3.throughput_ops_sec,
+               result3.cv_percent);
 
-    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n", "ConcurrentQueue + OpenMP",
-               result4.mean_time_ms, result4.throughput_ops_sec, result4.cv_percent);
+    std::print("{:<30}{:<15.2f}{:<15.2f}{:<15.2f}\n",
+               "ConcurrentQueue + OpenMP",
+               result4.mean_time_ms,
+               result4.throughput_ops_sec,
+               result4.cv_percent);
 
     std::print("\n---------------------------\n\n");
 
     // Calculate relative performance
-    double baseline = result1.mean_time_ms;
-    std::print("Relative Performance (lower is better, omp_queue + std::thread = 1.0):\n");
-    std::print("omp_queue + OpenMP: {:.2f}x\n", result2.mean_time_ms / baseline);
-    std::print("ConcurrentQueue + std::thread: {:.2f}x\n", result3.mean_time_ms / baseline);
-    std::print("ConcurrentQueue + OpenMP: {:.2f}x\n", result4.mean_time_ms / baseline);
+    double const baseline = result1.mean_time_ms;
+    std::print(
+        "Relative Performance (lower is better, omp_queue + std::thread = "
+        "1.0):\n");
+    std::print("omp_queue + OpenMP: {:.2f}x\n",
+               result2.mean_time_ms / baseline);
+    std::print("ConcurrentQueue + std::thread: {:.2f}x\n",
+               result3.mean_time_ms / baseline);
+    std::print("ConcurrentQueue + OpenMP: {:.2f}x\n",
+               result4.mean_time_ms / baseline);
 
     std::print("\n=====================================================\n");
 }
