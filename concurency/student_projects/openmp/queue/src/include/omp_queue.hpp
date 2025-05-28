@@ -24,14 +24,7 @@ class omp_queue {
     }
     auto pop(T& result) -> bool {
         omp_set_lock(&lock);
-        if (!queue.empty()) {
-            result = queue.front();
-            queue.pop();
-            omp_unset_lock(&lock);
-            return true;
-        }
-        omp_unset_lock(&lock);
-        return false;
+        return !queue.empty();
     }
     auto empty() -> bool {
         omp_set_lock(&lock);
