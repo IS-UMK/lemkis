@@ -27,7 +27,7 @@ namespace {
             run_full_comparison(producers, consumers);
         }
     }
-}
+}  // namespace
 
 auto main() -> int {
     run_queue_benchmarks();

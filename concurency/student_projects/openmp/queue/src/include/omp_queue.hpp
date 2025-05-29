@@ -2,23 +2,20 @@
 #define OMP_QUEUE_HPP
 
 #include <omp.h>
+
 #include <cstddef>
 #include <queue>
 
 template <typename T>
 class omp_queue {
-private:
+  private:
     std::queue<T> queue;
     omp_lock_t lock;
 
-public:
-    default omp_queue() {
-        omp_init_lock(&lock);
-    }
+  public:
+    omp_queue() { omp_init_lock(&lock); }// NOLINT
 
-    default ~omp_queue() {
-        omp_destroy_lock(&lock);
-    }
+    ~omp_queue() { omp_destroy_lock(&lock); }// NOLINT
 
     void push(const T& item) {
         omp_set_lock(&lock);
