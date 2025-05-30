@@ -4,7 +4,7 @@
 
 #include "include/utils/benchmark_script.hpp"
 
-constexpr int benchmark_count = 20000;
+constexpr int benchmark_count = 30000;
 constexpr int zero = 0;
 constexpr int one = 1;
 
