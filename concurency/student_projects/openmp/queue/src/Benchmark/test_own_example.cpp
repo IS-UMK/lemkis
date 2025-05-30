@@ -16,7 +16,7 @@ constexpr int thousand = 1000;
 namespace {
     auto generate_random_vector(std::size_t size) -> std::vector<double> {
         std::vector<double> vec(size);
-        const std::mt19937 gen(random_seed);
+        std::mt19937 gen(random_seed);
         std::uniform_real_distribution<> dis(distribution_min,
                                              distribution_max);
         std::ranges::generate(vec, [&]() { return dis(gen); });

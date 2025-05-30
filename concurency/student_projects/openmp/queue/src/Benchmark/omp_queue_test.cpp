@@ -514,14 +514,14 @@ namespace {
         return queue_name + " (run " + std::to_string(run_number) + ")";
     }
 
-    struct benchmark_params {
+    struct benchmark_parameters {
         std::string queue_name;
         int iteration;
         int num_producers;
         int num_consumers;
     };
 
-    auto run_single_benchmark(const benchmark_params& params,
+    auto run_single_benchmark(const benchmark_parameters& params,
                               auto benchmark_function) -> double {
         const std::string run_name =
             create_run_name(params.queue_name, params.iteration + number_one);
@@ -536,7 +536,7 @@ namespace {
         std::vector<double> times;
         times.reserve(measurement_iterations);
         for (int i = 0; i < measurement_iterations; ++i) {
-            benchmark_params const params{
+            benchmark_parameters const params{
                 queue_name, i, num_producers, num_consumers};
             times.push_back(run_single_benchmark(params, benchmark_function));
         }
