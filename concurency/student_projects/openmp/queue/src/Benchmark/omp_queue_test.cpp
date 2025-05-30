@@ -27,7 +27,7 @@ constexpr int one_hundred = 100;
 constexpr double one_thousand = 1000.0;
 
 namespace {
-    
+
     // Shared barrier for thread synchronization
     std::atomic<int> barrier{0};
     std::vector<double> times;
