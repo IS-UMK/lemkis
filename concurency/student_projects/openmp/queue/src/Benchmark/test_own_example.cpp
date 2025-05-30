@@ -16,10 +16,10 @@ constexpr int thousand = 1000;
 namespace {
     auto generate_random_vector(std::size_t size) -> std::vector<double> {
         std::vector<double> vec(size);
-        std::mt19937 gen(random_seed);
+        const std::mt19937 gen(random_seed);
         std::uniform_real_distribution<> dis(distribution_min,
                                              distribution_max);
-        std::generate(vec.begin(), vec.end(), [&]() { return dis(gen); });
+        std::ranges::generate(vec, [&]() { return dis(gen); });
         return vec;
     }
 
@@ -36,10 +36,8 @@ namespace {
     auto benchmark_transform_seq(const std::vector<double>& input,
                                  std::vector<double>& output) -> void {
         benchmark("std::transform (seq)", [&]() {
-            std::transform(
-                input.begin(), input.end(), output.begin(), [](double x) {
-                    return x * x;
-                });
+            std::ranges::transform(
+                input, output.begin(), [](double x) { return x * x; });
         });
     }
 

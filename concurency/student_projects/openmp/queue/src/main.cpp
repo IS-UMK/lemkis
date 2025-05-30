@@ -1,3 +1,4 @@
+#include <iostream>
 #include <print>
 #include <vector>
 
@@ -8,6 +9,7 @@
 constexpr int single_thread = 1;
 constexpr int small_thread_count = 2;
 constexpr int medium_thread_count = 4;
+constexpr int error_code = 1;
 
 // Anonymous namespace for internal linkage
 namespace {
@@ -30,7 +32,12 @@ namespace {
 }  // namespace
 
 auto main() -> int {
-    run_queue_benchmarks();
-    run_own_test();
+    try {
+        run_queue_benchmarks();
+        run_own_test();
+    } catch (const std::exception& e) {
+        std::cerr << "Błąd: " << e.what();
+        return error_code;
+    }
     return 0;
 }

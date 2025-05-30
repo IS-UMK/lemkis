@@ -30,7 +30,7 @@ class omp_queue {
         omp_unset_lock(&lock);
     }
 
-    auto pop(T& result) -> bool {
+    auto pop() -> bool {
         omp_set_lock(&lock);
         return !queue.empty();
     }

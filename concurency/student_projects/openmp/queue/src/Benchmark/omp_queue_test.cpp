@@ -338,7 +338,7 @@ namespace {
     auto setup_stdthread_benchmark(int num_producers, int num_consumers)
         -> std::tuple<concurrent_queue_wrapper, int, int, benchmark_params> {
         concurrent_queue<int> real_queue;
-        concurrent_queue_wrapper queue_wrapper(real_queue);
+        const concurrent_queue_wrapper queue_wrapper(real_queue);
         int items_produced{0};
         int items_consumed{0};
         initialize_benchmark_state(items_produced, items_consumed);
@@ -354,7 +354,7 @@ namespace {
                              bool warmup = false) -> double {
         auto [queue, items_produced, items_consumed, params] =
             setup_stdthread_benchmark(num_producers, num_consumers);
-        double elapsed_ms = measure_execution_time([&]() {
+        const double elapsed_ms = measure_execution_time([&]() {
             run_benchmark_threads(
                 queue, items_produced, items_consumed, params);
         });
@@ -386,7 +386,7 @@ namespace {
 
     auto try_consume_item(auto& queue, int& value, int& items_consumed)
         -> bool {
-        bool success =
+        const bool success =
             concurrent_queue_wrapper::try_pop(queue.get_queue(), value);
         if (success) {
 #pragma omp atomic
@@ -464,7 +464,7 @@ namespace {
         int consumed = 0;
         initialize_benchmark_state(produced, consumed);
         auto params = create_benchmark_params(p, c);
-        return std::make_tuple(std::move(qwrap), produced, consumed, params);
+        return std::make_tuple(qwrap, produced, consumed, params);
     }
 
 
@@ -474,19 +474,28 @@ namespace {
         { execute_thread_task(omp_get_thread_num(), params, ctx); }
     }
 
+    auto execute_openmp_benchmark(int num_producers, int num_consumers)
+        -> std::tuple<thread_context, benchmark_params> {
+        auto [queue, items_produced, items_consumed, params] =
+            setup_openmp_benchmark(num_producers, num_consumers);
+        thread_context ctx{.queue = queue,
+                           .items_produced = items_produced,
+                           .items_consumed = items_consumed};
+        return {ctx, params};
+    }
+
     auto benchmark_openmp(const std::string& queue_name,
                           int num_producers,
                           int num_consumers,
                           bool warmup = false) -> double {
-        auto [queue, items_produced, items_consumed, params] =
-            setup_openmp_benchmark(num_producers, num_consumers);
-        double elapsed_ms = measure_execution_time([&]() {
-            thread_context ctx{queue, items_produced, items_consumed};
-            run_openmp_parallel_section(params, ctx);
-        });
+        auto [ctx, params] =
+            execute_openmp_benchmark(num_producers, num_consumers);
+        const double elapsed_ms = measure_execution_time(
+            [&]() { run_openmp_parallel_section(params, ctx); });
         print_benchmark_results(queue_name, params, elapsed_ms, warmup);
         return elapsed_ms;
     }
+
 
     // Warmup and measurement helpers
     void perform_warmup_runs(const std::string& queue_name,
@@ -505,6 +514,21 @@ namespace {
         return queue_name + " (run " + std::to_string(run_number) + ")";
     }
 
+    struct benchmark_params {
+        std::string queue_name;
+        int iteration;
+        int num_producers;
+        int num_consumers;
+    };
+
+    auto run_single_benchmark(const benchmark_params& params,
+                              auto benchmark_function) -> double {
+        const std::string run_name =
+            create_run_name(params.queue_name, params.iteration + number_one);
+        return benchmark_function(
+            run_name, params.num_producers, params.num_consumers, false);
+    }
+
     auto collect_timing_data(const std::string& queue_name,
                              int num_producers,
                              int num_consumers,
@@ -512,36 +536,34 @@ namespace {
         std::vector<double> times;
         times.reserve(measurement_iterations);
         for (int i = 0; i < measurement_iterations; ++i) {
-            std::string run_name = create_run_name(queue_name, i + number_one);
-            double time = benchmark_function(
-                run_name, num_producers, num_consumers, false);
-            times.push_back(time);
+            benchmark_params const params{
+                queue_name, i, num_producers, num_consumers};
+            times.push_back(run_single_benchmark(params, benchmark_function));
         }
         return times;
     }
 
+
     // Fixed: Split calculate_mean_stddev
     auto calculate_mean(const std::vector<double>& times) -> double {
-        double sum = std::accumulate(times.begin(), times.end(), 0.0);
+        const double sum = std::accumulate(times.begin(), times.end(), 0.0);
         return sum / static_cast<double>(times.size());
     }
 
     auto calculate_stddev(const std::vector<double>& times, double mean)
         -> double {
         std::vector<double> diff(times.size());
-        std::transform(
-            times.begin(), times.end(), diff.begin(), [mean](double x) {
-                return x - mean;
-            });
-        double sq_sum =
+        std::ranges::transform(
+            times, diff.begin(), [mean](double x) { return x - mean; });
+        const double sq_sum =
             std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
         return std::sqrt(sq_sum / static_cast<double>(times.size()));
     }
 
     auto calculate_mean_stddev(const std::vector<double>& times)
         -> std::pair<double, double> {
-        double mean = calculate_mean(times);
-        double stddev = calculate_stddev(times, mean);
+        const double mean = calculate_mean(times);
+        const double stddev = calculate_stddev(times, mean);
         return {mean, stddev};
     }
 
@@ -645,15 +667,18 @@ namespace {
 
     auto run_all_benchmarks(int num_producers, int num_consumers)
         -> all_benchmark_results {
-        return {
-            run_omp_stdthread_benchmark(num_producers, num_consumers),
-            run_omp_openmp_benchmark(num_producers, num_consumers),
-            run_concurrent_stdthread_benchmark(num_producers, num_consumers),
-            run_concurrent_openmp_benchmark(num_producers, num_consumers)};
+        return all_benchmark_results{
+            .omp_stdthread =
+                run_omp_stdthread_benchmark(num_producers, num_consumers),
+            .omp_openmp =
+                run_omp_openmp_benchmark(num_producers, num_consumers),
+            .concurrent_stdthread = run_concurrent_stdthread_benchmark(
+                num_producers, num_consumers),
+            .concurrent_openmp =
+                run_concurrent_openmp_benchmark(num_producers, num_consumers)};
     }
 
     void print_comparison_header(int num_producers, int num_consumers) {
-        std::print("\n--- COMPARISON SUMMARY ---\n");
         std::print("Configuration: {} producers, {} consumers\n",
                    num_producers,
                    num_consumers);
@@ -662,7 +687,7 @@ namespace {
                    "Mean Time (ms)",
                    "Throughput",
                    "CV (%)");
-        std::print("{}\n", std::string(75, '-'));
+        std::print("{}\n", std::string(number_seventy_five, '-'));
     }
 
     void print_result_row(const std::string& name,
@@ -701,7 +726,7 @@ namespace {
     }
 
     void print_relative_performance(const all_benchmark_results& results) {
-        double base_time = results.omp_stdthread.mean_time_ms;
+        const double base_time = results.omp_stdthread.mean_time_ms;
         print_relative_header();
         print_relative_times(results, base_time);
         std::print("\n=====================================================\n");
