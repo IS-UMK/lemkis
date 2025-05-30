@@ -1,24 +1,28 @@
 #ifndef OMP_QUEUE_HPP
 #define OMP_QUEUE_HPP
 
-#include <queue>
 #include <omp.h>
-#include <cstddef>
 
-template<typename T>
-class OMPQueue {
-private:
+#include <cstddef>
+#include <queue>
+
+template <typename T>
+class omp_queue {
+  private:
     std::queue<T> queue;
     omp_lock_t lock;
+    bool created;
 
-public:
-    OMPQueue() {
+  public:
+    omp_queue() : lock() {
+        created = true;
         omp_init_lock(&lock);
     }
-
-    ~OMPQueue() {
+    ~omp_queue() {
+        created = false;
         omp_destroy_lock(&lock);
     }
+
 
     void push(const T& item) {
         omp_set_lock(&lock);
@@ -26,26 +30,19 @@ public:
         omp_unset_lock(&lock);
     }
 
-    bool pop(T& result) {
+    auto pop() -> bool {
         omp_set_lock(&lock);
-        if (!queue.empty()) {
-            result = queue.front();
-            queue.pop();
-            omp_unset_lock(&lock);
-            return true;
-        }
-        omp_unset_lock(&lock);
-        return false;
+        return !queue.empty();
     }
 
-    bool empty() {
+    auto empty() -> bool {
         omp_set_lock(&lock);
-        bool isEmpty = queue.empty();
+        bool is_empty = queue.empty();
         omp_unset_lock(&lock);
-        return isEmpty;
+        return is_empty;
     }
 
-    size_t size() {
+    auto size() -> size_t {
         omp_set_lock(&lock);
         size_t s = queue.size();
         omp_unset_lock(&lock);
@@ -53,5 +50,4 @@ public:
     }
 };
 
-#endif // OMP_QUEUE_HPP
-
+#endif  // OMP_QUEUE_HPP
