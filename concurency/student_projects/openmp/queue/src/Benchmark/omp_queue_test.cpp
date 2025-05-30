@@ -459,7 +459,7 @@ namespace {
     auto setup_openmp_benchmark(int p, int c)
         -> std::tuple<concurrent_queue_wrapper, int, int, benchmark_params> {
         concurrent_queue<int> q;
-        concurrent_queue_wrapper qwrap(q);
+        const concurrent_queue_wrapper qwrap(q);
         int produced = 0;
         int consumed = 0;
         initialize_benchmark_state(produced, consumed);
@@ -478,9 +478,9 @@ namespace {
         -> std::tuple<thread_context, benchmark_params> {
         auto [queue, items_produced, items_consumed, params] =
             setup_openmp_benchmark(num_producers, num_consumers);
-        thread_context ctx{.queue = queue,
-                           .items_produced = items_produced,
-                           .items_consumed = items_consumed};
+        const thread_context ctx{.queue = queue,
+                                 .items_produced = items_produced,
+                                 .items_consumed = items_consumed};
         return {ctx, params};
     }
 
@@ -536,8 +536,10 @@ namespace {
         std::vector<double> times;
         times.reserve(measurement_iterations);
         for (int i = 0; i < measurement_iterations; ++i) {
-            benchmark_parameters const params{
-                queue_name, i, num_producers, num_consumers};
+            benchmark_parameters const params{.queue_name = queue_name,
+                                              .iteration = i,
+                                              .num_producers = num_producers,
+                                              .num_consumers = num_consumers};
             times.push_back(run_single_benchmark(params, benchmark_function));
         }
         return times;
@@ -575,7 +577,7 @@ namespace {
     auto create_benchmark_result(const std::vector<double>& times)
         -> benchmark_result {
         auto [mean, stddev] = calculate_mean_stddev(times);
-        double median = calculate_median(times);
+        const double median = calculate_median(times);
         return {.mean_time_ms = mean,
                 .median_time_ms = median,
                 .stddev_ms = stddev,
