@@ -27,9 +27,10 @@ constexpr int one_hundred = 100;
 constexpr double one_thousand = 1000.0;
 
 namespace {
-
+    
     // Shared barrier for thread synchronization
     std::atomic<int> barrier{0};
+    std::vector<double> times;
 
     // Wrapper for concurrent_queue
     class concurrent_queue_wrapper {
@@ -533,7 +534,6 @@ namespace {
                              int num_producers,
                              int num_consumers,
                              auto benchmark_function) -> std::vector<double> {
-        std::vector<double> times;
         times.reserve(measurement_iterations);
         for (int i = 0; i < measurement_iterations; ++i) {
             benchmark_parameters const params{.queue_name = queue_name,
