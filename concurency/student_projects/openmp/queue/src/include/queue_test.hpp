@@ -37,4 +37,4 @@ auto static run_benchmark_suite(const std::string& queue_name,
     -> benchmark_result;
 
 // Porównanie pełne — uruchamia wszystkie kombinacje kolejek i metod
-auto  run_full_comparison(int num_producers, int num_consumers) -> void;
+auto run_full_comparison(int num_producers, int num_consumers) -> void;

@@ -11,11 +11,18 @@ class omp_queue {
   private:
     std::queue<T> queue;
     omp_lock_t lock;
+    bool created;
 
   public:
-    omp_queue() { omp_init_lock(&lock); }// NOLINT
+    omp_queue() : lock() {
+        created = true;
+        omp_init_lock(&lock);
+    }
+    ~omp_queue() {
+        created = false;
+        omp_destroy_lock(&lock);
+    }
 
-    ~omp_queue() { omp_destroy_lock(&lock); }// NOLINT
 
     void push(const T& item) {
         omp_set_lock(&lock);

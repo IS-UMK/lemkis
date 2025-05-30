@@ -7,6 +7,7 @@
 #include <numeric>
 #include <random>
 #include <vector>
+
 #include "../include/own_test.hpp"
 constexpr int random_seed = 42;
 constexpr double distribution_min = 0.0;
