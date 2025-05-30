@@ -1,0 +1,133 @@
+Company 69 acquired printer 69
+Employee 69 from company 69 is printing on printer 69
+Employee 851 from company 69 is printing on printer 69
+Employee 851 from company 69 is printing on printer 69
+Employee 69 from company 69 has stopped printing on printer 69
+Employee 1633 from company 69 is printing on printer 69
+Employee 1633 from company 69 is printing on printer 69
+Employee 851 from company 69 has stopped printing on printer 69
+Employee 2415 from company 69 is printing on printer 69
+Employee 2415 from company 69 is printing on printer 69
+Employee 1633 from company 69 has stopped printing on printer 69
+Employee 3197 from company 69 is printing on printer 69
+Employee 3197 from company 69 is printing on printer 69
+Employee 2415 from company 69 has stopped printing on printer 69
+Employee 3197 from company 69 has stopped printing on printer 69
+Company 69 has released printer 69
+Company 324 acquired printer 69
+Employee 3452 from company 324 is printing on printer 69
+Employee 3452 from company 324 has stopped printing on printer 69
+Company 324 has released printer 69
+Company 594 acquired printer 69
+Employee 3722 from company 594 is printing on printer 69
+Employee 3722 from company 594 has stopped printing on printer 69
+Company 594 has released printer 69
+Company 130 acquired printer 69
+Employee 130 from company 130 is printing on printer 69
+Employee 912 from company 130 is printing on printer 69
+Employee 912 from company 130 is printing on printer 69
+Employee 912 from company 130 has stopped printing on printer 69
+Employee 130 from company 130 has stopped printing on printer 69
+Company 130 has released printer 69
+Company 157 acquired printer 69
+Employee 157 from company 157 is printing on printer 69
+Employee 157 from company 157 has stopped printing on printer 69
+Company 157 has released printer 69
+Company 496 acquired printer 69
+Employee 1278 from company 496 is printing on printer 69
+Employee 1278 from company 496 has stopped printing on printer 69
+Company 496 has released printer 69
+Company 654 acquired printer 69
+Employee 1436 from company 654 is printing on printer 69
+Employee 1436 from company 654 has stopped printing on printer 69
+Company 654 has released printer 69
+Company 221 acquired printer 69
+Employee 221 from company 221 is printing on printer 69
+Employee 1785 from company 221 is printing on printer 69
+Employee 1785 from company 221 is printing on printer 69
+Employee 221 from company 221 has stopped printing on printer 69
+Employee 1785 from company 221 has stopped printing on printer 69
+Company 221 has released printer 69
+Company 358 acquired printer 69
+Employee 1922 from company 358 is printing on printer 69
+Employee 1922 from company 358 has stopped printing on printer 69
+Company 358 has released printer 69
+Company 499 acquired printer 69
+Employee 2063 from company 499 is printing on printer 69
+Employee 2063 from company 499 has stopped printing on printer 69
+Company 499 has released printer 69
+Company 681 acquired printer 69
+Employee 2245 from company 681 is printing on printer 69
+Employee 2245 from company 681 has stopped printing on printer 69
+Company 681 has released printer 69
+Company 357 acquired printer 69
+Employee 357 from company 357 is printing on printer 69
+Employee 357 from company 357 has stopped printing on printer 69
+Company 357 has released printer 69
+Company 381 acquired printer 69
+Employee 381 from company 381 is printing on printer 69
+Employee 381 from company 381 has stopped printing on printer 69
+Company 381 has released printer 69
+Company 316 acquired printer 69
+Employee 2662 from company 316 is printing on printer 69
+Employee 2662 from company 316 has stopped printing on printer 69
+Company 316 has released printer 69
+Company 438 acquired printer 69
+Employee 2784 from company 438 is printing on printer 69
+Employee 2784 from company 438 has stopped printing on printer 69
+Company 438 has released printer 69
+Company 511 acquired printer 69
+Employee 2857 from company 511 is printing on printer 69
+Employee 2857 from company 511 has stopped printing on printer 69
+Company 511 has released printer 69
+Company 651 acquired printer 69
+Employee 2997 from company 651 is printing on printer 69
+Employee 2997 from company 651 has stopped printing on printer 69
+Company 651 has released printer 69
+Company 538 acquired printer 69
+Employee 538 from company 538 is printing on printer 69
+Employee 538 from company 538 has stopped printing on printer 69
+Company 538 has released printer 69
+Company 134 acquired printer 69
+Employee 3262 from company 134 is printing on printer 69
+Employee 3262 from company 134 has stopped printing on printer 69
+Company 134 has released printer 69
+Company 256 acquired printer 69
+Employee 3384 from company 256 is printing on printer 69
+Employee 3384 from company 256 has stopped printing on printer 69
+Company 256 has released printer 69
+Company 413 acquired printer 69
+Employee 3541 from company 413 is printing on printer 69
+Employee 3541 from company 413 has stopped printing on printer 69
+Company 413 has released printer 69
+Company 709 acquired printer 69
+Employee 709 from company 709 is printing on printer 69
+Employee 3837 from company 709 is printing on printer 69
+Employee 3837 from company 709 is printing on printer 69
+Employee 709 from company 709 has stopped printing on printer 69
+Employee 3837 from company 709 has stopped printing on printer 69
+Company 709 has released printer 69
+Company 237 acquired printer 69
+Employee 1019 from company 237 is printing on printer 69
+Employee 4147 from company 237 is printing on printer 69
+Employee 4147 from company 237 is printing on printer 69
+Employee 1019 from company 237 has stopped printing on printer 69
+Employee 4147 from company 237 has stopped printing on printer 69
+Company 237 has released printer 69
+Company 325 acquired printer 69
+Employee 4235 from company 325 is printing on printer 69
+Employee 4235 from company 325 has stopped printing on printer 69
+Company 325 has released printer 69
+Company 404 acquired printer 69
+Employee 4314 from company 404 is printing on printer 69
+Employee 4314 from company 404 has stopped printing on printer 69
+Company 404 has released printer 69
+Company 572 acquired printer 69
+Employee 4482 from company 572 is printing on printer 69
+Employee 4482 from company 572 has stopped printing on printer 69
+Company 572 has released printer 69
+Company 333 acquired printer 69
+Employee 1115 from company 333 is printing on printer 69
+Employee 1115 from company 333 has stopped printing on printer 69
+Company 333 has released printer 69
+Printer 69 was used 35 times.

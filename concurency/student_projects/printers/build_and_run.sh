@@ -20,4 +20,4 @@ cmake --build .
 
 # Run the program if build succeeds
 echo "=== Build successful. Running the program ==="
-./PrintersSimulation
+./PrintersSimulation | tee ../input.txt

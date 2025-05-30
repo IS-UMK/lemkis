@@ -1,76 +1,179 @@
 ﻿#pragma once
-#include <mutex>
-#include <vector>
+
+#include <fcntl.h>
+#include <semaphore.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#include <iostream>
+#include <utility>
 
 #include "Company.h"
 #include "Employee.h"
 #include "Printer.h"
+#include "Utility.h"
+
 
 /// <summary>
 /// class which represents the office with multiple companies and printers,
 /// which is ready for printer-chaos.
 /// </summary>
 class office {
-    std::mutex mtx_;  // Mutex for synchronizing access to the office
-    std::condition_variable cv_;  // Condition variable for signaling between
-                                  // threads, when some printer is available
-
   public:
-    std::vector<printer> printers;   // Vector of printers in the office
-    std::vector<company> companies;  // Vector of companies in the office
-    std::vector<std::thread>
-        threads;  // Vector of threads representing employees
+    office(int num_companies, int num_printers, int num_of_all_employees)
+        : num_companies_(num_companies),
+          num_printers_(num_printers),
+          num_of_all_employees_(num_of_all_employees) {}
 
-    auto run_chaos(int num_companies,
-                   int num_printers,
-                   int num_of_all_employees) -> void;
+    auto run_chaos() -> void;
+    void run_employee_process(int i, sem_t* mutex, sem_t* condition) const;
 
   private:
-    void init_printers(int num_printers);
-    void init_companies(int num_companies);
-    void init_employees_threads(int num_companies, int num_of_all_employees);
+    const int shm_mode = 0666;  // file permissions for shared memory
+    const int shm_value = 1;    // initial value for semaphores
+    const char* shm_printers_name = "/printers_shared_memory";
+    const char* shm_companies_name = "/companies_shared_memory";
+
+  public:
+    int num_companies_;
+    int num_printers_;
+    int num_of_all_employees_;
+
+    printer* printers_;   // shared memory for printers
+    company* companies_;  // shared memory for companies
+
+    static void prepare_printers(printer* printers, int num_printers) {
+        for (int i = 0; i < num_printers; i++) {
+            printers[i].printer_id = i;
+            printers[i].current_company = utility::no_company;
+            printers[i].usage_count = 0;
+        }
+    }
+
+    static void prepare_companies(company* companies, int num_companies) {
+        for (int i = 0; i < num_companies; i++) {
+            companies[i].company_id = i;
+            companies[i].assigned_printer = utility::no_printer;
+        }
+    }
+
+    static void prepare_office(printer* printers,
+                               int num_printers,
+                               company* companies,
+                               int num_companies) {
+        prepare_printers(printers, num_printers);     // prepare printers
+        prepare_companies(companies, num_companies);  // prepare companies
+    }
+
+    auto create_employee(const int i,
+                         sem_t* mutex,
+                         sem_t* condition) const -> employee {
+        auto company_id = i % num_companies_;
+        employee emp(i,
+                     company_id,
+                     companies_,
+                     printers_,
+                     num_printers_,
+                     mutex,
+                     condition);
+        return emp;
+    }
+
+    void wait_for_employees() const {
+        for (int i = 0; i < num_of_all_employees_; i++) {
+            wait(nullptr);  // wait for all child processes to finish
+        }
+    }
+
+    void clean_up() {
+        printers_ = nullptr;
+        companies_ = nullptr;
+        sem_unlink("/mutex");
+        sem_unlink("/condition");
+        shm_unlink(shm_printers_name);
+        shm_unlink(shm_companies_name);
+    }
+
+    void print_summary() const;
+    void run_employees(sem_t* mutex, sem_t* condition) const;
+
+    [[nodiscard]] auto stage_init_semaphores() const
+        -> std::pair<sem_t*, sem_t*>;
+
+    auto init_printers_shm(int num_printers) -> printer*;
+    auto init_companies_shm(int num_companies) -> company*;
+    void init_shared_memory();
 };
 
-/// <summary>
-/// Method which represents the office with multiple companies and printers,
-/// to simulate the chaos of why having multiple companies in one office is a
-/// bad idea.
-/// </summary>
-/// <param name="num_companies"></param>
-/// <param name="num_printers"></param>
-/// <param name="num_of_all_employees"></param>
-inline void office::run_chaos(const int num_companies,
-                              const int num_printers,
-                              const int num_of_all_employees) {
-    init_printers(num_printers);    // init printers
-    init_companies(num_companies);  // init companies
-    init_employees_threads(num_companies,
-                           num_of_all_employees);  // init employees threads
+inline void office::run_chaos() {
+    clean_up();  // clean up previous resources if any
+    init_shared_memory();
+    prepare_office(printers_, num_printers_, companies_, num_companies_);
+    auto [mutex, condition] = stage_init_semaphores();
+    run_employees(mutex, condition);
+    wait_for_employees();
+    print_summary();
+    clean_up();
+}
 
-    for (auto& thread : threads)  // wait for threads to be done
-    {
-        thread.join();
+inline void office::init_shared_memory() {
+    printers_ = init_printers_shm(num_printers_);
+    companies_ = init_companies_shm(num_companies_);
+}
+
+inline auto office::stage_init_semaphores() const -> std::pair<sem_t*, sem_t*> {
+    sem_t* mutex = sem_open("/mutex", O_CREAT, shm_mode, shm_value);
+    sem_t* condition = sem_open("/condition", O_CREAT, shm_mode, 0);
+    return {mutex, condition};
+}
+
+inline void office::run_employees(sem_t* mutex, sem_t* condition) const {
+    for (auto i = 0; i < num_of_all_employees_; i++) {
+        const pid_t pid = fork();
+        if (pid == 0) { run_employee_process(i, mutex, condition); }
     }
 }
 
-inline void office::init_printers(const int num_printers) {
-    printers.reserve(num_printers);
-    for (int i = 0; i < num_printers; i++) { printers.emplace_back(i); }
+inline void office::run_employee_process(int i,
+                                         sem_t* mutex,
+                                         sem_t* condition) const {
+    auto process_id = getpid();
+    std::cout << "Employee " << i << " with PID " << process_id
+              << " is starting.\n"
+              << std::flush;
+    auto emp = create_employee(i, mutex, condition);
+    emp.run();  // child process runs the employee
+    exit(0);    // child process exits after running
 }
 
-inline void office::init_companies(const int num_companies) {
-    companies.reserve(num_companies);
-    for (int i = 0; i < num_companies; i++) { companies.emplace_back(i); }
+inline auto office::init_printers_shm(const int num_printers) -> printer* {
+    const size_t printer_size = sizeof(printer) * num_printers;
+    const int shm_fd = shm_open(shm_printers_name, O_CREAT | O_RDWR, shm_mode);
+    auto length = static_cast<long>(printer_size);
+    ftruncate(shm_fd, length);
+
+    auto* printers = static_cast<printer*>(
+        mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0));
+    return printers;
 }
 
-inline void office::init_employees_threads(const int num_companies,
-                                           const int num_of_all_employees) {
-    for (int i = 0; i < num_of_all_employees; i++) {
-        const auto company_id = i % num_companies;
-        std::printf("Creating employee %d from company %d\n", i, company_id);
+inline auto office::init_companies_shm(const int num_companies) -> company* {
+    const size_t company_size = sizeof(company) * num_companies;
+    const int shm_fd = shm_open(shm_companies_name, O_CREAT | O_RDWR, shm_mode);
+    auto length = static_cast<long>(company_size);
+    ftruncate(shm_fd, length);
 
-        // run the employee thread with the company and printers
-        threads.emplace_back(
-            employee(i, companies[company_id], printers, mtx_, cv_));
+    auto* companies = static_cast<company*>(
+        mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0));
+    return companies;
+}
+
+inline void office::print_summary() const {
+    // print all pritners usage
+    std::cout << "Printers usage summary:\n";
+    for (int i = 0; i < num_printers_; i++) {
+        std::cout << "Printer " << printers_[i].printer_id << " was used "
+                  << printers_[i].times_used << " times.\n";
     }
 }
