@@ -3,7 +3,7 @@
 #include "prelude.h"
 
 auto produce(int id) -> unit {
-    unit u{static_cast<UnitType>(rand() % number_of_workers), id, true};
+    unit u{static_cast<UnitType>(rand()%(unit_interval)+number_one), id, true, false};
     std::println("[Worker {}] Produced unit of type {}",
                  id,
                  unit_type_to_string(u.type));
