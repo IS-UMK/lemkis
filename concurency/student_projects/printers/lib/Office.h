@@ -145,9 +145,7 @@ inline void office::run_employee_process(int i,
                                          sem_t* mutex,
                                          sem_t* condition) const {
     auto process_id = getpid();
-    std::cout << std::format(
-                     "Employee {} with PID {} is starting.\n", i, process_id)
-              << std::flush;
+    std::println("Employee {} with PID {} is starting.", i, process_id);
     auto emp = create_employee(i, mutex, condition);
     emp.run();
     exit(0);
@@ -184,9 +182,8 @@ inline auto office::init_companies_shm(const int num_companies) -> company* {
 inline void office::print_summary() const {
     std::cout << "Printers usage summary:\n";
     for (int i = 0; i < num_printers_; i++) {
-        std::cout << std::format("Printer {} was used {} times.\n",
-                                 printers_[i].printer_id,
-                                 printers_[i].times_used)
-                  << std::flush;
+        std::println("Printer {} was used {} times.",
+                     printers_[i].printer_id,
+                     printers_[i].times_used);
     }
 }

@@ -3,8 +3,7 @@
 /// <summary>
 /// class which represents a printer in the office.
 /// </summary>
-class printer {
-  public:
+struct printer {
     int printer_id;
     int current_company;
     int usage_count{0};

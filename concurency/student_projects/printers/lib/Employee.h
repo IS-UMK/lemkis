@@ -2,8 +2,7 @@
 #include <semaphore.h>
 
 #include <cstdio>
-#include <format>
-#include <iostream>
+#include <print>
 #include <thread>
 
 #include "Company.h"
@@ -48,37 +47,27 @@ class employee {
     auto get_company() -> company& { return companies_[company_id_]; }
 
     void acquire_printer_print(int printer_id) const {
-        std::cout << std::format("Company {} acquired printer {}\n",
-                                 company_id_,
-                                 printer_id)
-                  << std::flush;
+        std::println("Company {} acquired printer {}", company_id_, printer_id);
     }
 
     void employee_start_printing_print(int printer_id) const {
-        std::cout
-            << std::format(
-                   "Employee {} from company {} is printing on printer {}\n",
-                   employee_id_,
-                   company_id_,
-                   printer_id)
-            << std::flush;
+        std::println("Employee {} from company {} is printing on printer {}",
+                     employee_id_,
+                     company_id_,
+                     printer_id);
     }
 
     void employee_stop_printing_print(int printer_id) const {
-        std::cout << std::format(
-                         "Employee {} from company {} has stopped printing on "
-                         "printer {}\n",
-                         employee_id_,
-                         company_id_,
-                         printer_id)
-                  << std::flush;
+        std::println(
+            "Employee {} from company {} has stopped printing on printer {}",
+            employee_id_,
+            company_id_,
+            printer_id);
     }
 
     void release_printer_print(int printer_id) const {
-        std::cout << std::format("Company {} has released printer {}\n",
-                                 company_id_,
-                                 printer_id)
-                  << std::flush;
+        std::println(
+            "Company {} has released printer {}", company_id_, printer_id);
     }
 
     void acquire();
