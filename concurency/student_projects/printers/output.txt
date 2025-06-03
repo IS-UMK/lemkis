@@ -1,0 +1,126 @@
+Company 136 acquired printer 122
+Employee 136 from company 136 is printing on printer 122
+Employee 918 from company 136 is printing on printer 122
+Employee 918 from company 136 is printing on printer 122
+Employee 918 from company 136 has stopped printing on printer 122
+Employee 136 from company 136 has stopped printing on printer 122
+Company 136 has released printer 122
+Company 5 acquired printer 122
+Employee 1569 from company 5 is printing on printer 122
+Employee 1569 from company 5 has stopped printing on printer 122
+Company 5 has released printer 122
+Company 601 acquired printer 122
+Employee 2165 from company 601 is printing on printer 122
+Employee 2165 from company 601 has stopped printing on printer 122
+Company 601 has released printer 122
+Company 578 acquired printer 122
+Employee 578 from company 578 is printing on printer 122
+Employee 578 from company 578 has stopped printing on printer 122
+Company 578 has released printer 122
+Company 447 acquired printer 122
+Employee 2793 from company 447 is printing on printer 122
+Employee 3575 from company 447 is printing on printer 122
+Employee 3575 from company 447 is printing on printer 122
+Employee 2793 from company 447 has stopped printing on printer 122
+Employee 4357 from company 447 is printing on printer 122
+Employee 4357 from company 447 is printing on printer 122
+Employee 3575 from company 447 has stopped printing on printer 122
+Employee 4357 from company 447 has stopped printing on printer 122
+Company 447 has released printer 122
+Company 318 acquired printer 122
+Employee 1100 from company 318 is printing on printer 122
+Employee 1100 from company 318 has stopped printing on printer 122
+Company 318 has released printer 122
+Company 419 acquired printer 122
+Employee 1201 from company 419 is printing on printer 122
+Employee 1201 from company 419 has stopped printing on printer 122
+Company 419 has released printer 122
+Company 513 acquired printer 122
+Employee 1295 from company 513 is printing on printer 122
+Employee 1295 from company 513 has stopped printing on printer 122
+Company 513 has released printer 122
+Company 660 acquired printer 122
+Employee 1442 from company 660 is printing on printer 122
+Employee 1442 from company 660 has stopped printing on printer 122
+Company 660 has released printer 122
+Company 297 acquired printer 122
+Employee 297 from company 297 is printing on printer 122
+Employee 297 from company 297 has stopped printing on printer 122
+Company 297 has released printer 122
+Company 104 acquired printer 122
+Employee 1668 from company 104 is printing on printer 122
+Employee 1668 from company 104 has stopped printing on printer 122
+Company 104 has released printer 122
+Company 211 acquired printer 122
+Employee 1775 from company 211 is printing on printer 122
+Employee 1775 from company 211 has stopped printing on printer 122
+Company 211 has released printer 122
+Company 593 acquired printer 122
+Employee 2157 from company 593 is printing on printer 122
+Employee 2157 from company 593 has stopped printing on printer 122
+Company 593 has released printer 122
+Company 721 acquired printer 122
+Employee 2285 from company 721 is printing on printer 122
+Employee 2285 from company 721 has stopped printing on printer 122
+Company 721 has released printer 122
+Company 489 acquired printer 122
+Employee 489 from company 489 is printing on printer 122
+Employee 489 from company 489 has stopped printing on printer 122
+Company 489 has released printer 122
+Company 152 acquired printer 122
+Employee 2498 from company 152 is printing on printer 122
+Employee 2498 from company 152 has stopped printing on printer 122
+Company 152 has released printer 122
+Company 290 acquired printer 122
+Employee 2636 from company 290 is printing on printer 122
+Employee 2636 from company 290 has stopped printing on printer 122
+Company 290 has released printer 122
+Company 398 acquired printer 122
+Employee 2744 from company 398 is printing on printer 122
+Employee 2744 from company 398 has stopped printing on printer 122
+Company 398 has released printer 122
+Company 114 acquired printer 122
+Employee 3242 from company 114 is printing on printer 122
+Employee 3242 from company 114 has stopped printing on printer 122
+Company 114 has released printer 122
+Company 255 acquired printer 122
+Employee 3383 from company 255 is printing on printer 122
+Employee 3383 from company 255 has stopped printing on printer 122
+Company 255 has released printer 122
+Company 387 acquired printer 122
+Employee 3515 from company 387 is printing on printer 122
+Employee 3515 from company 387 has stopped printing on printer 122
+Company 387 has released printer 122
+Company 570 acquired printer 122
+Employee 3698 from company 570 is printing on printer 122
+Employee 3698 from company 570 has stopped printing on printer 122
+Company 570 has released printer 122
+Company 629 acquired printer 122
+Employee 3757 from company 629 is printing on printer 122
+Employee 3757 from company 629 has stopped printing on printer 122
+Company 629 has released printer 122
+Company 200 acquired printer 122
+Employee 982 from company 200 is printing on printer 122
+Employee 982 from company 200 has stopped printing on printer 122
+Company 200 has released printer 122
+Company 32 acquired printer 122
+Employee 3942 from company 32 is printing on printer 122
+Employee 3942 from company 32 has stopped printing on printer 122
+Company 32 has released printer 122
+Company 103 acquired printer 122
+Employee 4013 from company 103 is printing on printer 122
+Employee 4013 from company 103 has stopped printing on printer 122
+Company 103 has released printer 122
+Company 171 acquired printer 122
+Employee 4081 from company 171 is printing on printer 122
+Employee 4081 from company 171 has stopped printing on printer 122
+Company 171 has released printer 122
+Company 457 acquired printer 122
+Employee 4367 from company 457 is printing on printer 122
+Employee 4367 from company 457 has stopped printing on printer 122
+Company 457 has released printer 122
+Company 279 acquired printer 122
+Employee 1061 from company 279 is printing on printer 122
+Employee 1061 from company 279 has stopped printing on printer 122
+Company 279 has released printer 122
+Printer 122 was used 32 times.
