@@ -1,7 +1,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-constexpr int number_of_workers = 5;
+constexpr int number_of_workers = 6;
+constexpr int unit_interval = number_of_workers/2 - 1;
+constexpr int number_one = 1;
 constexpr int sleep_short = 5000;
 constexpr int sleep_long = 100000;
 constexpr int chmod = 0666;
