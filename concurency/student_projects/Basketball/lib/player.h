@@ -1,69 +1,74 @@
 #pragma once
-#include <algorithm>
+
+#include <fcntl.h>
+#include <semaphore.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <atomic>
 #include <chrono>
-#include <condition_variable>
+#include <csignal>
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <mutex>
+#include <print>
 #include <random>
+#include <string>
 #include <thread>
+#include <utility>
 #include <vector>
-
 
 class player {
   public:
     int id;
-    mutable std::mutex mtx;
-    bool in_match = false, abandoned = false;
+    std::string shm_name;
     std::mt19937 gen;
     const int timeout = 500;
+    const int delay = 100;
+    const int flag_value = 1;
+    std::atomic<bool>* match_active{nullptr};
+    pid_t pid{0};
 
+    explicit player(int id)
+        : id(id),
+          gen(std::random_device{}()),
+          shm_name("/player_" + std::to_string(id)) {}
 
-    explicit player(int id) : id(id), gen(std::random_device{}()) {}
-
-    void arrive() {
-        {
-            const std::lock_guard<std::mutex> lg(mtx);
-            if (abandoned) { return; }
-            in_match = true;
-        }
-    }
-
-    void leave(const int play_time = 0) {
-        const std::lock_guard<std::mutex> lg(mtx);
-        if (!abandoned) {
-            abandoned = true;
-            in_match = false;
-            std::printf("Player %d abandoned after %dms\n", id, play_time);
-        }
-    }
-
-    auto start(int dur) -> int {
+    auto start(int dur, std::atomic<bool>* active) {
+        match_active = active;
+        shm_unlink(shm_name.c_str());
         std::uniform_int_distribution<> dist(timeout, dur);
-        const int play_time = dist(gen);
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(play_time));
-        return play_time;
+        return dist(gen);
     }
 
-    void play(int dur, std::shared_ptr<std::atomic<bool>> &over) {
-        arrive();
-        std::thread([this, dur, over]() {
-            auto play_time = start(dur);
-            if (*over) { return; }
-            leave(play_time);
-        }).detach();
+    auto match_while(int play_time) -> void {
+        auto start = std::chrono::steady_clock::now();
+        while (*match_active &&
+               std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::steady_clock::now() - start)
+                       .count() < play_time) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+        }
     }
 
-    auto available() const -> bool {
-        const std::lock_guard<std::mutex> lg(mtx);
-        return !in_match && !abandoned;
+
+    void play(int dur,
+              sem_t* sem,
+              int* abandoned_flag,
+              std::atomic<bool>* active) {
+        auto play_time = start(dur, active);
+
+        match_while(play_time);
+
+        if (*match_active) {
+            *abandoned_flag = flag_value;
+            std::println("Player {} abandoned after {}ms", id, play_time);
+            sem_post(sem);
+        }
     }
 
-    void reset() {
-        const std::lock_guard<std::mutex> lg(mtx);
-        abandoned = in_match = false;
-    }
+    ~player() { shm_unlink(shm_name.c_str()); }
 };

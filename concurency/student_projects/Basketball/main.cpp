@@ -1,13 +1,17 @@
 #include "matchManager.h"
 
-const int global_magic_number_of_courts = 10;
-const int global_magic_number_of_teams = 4;
-const int global_magic_number_of_players = 2;
+const int number_of_courts = 1;
+const int number_of_teams = 8;
+const int number_of_players = 2;
+const int exit_code = 0;
+const int exit_code_error = 1;
 
 auto main() -> int {
-    match_manager(global_magic_number_of_courts,
-                  global_magic_number_of_teams,
-                  global_magic_number_of_players)
-        .run();
-    return 0;
+    try {
+        match_manager(number_of_courts, number_of_teams, number_of_players)
+            .run();
+    } catch (const std::exception& e) { return exit_code_error; } catch (...) {
+        return exit_code_error;
+    }
+    return exit_code;
 }
