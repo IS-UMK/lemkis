@@ -18,3 +18,16 @@ Pracownik danej firmy **nie może rozpocząć drukowania**, dopóki nie będzie 
 3. **Pracownicy tej samej firmy mogą korzystać z tej samej drukarki w tym samym czasie.**
 
 4. **Jeśli jest wiele wolnych drukarek, pracownik może wybrać dowolną z nich, pod warunkiem że jego firma nie korzysta już z innej drukarki.**
+
+---
+
+### Parametry symulacji (`main.cpp`)
+
+W pliku `main.cpp` znajdują się stałe konfiguracyjne określające parametry symulacji:
+
+```cpp
+auto constexpr num_companies = 782;
+auto constexpr num_printers = 123;
+auto constexpr num_of_all_employees = 4564;
+auto constexpr invalid_params_exit_code = -2;
+auto constexpr unexpected_exception_exit_code = 2;
