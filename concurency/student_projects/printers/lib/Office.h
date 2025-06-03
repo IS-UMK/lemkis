@@ -62,13 +62,12 @@ class office {
                                int num_printers,
                                company* companies,
                                int num_companies) {
-        prepare_printers(printers, num_printers);     // prepare printers
-        prepare_companies(companies, num_companies);  // prepare companies
+        prepare_printers(printers, num_printers);
+        prepare_companies(companies, num_companies);
     }
 
-    auto create_employee(const int i,
-                         sem_t* mutex,
-                         sem_t* condition) const -> employee {
+    auto create_employee(const int i, sem_t* mutex, sem_t* condition) const
+        -> employee {
         auto company_id = i % num_companies_;
         employee emp(i,
                      company_id,
@@ -80,7 +79,6 @@ class office {
         return emp;
     }
 
-    // wait for all child processes to finish
     void wait_for_employees() const {
         for (int i = 0; i < num_of_all_employees_; i++) { wait(nullptr); }
     }
@@ -106,7 +104,7 @@ class office {
 };
 
 inline void office::run_chaos() {
-    clean_up();  // clean up previous resources if any
+    clean_up();
     init_shared_memory();
     prepare_office(printers_, num_printers_, companies_, num_companies_);
     auto [mutex, condition] = stage_init_semaphores();
@@ -151,8 +149,8 @@ inline void office::run_employee_process(int i,
                      "Employee {} with PID {} is starting.\n", i, process_id)
               << std::flush;
     auto emp = create_employee(i, mutex, condition);
-    emp.run();  // child process runs the employee
-    exit(0);    // child process exits after running
+    emp.run();
+    exit(0);
 }
 
 /// <summary>
@@ -184,7 +182,6 @@ inline auto office::init_companies_shm(const int num_companies) -> company* {
 }
 
 inline void office::print_summary() const {
-    // print all pritners usage
     std::cout << "Printers usage summary:\n";
     for (int i = 0; i < num_printers_; i++) {
         std::cout << std::format("Printer {} was used {} times.\n",
