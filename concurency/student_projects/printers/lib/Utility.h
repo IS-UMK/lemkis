@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <array>
 #include <cerrno>
 #include <climits>
 #include <cstring>
@@ -21,6 +20,7 @@ class utility {
         return dist(generator());
     }
 
+    // Checks if the parameters for the office are valid
     auto static are_params_ok(const int num_companies,
                               const int num_printers,
                               const int num_of_all_employees) -> bool {

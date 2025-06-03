@@ -1,1 +1,0 @@
-grep -i "$1 $2" input.txt > output.txt

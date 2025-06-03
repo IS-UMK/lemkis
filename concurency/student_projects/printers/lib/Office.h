@@ -80,10 +80,9 @@ class office {
         return emp;
     }
 
+    // wait for all child processes to finish
     void wait_for_employees() const {
-        for (int i = 0; i < num_of_all_employees_; i++) {
-            wait(nullptr);  // wait for all child processes to finish
-        }
+        for (int i = 0; i < num_of_all_employees_; i++) { wait(nullptr); }
     }
 
     void clean_up() {
@@ -117,17 +116,26 @@ inline void office::run_chaos() {
     clean_up();
 }
 
+/// <summary>
+/// Initializes shared memory for printers and companies.
+/// </summary>
 inline void office::init_shared_memory() {
     printers_ = init_printers_shm(num_printers_);
     companies_ = init_companies_shm(num_companies_);
 }
 
+/// <summary>
+/// Initializes semaphores for synchronization.
+/// </summary>
 inline auto office::stage_init_semaphores() const -> std::pair<sem_t*, sem_t*> {
     sem_t* mutex = sem_open("/mutex", O_CREAT, shm_mode, shm_value);
     sem_t* condition = sem_open("/condition", O_CREAT, shm_mode, 0);
     return {mutex, condition};
 }
 
+/// <summary>
+/// Runs the employee processes.
+/// </summary>
 inline void office::run_employees(sem_t* mutex, sem_t* condition) const {
     for (auto i = 0; i < num_of_all_employees_; i++) {
         const pid_t pid = fork();
@@ -139,14 +147,17 @@ inline void office::run_employee_process(int i,
                                          sem_t* mutex,
                                          sem_t* condition) const {
     auto process_id = getpid();
-    std::cout << "Employee " << i << " with PID " << process_id
-              << " is starting.\n"
+    std::cout << std::format(
+                     "Employee {} with PID {} is starting.\n", i, process_id)
               << std::flush;
     auto emp = create_employee(i, mutex, condition);
     emp.run();  // child process runs the employee
     exit(0);    // child process exits after running
 }
 
+/// <summary>
+/// Initializes shared memory for printers.
+/// </summary>
 inline auto office::init_printers_shm(const int num_printers) -> printer* {
     const size_t printer_size = sizeof(printer) * num_printers;
     const int shm_fd = shm_open(shm_printers_name, O_CREAT | O_RDWR, shm_mode);
@@ -158,6 +169,9 @@ inline auto office::init_printers_shm(const int num_printers) -> printer* {
     return printers;
 }
 
+/// <summary>
+/// Initializes shared memory for companies.
+/// </summary>
 inline auto office::init_companies_shm(const int num_companies) -> company* {
     const size_t company_size = sizeof(company) * num_companies;
     const int shm_fd = shm_open(shm_companies_name, O_CREAT | O_RDWR, shm_mode);
@@ -173,7 +187,9 @@ inline void office::print_summary() const {
     // print all pritners usage
     std::cout << "Printers usage summary:\n";
     for (int i = 0; i < num_printers_; i++) {
-        std::cout << "Printer " << printers_[i].printer_id << " was used "
-                  << printers_[i].times_used << " times.\n";
+        std::cout << std::format("Printer {} was used {} times.\n",
+                                 printers_[i].printer_id,
+                                 printers_[i].times_used)
+                  << std::flush;
     }
 }
