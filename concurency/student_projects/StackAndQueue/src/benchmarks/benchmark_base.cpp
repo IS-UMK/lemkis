@@ -25,12 +25,13 @@ auto benchmark_base::prepare_threads() -> void {
 }
 
 auto benchmark_base::launch_threads() -> void {
-    for (int i = 0; i < m_num_producers; ++i) {
-        m_producers.emplace_back([this] { producer_loop(); });
-    }
-    for (int i = 0; i < m_num_consumers; ++i) {
-        m_consumers.emplace_back([this] { consumer_loop(); });
-    }
+    std::generate_n(std::back_inserter(m_producers), m_num_producers, [this] {
+        return std::jthread([this] { producer_loop(); });
+    });
+
+    std::generate_n(std::back_inserter(m_consumers), m_num_consumers, [this] {
+        return std::jthread([this] { consumer_loop(); });
+    });
 }
 
 auto benchmark_base::wait_for_completion() -> void {
