@@ -1,6 +1,5 @@
-# Summary: CUDA Kernel Basics and Matrix Multiplication Example
+# CUDA Kernel Basics and Matrix Multiplication Example
 
-This summary covers the essentials of writing CUDA kernels, how threads, blocks, and grids are organized, and a simple matrix multiplication kernel with host code example.
 
 ---
 
