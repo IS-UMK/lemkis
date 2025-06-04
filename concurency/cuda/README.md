@@ -144,26 +144,75 @@ int main() {
 ```
 
 
----
+# CUDA Function Qualifiers: `__global__`, `__device__`, and `__host__`
 
-## Key Points Recap
-
-- Use **grids of blocks** to cover large matrices; each thread computes one output element.
-- Compute **global thread indices** using `blockIdx`, `blockDim`, and `threadIdx`.
-- Always do **boundary checks** inside kernels.
-- Manage GPU memory carefully: allocate, copy, launch kernel, copy back, free.
-- The indexing formula stays the same whether you use one block or multiple blocks (grid).
-- For better performance, consider **tiling and shared memory**, but start with this simple version.
+In CUDA C++, these qualifiers specify where functions run and from where they can be called.
 
 ---
 
-## References
+## `__global__`
 
-- [NVIDIA CUDA Samples: matrixMul](https://github.com/NVIDIA/cuda-samples/blob/master/Samples/0_Introduction/matrixMul/matrixMul.cu)
-- CUDA C Programming Guide (NVIDIA)
-- CUDA tutorials and articles on matrix multiplication
+- Declares a **kernel function**.
+- Runs **on the GPU (device)**.
+- Called **from the CPU (host)** using CUDA kernel launch syntax:
+  ```cpp
+  kernel<<<gridDim, blockDim>>>(args);
+  ```
+- Must have `void` return type.
+- Each GPU thread executes an instance of this function in parallel.
+
+**Example:**
+```cpp
+__global__ void myKernel() {
+// kernel code running on GPU
+}
+```
+
 
 ---
 
-This should give you a solid foundation to write and run your own CUDA kernels for matrix multiplication and other parallel tasks!
+## `__device__`
+
+- Declares a **device function**.
+- Runs **on the GPU (device)**.
+- Can only be called **from other device or global (`__global__`) functions**.
+- Can have any return type.
+- Used for helper functions callable from kernels or other device functions.
+
+**Example:**
+```cpp
+__device__ int add(int a, int b) {
+return a + b;
+}
+```
+
+---
+
+## `__host__`
+
+- Declares a **host function**.
+- Runs **on the CPU (host)**.
+- Called **from host code only**.
+- This is the default for normal C++ functions, so usually not explicitly needed.
+
+**Example:**
+```cpp
+__host__ void foo() {
+// CPU code
+}
+```
+
+
+---
+
+## Combined Qualifiers
+
+You can combine `__host__` and `__device__` to compile a function for **both CPU and GPU**:
+```cpp
+__host__ __device__ int square(int x) {
+return x * x;
+}
+```
+
+
 
