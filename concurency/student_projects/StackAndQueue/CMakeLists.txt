@@ -11,8 +11,8 @@ add_executable(${PROJECT_NAME}
 )
 
 set(INCLUDE_DIRS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../external/moodycamel
   ${CMAKE_CURRENT_SOURCE_DIR}/src/include/benchmarks
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/include/moodycamel
   ${CMAKE_CURRENT_SOURCE_DIR}/src/include/structures
   ${CMAKE_CURRENT_SOURCE_DIR}/src/include/utils
 )
