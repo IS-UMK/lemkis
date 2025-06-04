@@ -34,14 +34,14 @@ class benchmark_base {
                    int total_items);
     virtual ~benchmark_base() = default;
     auto run() -> void;
+    auto prepare_threads() -> void;
+    auto print_result(Duration duration) -> void;
 
   protected:
     virtual auto producer_loop() -> void = 0;
     virtual auto consumer_loop() -> void = 0;
 
   private:
-    auto prepare_threads() -> void;
     auto launch_threads() -> void;
     auto wait_for_completion() -> void;
-    auto print_result(Duration duration) -> void;
 };

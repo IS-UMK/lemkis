@@ -12,6 +12,7 @@
 #include "../benchmarks/stack_mutex_benchmark.hpp"
 #include "../structures/list_stack.hpp"
 #include "../structures/vector_stack.hpp"
+#include "timer.hpp"
 
 namespace benchmark_script {
     using vector_stack_t = vector_stack<int>;
@@ -59,13 +60,30 @@ namespace benchmark_script {
         }
     }
 
-    inline auto run_for_config(int p, int c, int n) -> void {
-        std::print("{} producer(s), {} consumer(s):\n", p, c);
+    inline auto create_all_benchmarks(int p, int c, int n)
+        -> std::vector<std::unique_ptr<benchmark_base>> {
         std::vector<std::unique_ptr<benchmark_base>> b;
         add_stack_benchmarks(b, p, c, n);
         add_queue_benchmarks(b, p, c, n);
         add_lockfree_benchmarks(b, p, c, n);
-        for (auto& bench : b) { bench->run(); }
+        return b;
+    }
+
+    inline auto run_and_report(std::vector<std::unique_ptr<benchmark_base>> b)
+        -> void {
+        for (auto& bench : b) {
+            timer t;
+            bench->prepare_threads();
+            t.start();
+            bench->run();
+            bench->print_result(t.elapsed());
+        }
+    }
+
+    inline auto run_for_config(int p, int c, int n) -> void {
+        std::print("{} producer(s), {} consumer(s):\n", p, c);
+        auto benchmarks = create_all_benchmarks(p, c, n);
+        run_and_report(std::move(benchmarks));
         std::print("\n");
     }
 

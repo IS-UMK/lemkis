@@ -15,12 +15,8 @@ benchmark_base::benchmark_base(std::string_view name,
 }
 
 auto benchmark_base::run() -> void {
-    prepare_threads();
-    const auto start = Clock::now();
     launch_threads();
     wait_for_completion();
-    const auto end = Clock::now();
-    print_result(std::chrono::duration_cast<Duration>(end - start));
 }
 
 auto benchmark_base::prepare_threads() -> void {
