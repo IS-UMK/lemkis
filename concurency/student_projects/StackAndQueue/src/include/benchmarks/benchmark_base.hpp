@@ -2,13 +2,12 @@
 
 #include <atomic>
 #include <chrono>
-#include <string_view>
+#include <string>
 #include <thread>
 #include <vector>
 
 class benchmark_base {
   protected:
-    using Clock = std::chrono::high_resolution_clock;
     using Duration = std::chrono::milliseconds;
     static constexpr int one = 1;
 
@@ -18,7 +17,7 @@ class benchmark_base {
     int m_items_per_consumer;
     int m_total_items;
 
-    std::string_view m_name;
+    std::string m_name;
 
     std::atomic<int> m_produced_count = 0;
     std::atomic<int> m_consumed_count = 0;
@@ -33,9 +32,12 @@ class benchmark_base {
                    int consumers,
                    int total_items);
     virtual ~benchmark_base() = default;
+
     auto run() -> void;
     auto prepare_threads() -> void;
     auto print_result(Duration duration) -> void;
+    auto write_result_to_file(Duration duration, std::string_view file_name)
+        -> void;
 
   protected:
     virtual auto producer_loop() -> void = 0;

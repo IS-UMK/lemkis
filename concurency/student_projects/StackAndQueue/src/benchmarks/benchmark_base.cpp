@@ -1,4 +1,5 @@
 #include <benchmark_base.hpp>
+#include <cstdio>
 #include <print>
 
 benchmark_base::benchmark_base(std::string_view name,
@@ -13,14 +14,14 @@ benchmark_base::benchmark_base(std::string_view name,
     m_items_per_consumer = total_items / consumers;
 }
 
-auto benchmark_base::run() -> void {
-    launch_threads();
-    wait_for_completion();
-}
-
 auto benchmark_base::prepare_threads() -> void {
     m_producers.reserve(m_num_producers);
     m_consumers.reserve(m_num_consumers);
+}
+
+auto benchmark_base::run() -> void {
+    launch_threads();
+    wait_for_completion();
 }
 
 auto benchmark_base::launch_threads() -> void {
@@ -46,4 +47,18 @@ auto benchmark_base::print_result(Duration duration) -> void {
                m_num_consumers,
                m_total_items,
                duration.count());
+}
+
+auto benchmark_base::write_result_to_file(Duration duration,
+                                          std::string_view filename) -> void {
+    if (auto file = std::fopen(filename.data(), "a"); file != nullptr) {
+        std::fprintf(file,
+                     "%s,%d,%d,%d,%lld\n",
+                     m_name.c_str(),
+                     m_num_producers,
+                     m_num_consumers,
+                     m_total_items,
+                     static_cast<long long>(duration.count()));
+        std::fclose(file);
+    }
 }

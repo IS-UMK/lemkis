@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdio>
 #include <list_stack.hpp>
 #include <lock_free_queue_benchmark.hpp>
 #include <memory>
@@ -28,10 +29,10 @@ namespace benchmark_script {
         int n) -> void {
         b.emplace_back(std::make_unique<stack_mutex_benchmark<vector_stack_t>>(
             "vector_stack (mutex)", p, c, n));
-        b.emplace_back(std::make_unique<stack_mutex_benchmark<list_stack_t>>(
-            "list_stack (mutex)", p, c, n));
         b.emplace_back(std::make_unique<stack_cv_benchmark<vector_stack_t>>(
             "vector_stack (cv)", p, c, n));
+        b.emplace_back(std::make_unique<stack_mutex_benchmark<list_stack_t>>(
+            "list_stack (mutex)", p, c, n));
         b.emplace_back(std::make_unique<stack_cv_benchmark<list_stack_t>>(
             "list_stack (cv)", p, c, n));
     }
@@ -69,31 +70,39 @@ namespace benchmark_script {
         return b;
     }
 
-    inline auto run_and_report(std::vector<std::unique_ptr<benchmark_base>> b)
-        -> void {
+    inline auto run_and_report(std::vector<std::unique_ptr<benchmark_base>> b,
+                               std::string_view file_name) -> void {
         for (auto& bench : b) {
             timer t;
             bench->prepare_threads();
             t.start();
             bench->run();
-            bench->print_result(t.elapsed());
+            const auto duration = t.elapsed();
+            bench->print_result(duration);
+            bench->write_result_to_file(duration, file_name);
         }
     }
 
-    inline auto run_for_config(int p, int c, int n) -> void {
+    inline auto run_for_config(int p, int c, int n, std::string_view file_name)
+        -> void {
         std::print("{} producer(s), {} consumer(s):\n", p, c);
         auto benchmarks = create_all_benchmarks(p, c, n);
-        run_and_report(std::move(benchmarks));
+        run_and_report(std::move(benchmarks), file_name);
         std::print("\n");
     }
 
     inline auto run_all_benchmarks(const std::vector<int>& prod,
                                    const std::vector<int>& cons,
-                                   int total) -> void {
-        std::print("Running all benchmarks:\n");
-        std::print("========================\n\n");
+                                   int total,
+                                   std::string_view filename) -> void {
+        if (auto file = std::fopen(filename.data(), "w"); file != nullptr) {
+            std::fputs("benchmark,producers,consumers,items,duration_ms\n",
+                       file);
+            std::fclose(file);
+        }
+        std::print("Running all benchmarks:\n========================\n\n");
         for (auto [p, c] : std::views::cartesian_product(prod, cons)) {
-            run_for_config(p, c, total);
+            run_for_config(p, c, total, filename);
         }
     }
 }  // namespace benchmark_script
