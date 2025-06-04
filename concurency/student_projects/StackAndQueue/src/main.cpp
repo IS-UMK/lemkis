@@ -8,7 +8,7 @@
 
 namespace {
     constexpr std::string_view file_name = "../results/results.csv";
-    constexpr int benchmark_count = 10000;
+    constexpr int benchmark_count = 100000;
     constexpr int zero = 0;
     constexpr int one = 1;
 }  // namespace
