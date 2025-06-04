@@ -1,1 +1,0 @@
-clang-format-19 "$1" --Werror --dry-run

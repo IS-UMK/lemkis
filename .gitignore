@@ -31,5 +31,11 @@
 *.out
 *.app
 
+# Root directories
 /build/
 /Testing/
+
+# Student projects directories
+/concurency/student_projects/**/build
+/concurency/student_projects/**/.vscode
+/concurency/student_projects/**/*.sh
