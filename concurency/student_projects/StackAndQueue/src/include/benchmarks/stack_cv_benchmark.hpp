@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "benchmark_base.hpp"
+#include <benchmark_base.hpp>
 
 template <typename StackType>
 class stack_cv_benchmark : public benchmark_base {

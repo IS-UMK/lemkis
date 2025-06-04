@@ -1,5 +1,4 @@
-#include "../include/benchmarks/benchmark_base.hpp"
-
+#include <benchmark_base.hpp>
 #include <print>
 
 benchmark_base::benchmark_base(std::string_view name,

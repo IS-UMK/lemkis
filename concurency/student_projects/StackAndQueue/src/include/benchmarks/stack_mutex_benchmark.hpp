@@ -1,8 +1,7 @@
 #pragma once
 
+#include <benchmark_base.hpp>
 #include <string_view>
-
-#include "benchmark_base.hpp"
 
 template <typename StackType>
 class stack_mutex_benchmark : public benchmark_base {
@@ -26,12 +25,11 @@ class stack_mutex_benchmark : public benchmark_base {
 
     auto consumer_loop() -> void override {
         int count = 0;
-        while (count < m_items_per_consumer) {
+        while (!should_break(count)) {
             if (try_consume()) {
                 ++count;
                 continue;
             }
-            if (should_break()) { break; }
             std::this_thread::yield();
         }
     }
@@ -42,9 +40,10 @@ class stack_mutex_benchmark : public benchmark_base {
         return true;
     }
 
-    auto should_break() -> bool {
-        return m_producers_done.load(std::memory_order_acquire) &&
-               m_consumed_count.load(std::memory_order_relaxed) >=
-                   m_total_items;
+    auto should_break(int count) -> bool {
+        return count >= m_items_per_consumer ||
+               (m_producers_done.load(std::memory_order_acquire) &&
+                m_consumed_count.load(std::memory_order_relaxed) >=
+                    m_total_items);
     }
 };

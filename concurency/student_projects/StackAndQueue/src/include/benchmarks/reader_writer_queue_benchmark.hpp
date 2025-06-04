@@ -1,10 +1,10 @@
 #pragma once
 
+#include <readerwriterqueue.h>
+
+#include <benchmark_base.hpp>
 #include <string_view>
 #include <thread>
-
-#include "../../../../../../external/moodycamel/readerwriterqueue.h"
-#include "benchmark_base.hpp"
 
 class reader_writer_queue_benchmark : public benchmark_base {
   private:

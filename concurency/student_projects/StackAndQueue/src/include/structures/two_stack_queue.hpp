@@ -3,8 +3,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <optional>
-
-#include "vector_stack.hpp"
+#include <vector_stack.hpp>
 
 // Queue implementation using two stacks (based on vector_stack)
 template <typename T>

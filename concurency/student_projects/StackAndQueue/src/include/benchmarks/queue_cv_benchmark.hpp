@@ -1,9 +1,8 @@
 #pragma once
 
+#include <benchmark_base.hpp>
 #include <string_view>
-
-#include "../structures/two_stack_queue.hpp"
-#include "benchmark_base.hpp"
+#include <two_stack_queue.hpp>
 
 class queue_cv_benchmark : public benchmark_base {
   private:

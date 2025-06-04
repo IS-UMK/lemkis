@@ -1,8 +1,9 @@
+#include <benchmark_script.hpp>
 #include <cstdio>
 #include <exception>
 #include <print>
 
-#include "include/utils/benchmark_script.hpp"
+// #include <include/utils/benchmark_script.hpp>
 
 constexpr int benchmark_count = 10000;
 constexpr int zero = 0;
