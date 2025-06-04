@@ -63,17 +63,16 @@ if (row < M && col < N) {
 #include <cuda_runtime.h>
 #include <iostream>
 
-#define CUDA_CHECK(call)
-do {
-  cudaError_t err = call;
-  if (err != cudaSuccess) {
-    std::cerr << "CUDA error: " << cudaGetErrorString(err) << std::endl;
-    exit(EXIT_FAILURE);
-  }
-} while (0)
+#define CUDA_CHECK(call)                                                       \
+  do {                                                                         \
+    cudaError_t err = call;                                                    \
+    if (err != cudaSuccess) {                                                  \
+      std::cerr << "CUDA error: " << cudaGetErrorString(err) << std::endl;     \
+      exit(EXIT_FAILURE);                                                      \
+    }                                                                          \
+  } while (0)
 
-    int
-    main() {
+int main() {
   int M = 512, K = 256, N = 512;
   size_t sizeA = M * K * sizeof(float);
   size_t sizeB = K * N * sizeof(float);
