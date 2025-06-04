@@ -50,7 +50,7 @@ if (row < M && col < N) {
     }
     C[row * N + col] = sum;
 }
-
+}
 ```
 
 
@@ -62,6 +62,20 @@ if (row < M && col < N) {
 #include <cmath>
 #include <cuda_runtime.h>
 #include <iostream>
+// Matrix multiplication kernel: C = A * B
+// A is M x K, B is K x N, C is M x N
+__global__ void matMulKernel(const float* A, const float* B, float* C,
+int M, int N, int K) {
+int row = blockIdx.y * blockDim.y + threadIdx.y; // Row index of C
+int col = blockIdx.x * blockDim.x + threadIdx.x; // Column index of C
+if (row < M && col < N) {
+    float sum = 0.0f;
+    for (int i = 0; i < K; ++i) {
+        sum += A[row * K + i] * B[i * N + col];
+    }
+    C[row * N + col] = sum;
+}
+}
 
 #define CUDA_CHECK(call)                                                       \
   do {                                                                         \
@@ -126,6 +140,8 @@ int main() {
   delete[] h_C;
 
   return 0;
+
+}
 ```
 
 
