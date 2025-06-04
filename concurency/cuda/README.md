@@ -59,69 +59,74 @@ if (row < M && col < N) {
 ## Example Host Code to Use the Kernel
 
 ```cpp
+#include <cmath>
 #include <cuda_runtime.h>
 #include <iostream>
-#include <cmath>
 
 #define CUDA_CHECK(call)
 do {
-cudaError_t err = call;
-if (err != cudaSuccess) {
-std::cerr << "CUDA error: " << cudaGetErrorString(err) << std::endl;
-exit(EXIT_FAILURE);
-}
-} while(0)
+  cudaError_t err = call;
+  if (err != cudaSuccess) {
+    std::cerr << "CUDA error: " << cudaGetErrorString(err) << std::endl;
+    exit(EXIT_FAILURE);
+  }
+} while (0)
 
-int main() {
-int M = 512, K = 256, N = 512;
-size_t sizeA = M * K * sizeof(float);
-size_t sizeB = K * N * sizeof(float);
-size_t sizeC = M * N * sizeof(float);
-float *h_A = new float[M * K];
-float *h_B = new float[K * N];
-float *h_C = new float[M * N];
+    int
+    main() {
+  int M = 512, K = 256, N = 512;
+  size_t sizeA = M * K * sizeof(float);
+  size_t sizeB = K * N * sizeof(float);
+  size_t sizeC = M * N * sizeof(float);
+  float *h_A = new float[M * K];
+  float *h_B = new float[K * N];
+  float *h_C = new float[M * N];
 
-// Initialize matrices with 1.0f for simplicity
-for (int i = 0; i < M * K; ++i) h_A[i] = 1.0f;
-for (int i = 0; i < K * N; ++i) h_B[i] = 1.0f;
+  // Initialize matrices with 1.0f for simplicity
+  for (int i = 0; i < M * K; ++i)
+    h_A[i] = 1.0f;
+  for (int i = 0; i < K * N; ++i)
+    h_B[i] = 1.0f;
 
-float *d_A, *d_B, *d_C;
-CUDA_CHECK(cudaMalloc(&d_A, sizeA));
-CUDA_CHECK(cudaMalloc(&d_B, sizeB));
-CUDA_CHECK(cudaMalloc(&d_C, sizeC));
+  float *d_A, *d_B, *d_C;
+  CUDA_CHECK(cudaMalloc(&d_A, sizeA));
+  CUDA_CHECK(cudaMalloc(&d_B, sizeB));
+  CUDA_CHECK(cudaMalloc(&d_C, sizeC));
 
-CUDA_CHECK(cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice));
-CUDA_CHECK(cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice));
+  CUDA_CHECK(cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice));
+  CUDA_CHECK(cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice));
 
-dim3 threadsPerBlock(16, 16);
-dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
+  dim3 threadsPerBlock(16, 16);
+  dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                     (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
-matMulKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
-CUDA_CHECK(cudaDeviceSynchronize());
+  matMulKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
+  CUDA_CHECK(cudaDeviceSynchronize());
 
-CUDA_CHECK(cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost));
 
-// Verify result: each element should be K (since all ones multiplied)
-bool success = true;
-for (int i = 0; i < M * N; ++i) {
+  // Verify result: each element should be K (since all ones multiplied)
+  bool success = true;
+  for (int i = 0; i < M * N; ++i) {
     if (fabs(h_C[i] - K) > 1e-5) {
-        success = false;
-        std::cerr << "Mismatch at index " << i << ": " << h_C[i] << std::endl;
-        break;
+      success = false;
+      std::cerr << "Mismatch at index " << i << ": " << h_C[i] << std::endl;
+      break;
     }
-}
-std::cout << (success ? "Matrix multiplication succeeded!" : "Result verification failed!") << std::endl;
+  }
+  std::cout << (success ? "Matrix multiplication succeeded!"
+                        : "Result verification failed!")
+            << std::endl;
 
-CUDA_CHECK(cudaFree(d_A));
-CUDA_CHECK(cudaFree(d_B));
-CUDA_CHECK(cudaFree(d_C));
+  CUDA_CHECK(cudaFree(d_A));
+  CUDA_CHECK(cudaFree(d_B));
+  CUDA_CHECK(cudaFree(d_C));
 
-delete[] h_A;
-delete[] h_B;
-delete[] h_C;
+  delete[] h_A;
+  delete[] h_B;
+  delete[] h_C;
 
-return 0;
+  return 0;
 ```
 
 
