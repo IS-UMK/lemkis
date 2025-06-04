@@ -6,6 +6,7 @@
 #include <print>
 #include <queue_cv_benchmark.hpp>
 #include <queue_mutex_benchmark.hpp>
+#include <ranges>
 #include <reader_writer_queue_benchmark.hpp>
 #include <stack_cv_benchmark.hpp>
 #include <stack_mutex_benchmark.hpp>
@@ -91,8 +92,8 @@ namespace benchmark_script {
                                    int total) -> void {
         std::print("Running all benchmarks:\n");
         std::print("========================\n\n");
-        for (const int p : prod) {
-            for (const int c : cons) { run_for_config(p, c, total); }
+        for (auto [p, c] : std::views::cartesian_product(prod, cons)) {
+            run_for_config(p, c, total);
         }
     }
 }  // namespace benchmark_script
