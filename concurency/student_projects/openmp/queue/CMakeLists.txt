@@ -62,7 +62,8 @@ find_package(TBB REQUIRED)
 # Create an executable
 add_executable(${PROJECT_NAME} 
 ./src/main.cpp 
-./src/Benchmark/omp_queue_test.cpp
+./src/Benchmark/omp_queue_benchmark.cpp
+./src/Benchmark/concurrent_queue_benchmark.cpp
 ./src/Benchmark/test_own_example.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})

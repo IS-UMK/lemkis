@@ -52,6 +52,18 @@ namespace {
         });
     }
 
+    void benchmark_transform_par_unseq(const std::vector<double>& input,
+                                       std::vector<double>& output) {
+        benchmark("std::transform (par_unseq)", [&]() {
+            std::transform(std::execution::par_unseq,
+                           input.begin(),
+                           input.end(),
+                           output.begin(),
+                           [](double x) { return x * x; });
+        });
+    }
+
+
     auto benchmark_transform_openmp(const std::vector<double>& input,
                                     std::vector<double>& output) -> void {
         benchmark("OpenMP transform", [&]() {
@@ -66,6 +78,7 @@ namespace {
                         std::vector<double>& output) {
         benchmark_transform_seq(input, output);
         benchmark_transform_par(input, output);
+        benchmark_transform_par_unseq(input, output);
         benchmark_transform_openmp(input, output);
     }
 
@@ -75,12 +88,41 @@ namespace {
             double res = 0.0;
 #pragma omp parallel for reduction(+ : res)
             for (std::size_t i = 0; i < a.size(); ++i) { res += a[i] * b[i]; }
-            std::cout << "Result: " << res << "\n";
         });
     }
 
-    void test_dot_product(const std::vector<double>& a,
-                          const std::vector<double>& b) {
+
+    // Każdy benchmark jako osobna funkcja
+    auto benchmark_dot_product_seq(const std::vector<double>& a,
+                                   const std::vector<double>& b) -> void {
+        benchmark("std::inner_product (seq)", [&]() {
+            std::inner_product(a.begin(), a.end(), b.begin(), 0.0);
+        });
+    }
+
+    auto benchmark_dot_product_par(const std::vector<double>& a,
+                                   const std::vector<double>& b) -> void {
+        benchmark("std::transform_reduce (par)", [&]() {
+            std::transform_reduce(
+                std::execution::par, a.begin(), a.end(), b.begin(), 0.0);
+        });
+    }
+
+    auto benchmark_dot_product_par_unseq(const std::vector<double>& a,
+                                         const std::vector<double>& b) -> void {
+        benchmark("std::transform_reduce (par_unseq)", [&]() {
+            std::transform_reduce(
+                std::execution::par_unseq, a.begin(), a.end(), b.begin(), 0.0);
+        });
+    }
+
+
+    auto test_dot_product(const std::vector<double>& a,
+                          const std::vector<double>& b) -> void {
+
+        benchmark_dot_product_seq(a, b);
+        benchmark_dot_product_par(a, b);
+        benchmark_dot_product_par_unseq(a, b);
         benchmark_dot_product_openmp(a, b);
     }
 

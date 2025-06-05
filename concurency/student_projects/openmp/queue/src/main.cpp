@@ -1,43 +1,16 @@
-#include <iostream>
-#include <print>
-#include <vector>
+#include <omp.h>
 
-#include "include/own_test.hpp"
-#include "include/queue_test.hpp"
+#include <thread>
 
-// Constants for benchmark configurations
-constexpr int single_thread = 1;
-constexpr int small_thread_count = 2;
-constexpr int medium_thread_count = 4;
-constexpr int error_code = 1;
+#include "./include/benchmark_utils.hpp"
+#include "./include/own_test.hpp"
 
-// Anonymous namespace for internal linkage
-namespace {
-    // Get benchmark configurations
-    auto get_benchmark_configs() -> std::vector<std::pair<int, int>> {
-        return {{single_thread, single_thread},
-                {single_thread, medium_thread_count},
-                {medium_thread_count, single_thread},
-                {small_thread_count, small_thread_count},
-                {medium_thread_count, medium_thread_count}};
-    }
+int main() {
+    measure_and_print("[omp_queue] OpenMP Benchmark",
+                      [] { return omp_queue_test(4, 4); });
 
-    // Run benchmarks for all configurations
-    auto run_queue_benchmarks() -> void {
-        auto const configs = get_benchmark_configs();
-        for (const auto& [producers, consumers] : configs) {
-            run_full_comparison(producers, consumers);
-        }
-    }
-}  // namespace
+    measure_and_print("[concurrent_queue] jthread Benchmark",
+                      [] { return concurrent_queue_test(4, 4); });
 
-auto main() -> int {
-    try {
-        run_queue_benchmarks();
-        run_own_test();
-    } catch (const std::exception& e) {
-        std::cerr << "Błąd: " << e.what();
-        return error_code;
-    }
-    return 0;
+    run_own_test();
 }
