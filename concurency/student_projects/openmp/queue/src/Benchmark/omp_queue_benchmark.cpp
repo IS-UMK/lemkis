@@ -19,13 +19,13 @@ auto omp_producer(int tid, int per) -> void {
     }
 }
 
-auto atomic_pop_increment(){
-    #pragma omp atomic
-        popped += k_increment;
+auto atomic_pop_increment() {
+#pragma omp atomic
+    popped += k_increment;
 }
 
 auto try_pop(int total) -> bool {
-     int current;
+    int current;
 #pragma omp atomic read
     current = popped;
     if (current >= total) { return false; }
@@ -36,7 +36,7 @@ auto try_pop(int total) -> bool {
     return false;
 }
 
-auto consumer_action(int total) -> bool{
+auto consumer_action(int total) -> bool {
     if (!try_pop(total)) {
 #pragma omp taskyield
         int cur;
@@ -49,13 +49,14 @@ auto consumer_action(int total) -> bool{
 
 auto omp_consumer_loop(int total) -> void {
     while (true) {
-        if(consumer_action(total)){
-            break;
-        }
+        if (consumer_action(total)) { break; }
     }
 }
 
-auto run_omp_threads(int prod, [[maybe_unused]] int cons, int per, int total) -> void {
+auto run_omp_threads(int prod,
+                     [[maybe_unused]] int cons,
+                     int per,
+                     int total) -> void {
 #pragma omp parallel num_threads(prod + cons)
     {
         int const tid = omp_get_thread_num();

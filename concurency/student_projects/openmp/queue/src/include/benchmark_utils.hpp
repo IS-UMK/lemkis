@@ -5,7 +5,6 @@
 #include <string>
 
 
-
 template <typename Func>
 auto measure_and_print(const std::string& label, Func&& func) -> void {
     const auto start = std::chrono::high_resolution_clock::now();
