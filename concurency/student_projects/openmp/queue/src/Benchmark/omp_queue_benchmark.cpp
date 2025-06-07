@@ -53,10 +53,8 @@ auto omp_consumer_loop(int total) -> void {
     }
 }
 
-auto run_omp_threads(int prod,
-                     [[maybe_unused]] int cons,
-                     int per,
-                     int total) -> void {
+auto run_omp_threads(int prod, [[maybe_unused]] int cons, int per, int total)
+    -> void {
 #pragma omp parallel num_threads(prod + cons)
     {
         int const tid = omp_get_thread_num();
@@ -68,8 +66,8 @@ auto run_omp_threads(int prod,
     }
 }
 
-auto omp_queue_test(int producers,
-                    int consumers) -> std::tuple<int, int, std::size_t> {
+auto omp_queue_test(int producers, int consumers)
+    -> std::tuple<int, int, std::size_t> {
     int const per = item_limit / producers;
     int const total = per * producers;
     run_omp_threads(producers, consumers, per, total);

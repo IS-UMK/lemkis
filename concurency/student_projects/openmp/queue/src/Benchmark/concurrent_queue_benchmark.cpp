@@ -43,8 +43,8 @@ void launch_consumers(int count) {
     for (int i = 0; i < count; ++i) { threads.emplace_back(consume_items); }
 }
 
-auto concurrent_queue_test(int producers,
-                           int consumers) -> std::tuple<int, int, std::size_t> {
+auto concurrent_queue_test(int producers, int consumers)
+    -> std::tuple<int, int, std::size_t> {
     threads.reserve(producers + consumers);
     launch_producers(producers);
     launch_consumers(consumers);
