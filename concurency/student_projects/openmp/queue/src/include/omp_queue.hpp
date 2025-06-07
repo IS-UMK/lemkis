@@ -1,51 +1,60 @@
 #ifndef OMP_QUEUE_HPP
 #define OMP_QUEUE_HPP
 
-#include <queue>
 #include <omp.h>
+
 #include <cstddef>
+#include <queue>
 
-template<typename T>
-class OMPQueue {
-private:
-    std::queue<T> queue;
-    omp_lock_t lock;
+// A simple thread-safe queue implementation using OpenMP locks.
+// Wraps std::queue and synchronizes access via omp_lock_t.
+template <typename T>
+class omp_queue {
+  private:
+    std::queue<T> queue;  // Standard queue as the underlying container
+    omp_lock_t lock;      // OpenMP lock for mutual exclusion
+    bool created;         // Indicates whether the lock was initialized
 
-public:
-    OMPQueue() {
+  public:
+    // Constructor initializes the OpenMP lock
+    omp_queue() : lock() {
+        created = true;
         omp_init_lock(&lock);
     }
 
-    ~OMPQueue() {
+    // Destructor destroys the lock to prevent resource leaks
+    ~omp_queue() {
+        created = false;
         omp_destroy_lock(&lock);
     }
 
+    // Adds an item to the queue in a thread-safe way
     void push(const T& item) {
         omp_set_lock(&lock);
         queue.push(item);
         omp_unset_lock(&lock);
     }
 
-    bool pop(T& result) {
+    // Attempts to remove the front item.
+    // Returns true if an element was removed, false if queue was empty.
+    auto pop() -> bool {
         omp_set_lock(&lock);
-        if (!queue.empty()) {
-            result = queue.front();
-            queue.pop();
-            omp_unset_lock(&lock);
-            return true;
-        }
+        bool has_element = !queue.empty();
+        if (has_element) { queue.pop(); }
         omp_unset_lock(&lock);
-        return false;
+        return has_element;
     }
 
-    bool empty() {
+    // Returns true if the queue is empty (thread-safe check)
+    auto empty() -> bool {
         omp_set_lock(&lock);
-        bool isEmpty = queue.empty();
+        bool is_empty = queue.empty();
         omp_unset_lock(&lock);
-        return isEmpty;
+        return is_empty;
     }
 
-    size_t size() {
+    // Returns the number of elements in the queue
+    auto size() -> size_t {
         omp_set_lock(&lock);
         size_t s = queue.size();
         omp_unset_lock(&lock);
@@ -53,5 +62,4 @@ public:
     }
 };
 
-#endif // OMP_QUEUE_HPP
-
+#endif  // OMP_QUEUE_HPP

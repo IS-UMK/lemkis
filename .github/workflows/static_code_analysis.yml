@@ -32,6 +32,8 @@ jobs:
         python-version: '3.12' 
     - name: Configure
       run: pip install cpplint 
+    - name: Install TBB library
+      run: sudo apt install libtbb-dev
     - name: Setup OpenMP headers
       run: |
         # Install specific OpenMP dev package for clang-19
@@ -78,4 +80,5 @@ jobs:
     - name: clang-tidy check
       if: steps.run_clang_tidy.outputs.clang-tidy-result > 0
       run: echo "You failed to fulfill some of requirements posed in the .clang-tidy file" && exit 1
+      
     

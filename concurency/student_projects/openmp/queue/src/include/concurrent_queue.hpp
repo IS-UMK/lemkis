@@ -6,25 +6,33 @@
 
 #include "node.hpp"
 
+// Thread-safe queue implementation using singly-linked list and synchronization
+// primitives. Provides both blocking and non-blocking operations for push/pop
+// access.
 template <typename T>
 class concurrent_queue {
   private:
+    // Pointer to the front (head) of the queue
     std::unique_ptr<node<T>> front_;
+    // Raw pointer to the rear (tail) of the queue
     node<T>* rear_ = nullptr;
+    // Current number of elements in the queue
     std::size_t size_ = 0;
 
-    // Synchronization primitives
+    // Mutex to protect access to the queue
     mutable std::mutex mutex_;
+    // Condition variable to signal availability of data
     std::condition_variable not_empty_cv_;
 
   public:
-    // Constructor
+    // Constructs an empty queue
     concurrent_queue() = default;
 
-    // Destructor
+    // Default destructor (unique_ptr will clean up nodes automatically)
     ~concurrent_queue() = default;
 
-    // Helper method for internal use when lock is already held
+    // Internal helper method to push without locking.
+    // Assumes caller already holds the mutex.
     auto unsafe_push(T value) -> void {
         auto new_node = std::make_unique<node<T>>(std::move(value));
         if (front_ == nullptr) {
@@ -37,17 +45,18 @@ class concurrent_queue {
         size_++;
     }
 
-    // Add an element to the queue
+    // Adds an element to the queue (thread-safe)
     auto push(T value) -> void {
         {
             std::lock_guard<std::mutex> lock(mutex_);
             unsafe_push(std::move(value));
         }
-        // Notify one waiting thread that data is available
+        // Notify one thread waiting on pop()
         not_empty_cv_.notify_one();
     }
 
-    // Remove the front element (non-blocking)
+    // Attempts to remove the front element without blocking.
+    // Returns true if an element was removed, false if the queue was empty.
     auto try_pop() -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
         if (unsafe_empty()) { return false; }
@@ -55,23 +64,24 @@ class concurrent_queue {
         return true;
     }
 
-    // Remove the front element
+    // Internal method to remove the front element without locking.
+    // Assumes the queue is not empty and mutex is held.
     auto unsafe_pop() -> void {
-        // Precondition: !empty()
-        // Calling pop() on an empty queue is undefined behavior
+        // If there's only one element, reset rear pointer
         if (front_.get() == rear_) { rear_ = nullptr; }
         front_ = std::move(front_->next);
         size_--;
     }
 
-    // Pop with use of cv
+    // Removes the front element, blocking if the queue is empty.
     auto pop() -> void {
         std::unique_lock<std::mutex> lock(mutex_);
         not_empty_cv_.wait(lock, [this] { return !unsafe_empty(); });
         unsafe_pop();
     }
 
-    // Try to peek at front element without removing
+    // Attempts to peek at the front element without removing it.
+    // Returns true if successful; false if queue is empty.
     auto try_peek(T& value) const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
         if (unsafe_empty()) { return false; }
@@ -79,16 +89,16 @@ class concurrent_queue {
         return true;
     }
 
-    // Helper method to check if queue is empty when lock is already held
+    // Returns true if the queue is empty (must be called with lock held)
     auto unsafe_empty() const -> bool { return front_ == nullptr; }
 
-    // Check if the queue is empty
+    // Thread-safe check whether the queue is empty
     [[nodiscard]] auto empty() const -> bool {
         std::lock_guard<std::mutex> lock(mutex_);
         return unsafe_empty();
     }
 
-    // Get the size of the queue
+    // Thread-safe getter for the queue size
     [[nodiscard]] auto size() const -> std::size_t {
         std::lock_guard<std::mutex> lock(mutex_);
         return size_;
