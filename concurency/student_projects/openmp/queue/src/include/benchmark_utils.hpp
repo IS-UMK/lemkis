@@ -16,8 +16,9 @@ auto measure_and_print(const std::string& label, Func&& func) -> void {
                remaining,
                time_seconds);
 }
-
-auto concurrent_queue_test(int producers, int consumers)
-    -> std::tuple<int, int, std::size_t>;
-auto omp_queue_test(int producers, int consumers)
-    -> std::tuple<int, int, std::size_t>;
+namespace omp_bench {
+    auto concurrent_queue_test(int producers, int consumers)
+        -> std::tuple<int, int, std::size_t>;
+    auto omp_queue_test(int producers, int consumers)
+        -> std::tuple<int, int, std::size_t>;
+}  // namespace omp_bench

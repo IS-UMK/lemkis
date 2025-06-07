@@ -51,10 +51,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 # Corrected include directories
 set(INCLUDE_DIRS
-  ${CURRENT_CMAKE_SOURCE_DIR}/src/include
-  ${CURRENT_CMAKE_SOURCE_DIR}/src/Benchmark
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Benchmark
 )
-
 find_package(OpenMP REQUIRED)
 find_package(TBB REQUIRED)
 

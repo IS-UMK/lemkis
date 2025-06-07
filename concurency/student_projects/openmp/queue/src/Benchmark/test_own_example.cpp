@@ -5,15 +5,15 @@
 #include <execution>
 #include <iostream>
 #include <numeric>
+#include <own_test.hpp>
 #include <random>
 #include <vector>
-
-#include "../include/own_test.hpp"
 constexpr int random_seed = 42;
 constexpr double distribution_min = 0.0;
 constexpr double distribution_max = 1.0;
 constexpr int thousand = 1000;
 namespace {
+    double res = 0.0;
     auto generate_random_vector(std::size_t size) -> std::vector<double> {
         std::vector<double> vec(size);
         std::mt19937 gen(random_seed);
@@ -85,7 +85,6 @@ namespace {
     auto benchmark_dot_product_openmp(const std::vector<double>& a,
                                       const std::vector<double>& b) -> void {
         benchmark("OpenMP dot product", [&]() {
-            double res = 0.0;
 #pragma omp parallel for reduction(+ : res)
             for (std::size_t i = 0; i < a.size(); ++i) { res += a[i] * b[i]; }
         });
@@ -126,7 +125,7 @@ namespace {
         benchmark_dot_product_openmp(a, b);
     }
 
-    void run_tests(std::size_t data_size) {
+    void prepare_and_run_tests(std::size_t data_size) {
         std::cout << "\n==== DATASET SIZE: " << data_size << " ====\n";
         auto a = generate_random_vector(data_size);
         auto b = generate_random_vector(data_size);
@@ -137,9 +136,14 @@ namespace {
         test_dot_product(a, b);
     }
 
+
 }  // namespace
-void run_own_test() {
-    run_tests(thousand);  // Example small dataset
-    run_tests(static_cast<std::size_t>(thousand) *
-              thousand);  // Example large dataset
-}
+
+
+namespace own_bench {
+    auto run_own_test() -> void {
+        prepare_and_run_tests(thousand);  // Example small dataset
+        prepare_and_run_tests(static_cast<std::size_t>(thousand) *
+                              thousand);  // Example large dataset
+    }
+}  // namespace own_bench

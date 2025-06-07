@@ -5,7 +5,9 @@
 constexpr size_t small_size = 10'000;
 constexpr size_t large_size = 300'000'000;
 
-void run_own_test();
+namespace own_bench {
+    auto run_own_test() -> void;
+}
 
 auto generate_random_vector(size_t size) -> std::vector<double>;
 

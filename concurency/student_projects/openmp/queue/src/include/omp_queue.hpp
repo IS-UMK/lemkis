@@ -32,14 +32,12 @@ class omp_queue {
 
     auto pop() -> bool {
         omp_set_lock(&lock);
-        if (!queue.empty()) {
-            queue.pop();
-            omp_unset_lock(&lock);
-            return true;
-        }
+        bool has_element = !queue.empty();
+        if (has_element) { queue.pop(); }
         omp_unset_lock(&lock);
-        return false;
+        return has_element;
     }
+
 
     auto empty() -> bool {
         omp_set_lock(&lock);
