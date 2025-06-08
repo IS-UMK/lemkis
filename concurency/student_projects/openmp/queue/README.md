@@ -1,57 +1,58 @@
+
 # Project: Benchmarking Concurrent Queues and Parallel Operations in C++
 
 ## Project Goal
-Celem projektu było zaimplementowanie i porównanie różnych implementacji kolejek współbieżnych oraz benchmarkowanie wydajności równoległych operacji na dużych zbiorach danych. Projekt skupia się na:
+The goal of the project was to implement and compare different implementations of concurrent queues and benchmark the performance of parallel operations on large datasets. The project focuses on:
 
-- Porównaniu niestandardowej kolejki współbieżnej zaimplementowanej z użyciem `std::jthread` i synchronizacji za pomocą mutexów z prostszą kolejką opartą na OpenMP.
-- Benchmarkowaniu operacji wektorowych takich jak transformacje i iloczyny skalarnie, realizowanych różnymi metodami równoległymi (standardowe algorytmy C++ i OpenMP).
-- Automatyzacji procesu budowy, testowania i kontroli jakości kodu przy pomocy narzędzi takich jak `clang-format` i `clang-tidy`.
+- Comparing a custom concurrent queue implemented using `std::jthread` and synchronization via mutexes with a simpler queue based on OpenMP.
+- Benchmarking vector operations such as transformations and dot products, implemented using various parallel methods (standard C++ algorithms and OpenMP).
+- Automating the build, testing, and code quality control process using tools like `clang-format` and `clang-tidy`.
 
 ## What Was Done?
 
 ### Queue Implementations
-- **concurrent_queue**: Niestandardowa kolejka bezpieczna wątkowo, wykorzystująca mutexy i zmienne warunkowe, zarządzająca węzłami przy pomocy `std::unique_ptr` dla bezpiecznego zarządzania pamięcią.
-- **omp_queue**: Prostsza kolejka opakowująca `std::queue`, chroniona blokadami OpenMP (`omp_lock_t`).
+- **concurrent_queue**: A custom thread-safe queue using mutexes and condition variables, managing nodes with `std::unique_ptr` for safe memory management.
+- **omp_queue**: A simpler queue wrapping `std::queue`, protected by OpenMP locks (`omp_lock_t`).
 
 ### Benchmarks
 
 #### Concurrent Queue Benchmark
-- Testy z różną liczbą wątków producentów i konsumentów.
-- Pomiar czasu operacji push/pop oraz rozmiaru kolejki.
-- Użycie uniwersalnej funkcji pomocniczej `measure_and_print` do zbierania i wyświetlania wyników.
+- Tests with varying numbers of producer and consumer threads.
+- Measuring push/pop operation times and queue size.
+- Use of a universal helper function `measure_and_print` to collect and display results.
 
 #### Vectorized Operation Benchmark (Transform and Dot Product)
-- Benchmarki sekwencyjne z wykorzystaniem `std::transform` i `std::inner_product`.
-- Benchmarki równoległe z użyciem standardowych algorytmów C++ z politykami wykonania `std::execution::par` oraz `par_unseq`.
-- Wersje równoległe z OpenMP, wykorzystujące pętle parallel for i redukcje.
-- Testy na małych (10 000 elementów) i dużych (300 milionów elementów) zbiorach danych.
+- Sequential benchmarks using `std::transform` and `std::inner_product`.
+- Parallel benchmarks using standard C++ algorithms with execution policies `std::execution::par` and `par_unseq`.
+- Parallel versions with OpenMP using parallel for loops and reductions.
+- Tests on small (10,000 elements) and large (300 million elements) datasets.
 
 ### Automation
-- Skrypt bash do:
-  - Czyszczenia i budowania projektu przy pomocy `cmake` i `make`.
-  - Formatowania kodu zgodnie z `clang-format`.
-  - Analizy statycznej i automatycznego poprawiania kodu za pomocą `clang-tidy`.
+- Bash script for:
+  - Cleaning and building the project using `cmake` and `make`.
+  - Formatting code according to `clang-format`.
+  - Static analysis and automatic code fixes using `clang-tidy`.
 
 ## Methods and Technologies Used
 
 ### Multithreading and Synchronization
-- `std::jthread` oraz zmienne atomowe do zarządzania i sygnalizacji wątków.
-- Mutexy i zmienne warunkowe dla bezpiecznych operacji na kolejce w `concurrent_queue`.
-- Blokady OpenMP oraz dyrektywy pragmatu do synchronizacji i pętli równoległych w `omp_queue` i benchmarkach.
+- `std::jthread` and atomic variables for thread management and signaling.
+- Mutexes and condition variables for safe queue operations in `concurrent_queue`.
+- OpenMP locks and pragma directives for synchronization and parallel loops in `omp_queue` and benchmarks.
 
 ### C++ Parallel Algorithms (C++17/20)
-- `std::transform` z politykami wykonania: sekwencyjnym, równoległym i równoległym niesekwencyjnym.
-- `std::transform_reduce` do równoległego obliczania iloczynu skalarnego.
+- `std::transform` with execution policies: sequential, parallel, and parallel unsequenced.
+- `std::transform_reduce` for parallel dot product computation.
 
 ### OpenMP
-- Pętle równoległe z klauzulami redukcji dla sumowania.
-- Kolejka wątkowo bezpieczna z blokadami OpenMP.
+- Parallel loops with reduction clauses for summation.
+- Thread-safe queue with OpenMP locks.
 
 ### Code Quality and Automation Tools
-- `clang-format` do spójnego formatowania kodu.
-- `clang-tidy` do analizy statycznej i automatycznych poprawek.
+- `clang-format` for consistent code formatting.
+- `clang-tidy` for static analysis and automatic fixes.
 
 ## Summary
-Projekt dostarczył praktycznych informacji na temat różnych technik współbieżności i równoległości w nowoczesnym C++. Niestandardowa kolejka z mutexami została porównana z rozwiązaniem opartym na OpenMP, ukazując kompromisy między złożonością implementacji a wydajnością. Benchmarki operacji wektorowych pokazały wpływ różnych polityk wykonania i podejścia OpenMP na wydajność przy różnych rozmiarach danych.
+The project provided practical insights into various concurrency and parallelism techniques in modern C++. The custom queue with mutexes was compared with an OpenMP-based solution, highlighting trade-offs between implementation complexity and performance. Vector operation benchmarks demonstrated the impact of different execution policies and OpenMP approaches on performance across different data sizes.
 
-Automatyzacja budowy i kontroli jakości kodu zapewnia łatwość utrzymania i rozwijania projektu w przyszłości.
+Build and code quality automation ensures ease of maintenance and future development of the project.
