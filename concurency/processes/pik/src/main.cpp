@@ -10,21 +10,23 @@ void end_program() {
     cleanup_semaphores();
 }
 
+// Create and start Helper processes
 void create_helpers() {
     for (int i = 0; i < number_of_workers; ++i) {
         const pid_t pid = fork();
         if (pid == 0) {
-            helper_process(i);
+            Helper(i).run();
             exit(0);
         }
     }
 }
 
+// Create and start Worker processes
 void create_workers() {
     for (int i = 0; i < number_of_workers; ++i) {
         const pid_t pid = fork();
         if (pid == 0) {
-            worker_process(i);
+            Worker(i).run();
             exit(0);
         }
     }
