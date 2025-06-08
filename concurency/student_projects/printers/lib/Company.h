@@ -3,7 +3,8 @@
 /// <summary>
 /// class represents a company in the office.
 /// </summary>
-struct company {
+class company {
+  public:
     int company_id;
     int assigned_printer;
 };

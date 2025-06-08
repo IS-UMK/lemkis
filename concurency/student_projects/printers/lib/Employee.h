@@ -15,22 +15,23 @@
 /// </summary>
 class employee {
   public:
-    auto static constexpr min_print_time = 100;
+    auto static constexpr min_print_time = 200;
     auto static constexpr max_print_time = 500;
+    auto static constexpr usage_value = 1;
 
     employee(int id,
              int company_id,
              company* companies,
              printer* printers,
              int num_printers,
-             sem_t* mutex,
+             // sem_t* mutex,
              sem_t* condition)
         : employee_id_(id),
           company_id_(company_id),
           companies_(companies),
           printers_(printers),
           num_printers_(num_printers),
-          mutex_(mutex),
+          // mutex_(mutex),
           condition_(condition) {}
 
     void run();
@@ -41,20 +42,26 @@ class employee {
     company* companies_;
     printer* printers_;
     int num_printers_;
-    sem_t* mutex_;
+    // sem_t* mutex_;
     sem_t* condition_;
 
     auto get_company() -> company& { return companies_[company_id_]; }
 
     void acquire_printer_print(int printer_id) const {
         std::println("Company {} acquired printer {}", company_id_, printer_id);
+        std::fflush(stdout);
     }
 
     void employee_start_printing_print(int printer_id) const {
-        std::println("Employee {} from company {} is printing on printer {}",
-                     employee_id_,
-                     company_id_,
-                     printer_id);
+        auto text = printers_[printer_id].generate_printer_doc();
+        std::println(
+            "Employee {} from company {} is printing on printer {} - with doc: "
+            "{}",
+            employee_id_,
+            company_id_,
+            printer_id,
+            text);
+        std::fflush(stdout);
     }
 
     void employee_stop_printing_print(int printer_id) const {
@@ -63,11 +70,13 @@ class employee {
             employee_id_,
             company_id_,
             printer_id);
+        std::fflush(stdout);
     }
 
     void release_printer_print(int printer_id) const {
         std::println(
             "Company {} has released printer {}", company_id_, printer_id);
+        std::fflush(stdout);
     }
 
     void acquire();
@@ -81,15 +90,15 @@ class employee {
     }
 
     static void update_printer_usage(printer& printer) {
-        printer.usage_count++;
-        printer.times_used++;
+        printer.usage_count.fetch_add(usage_value);
+        printer.times_used.fetch_add(usage_value);
     }
 
     auto try_to_get_printer() -> bool;
     void get_printer(printer& printer);
     auto run_printer_checks(printer& printer) -> bool;
-    void employee_starts_printing(printer& printer);
     void company_release_printer(printer& printer);
+    void handle_printer_release(printer& printer);
 };
 
 inline void employee::run() {
@@ -104,12 +113,7 @@ inline void employee::run() {
 /// </summary>
 inline void employee::acquire() {
     while (true) {
-        sem_wait(mutex_);
-        if (try_to_get_printer()) {
-            sem_post(mutex_);
-            break;
-        }
-        sem_post(mutex_);
+        if (try_to_get_printer()) { break; }
         sem_wait(condition_);
     }
 }
@@ -122,7 +126,8 @@ inline void employee::acquire() {
 /// </summary>
 inline auto employee::try_to_get_printer() -> bool {
     if (get_company().assigned_printer != utility::no_printer) {
-        employee_starts_printing(printers_[get_company().assigned_printer]);
+        auto& printer = printers_[get_company().assigned_printer];
+        update_printer_usage(printer);
         return true;
     }
     for (auto i = 0; i < num_printers_; i++) {
@@ -135,23 +140,14 @@ inline auto employee::try_to_get_printer() -> bool {
 /// Runs checks on the printer to determine if the employee can use it.
 /// </summary>
 inline auto employee::run_printer_checks(printer& printer) -> bool {
-    if (printer.current_company == company_id_) {
-        employee_starts_printing(printer);
-        return true;
-    }
+    sem_wait(&printer.mutex);
     if (printer.current_company == utility::no_company) {
         get_printer(printer);
+        sem_post(&printer.mutex);
         return true;
     }
+    sem_post(&printer.mutex);
     return false;
-}
-
-/// <summary>
-/// Employee takes the printer and starts printing.
-/// </summary>
-inline void employee::employee_starts_printing(printer& printer) {
-    update_printer_usage(printer);
-    employee_start_printing_print(printer.printer_id);
 }
 
 /// <summary>
@@ -180,22 +176,29 @@ inline auto employee::printing() -> int {
 /// it and notifies others that it is available.
 /// </summary>
 inline void employee::release(int printer_id) {
-    sem_wait(mutex_);
-
     auto& printer = printers_[printer_id];
-    printer.usage_count--;
+    // sem_wait(&printer.mutex);
+    printer.usage_count.fetch_sub(usage_value);
     employee_stop_printing_print(printer_id);
-    if (printer.usage_count == 0) { company_release_printer(printer); }
-
-    sem_post(mutex_);
+    handle_printer_release(printer);
+    // sem_post(&printer.mutex);
     sem_post(condition_);
+}
+
+inline void employee::handle_printer_release(printer& printer) {
+    int expected = 0;
+    if (printer.usage_count.compare_exchange_strong(expected, 0)) {
+        company_release_printer(printer);
+    }
 }
 
 /// <summary>
 /// Company releases the printer and sets the assigned printer to no printer.
 /// </summary>
 inline void employee::company_release_printer(printer& printer) {
+    sem_wait(&printer.mutex);
     printer.current_company = utility::no_company;
     get_company().assigned_printer = utility::no_printer;
     release_printer_print(printer.printer_id);
+    sem_post(&printer.mutex);
 }

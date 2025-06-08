@@ -6,9 +6,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <iostream>
-#include <utility>
-
 #include "Company.h"
 #include "Employee.h"
 #include "Printer.h"
@@ -27,11 +24,11 @@ class office {
           num_of_all_employees_(num_of_all_employees) {}
 
     auto run_chaos() -> void;
-    void run_employee_process(int i, sem_t* mutex, sem_t* condition) const;
+    void run_employee_process(int i, sem_t* condition) const;
 
   private:
-    const int shm_mode = 0666;  // file permissions for shared memory
-    const int shm_value = 1;    // initial value for semaphores
+    const static int shm_mode = 0666;  // file permissions for shared memory
+    const static int shm_value = 1;    // initial value for semaphores
     const char* shm_printers_name = "/printers_shared_memory";
     const char* shm_companies_name = "/companies_shared_memory";
 
@@ -46,8 +43,9 @@ class office {
     static void prepare_printers(printer* printers, int num_printers) {
         for (int i = 0; i < num_printers; i++) {
             printers[i].printer_id = i;
-            printers[i].current_company = utility::no_company;
-            printers[i].usage_count = 0;
+            printers[i].current_company.store(utility::no_company);
+            printers[i].usage_count.store(0);
+            sem_init(&printers[i].mutex, shm_value, shm_value);
         }
     }
 
@@ -66,16 +64,10 @@ class office {
         prepare_companies(companies, num_companies);
     }
 
-    auto create_employee(const int i, sem_t* mutex, sem_t* condition) const
-        -> employee {
+    auto create_employee(const int i, sem_t* condition) const -> employee {
         auto company_id = i % num_companies_;
-        employee emp(i,
-                     company_id,
-                     companies_,
-                     printers_,
-                     num_printers_,
-                     mutex,
-                     condition);
+        employee emp(
+            i, company_id, companies_, printers_, num_printers_, condition);
         return emp;
     }
 
@@ -83,20 +75,25 @@ class office {
         for (int i = 0; i < num_of_all_employees_; i++) { wait(nullptr); }
     }
 
+    static void clean_up_printers(printer* printers, int num_printers) {
+        for (int i = 0; i < num_printers; i++) {
+            sem_destroy(&printers[i].mutex);
+        }
+    }
+
     void clean_up() {
+        clean_up_printers(printers_, num_printers_);
         printers_ = nullptr;
         companies_ = nullptr;
-        sem_unlink("/mutex");
         sem_unlink("/condition");
         shm_unlink(shm_printers_name);
         shm_unlink(shm_companies_name);
     }
 
     void print_summary() const;
-    void run_employees(sem_t* mutex, sem_t* condition) const;
+    void run_employees(sem_t* condition) const;
 
-    [[nodiscard]] auto stage_init_semaphores() const
-        -> std::pair<sem_t*, sem_t*>;
+    [[nodiscard]] static auto stage_init_semaphores() -> sem_t*;
 
     auto init_printers_shm(int num_printers) -> printer*;
     auto init_companies_shm(int num_companies) -> company*;
@@ -107,8 +104,8 @@ inline void office::run_chaos() {
     clean_up();
     init_shared_memory();
     prepare_office(printers_, num_printers_, companies_, num_companies_);
-    auto [mutex, condition] = stage_init_semaphores();
-    run_employees(mutex, condition);
+    auto* condition = stage_init_semaphores();
+    run_employees(condition);
     wait_for_employees();
     print_summary();
     clean_up();
@@ -125,28 +122,27 @@ inline void office::init_shared_memory() {
 /// <summary>
 /// Initializes semaphores for synchronization.
 /// </summary>
-inline auto office::stage_init_semaphores() const -> std::pair<sem_t*, sem_t*> {
-    sem_t* mutex = sem_open("/mutex", O_CREAT, shm_mode, shm_value);
+inline auto office::stage_init_semaphores() -> sem_t* {
+    // sem_t* mutex = sem_open("/mutex", O_CREAT, shm_mode, shm_value);
     sem_t* condition = sem_open("/condition", O_CREAT, shm_mode, 0);
-    return {mutex, condition};
+    return condition;
 }
 
 /// <summary>
 /// Runs the employee processes.
 /// </summary>
-inline void office::run_employees(sem_t* mutex, sem_t* condition) const {
+inline void office::run_employees(sem_t* condition) const {
     for (auto i = 0; i < num_of_all_employees_; i++) {
         const pid_t pid = fork();
-        if (pid == 0) { run_employee_process(i, mutex, condition); }
+        if (pid == 0) { run_employee_process(i, condition); }
     }
 }
 
-inline void office::run_employee_process(int i,
-                                         sem_t* mutex,
-                                         sem_t* condition) const {
+inline void office::run_employee_process(int i, sem_t* condition) const {
     auto process_id = getpid();
     std::println("Employee {} with PID {} is starting.", i, process_id);
-    auto emp = create_employee(i, mutex, condition);
+    std::fflush(stdout);
+    auto emp = create_employee(i, condition);
     emp.run();
     exit(0);
 }
@@ -180,10 +176,12 @@ inline auto office::init_companies_shm(const int num_companies) -> company* {
 }
 
 inline void office::print_summary() const {
-    std::cout << "Printers usage summary:\n";
+    std::println("Printers usage summary:");
+    std::fflush(stdout);
     for (int i = 0; i < num_printers_; i++) {
         std::println("Printer {} was used {} times.",
                      printers_[i].printer_id,
-                     printers_[i].times_used);
+                     printers_[i].times_used.load());
+        std::fflush(stdout);
     }
 }
