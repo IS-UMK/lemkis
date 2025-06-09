@@ -15,8 +15,8 @@
 /// </summary>
 class employee {
   public:
-    auto static constexpr min_print_time = 200;
-    auto static constexpr max_print_time = 500;
+    auto static constexpr min_print_time = 300;
+    auto static constexpr max_print_time = 900;
     auto static constexpr usage_value = 1;
 
     employee(int id,
@@ -177,12 +177,9 @@ inline auto employee::printing() -> int {
 /// </summary>
 inline void employee::release(int printer_id) {
     auto& printer = printers_[printer_id];
-    // sem_wait(&printer.mutex);
     printer.usage_count.fetch_sub(usage_value);
     employee_stop_printing_print(printer_id);
     handle_printer_release(printer);
-    // sem_post(&printer.mutex);
-    sem_post(condition_);
 }
 
 inline void employee::handle_printer_release(printer& printer) {
@@ -201,4 +198,5 @@ inline void employee::company_release_printer(printer& printer) {
     get_company().assigned_printer = utility::no_printer;
     release_printer_print(printer.printer_id);
     sem_post(&printer.mutex);
+    sem_post(condition_);
 }
