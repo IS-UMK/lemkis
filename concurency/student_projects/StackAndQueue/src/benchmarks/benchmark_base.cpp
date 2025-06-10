@@ -3,6 +3,7 @@
 #include <format>
 #include <fstream>
 #include <print>
+#include <stream_utils.hpp>
 
 benchmark_base::benchmark_base(std::string_view name,
                                int producers,
@@ -53,13 +54,13 @@ auto benchmark_base::print_result(Duration duration) -> void {
 
 auto benchmark_base::write_result_to_file(Duration duration,
                                           std::string_view file_name) -> void {
-    if (std::ofstream out(file_name.data(), std::ios::app); out) {
-        std::string formatted = std::format("{},{},{},{},{}\n",
-                                            m_name,
-                                            m_num_producers,
-                                            m_num_consumers,
-                                            m_total_items,
-                                            duration.count());
-        out.write(formatted.data(), formatted.size());
+    if (std::ofstream out{std::string{file_name}, std::ios::app}; out) {
+        const auto formatted = std::format("{},{},{},{},{}\n",
+                                           m_name,
+                                           m_num_producers,
+                                           m_num_consumers,
+                                           m_total_items,
+                                           duration.count());
+        out.write(formatted.data(), to_streamsize(formatted.size()));
     }
 }

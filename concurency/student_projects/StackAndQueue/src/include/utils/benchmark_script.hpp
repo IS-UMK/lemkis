@@ -11,6 +11,7 @@
 #include <reader_writer_queue_benchmark.hpp>
 #include <stack_cv_benchmark.hpp>
 #include <stack_mutex_benchmark.hpp>
+#include <stream_utils.hpp>
 #include <timer.hpp>
 #include <vector>
 #include <vector_stack.hpp>
@@ -136,11 +137,11 @@ namespace benchmark_script {
         if (std::ofstream out(file_name.data()); out) {
             std::string header(
                 "benchmark,producers,consumers,items,duration_ms\n");
-            out.write(header.data(), header.size());
+            out.write(header.data(), to_streamsize(header.size()));
         }
         std::print("Running all benchmarks:\n========================\n\n");
-        for (int producer_count : producer_counts) {
-            for (int consumer_count : consumer_counts) {
+        for (const int producer_count : producer_counts) {
+            for (const int consumer_count : consumer_counts) {
                 run_for_config(
                     producer_count, consumer_count, total_items, file_name);
             }
