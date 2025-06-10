@@ -23,56 +23,56 @@ namespace benchmark_script {
     static constexpr int single_consumer = 1;
 
     inline auto add_stack_benchmarks(
-        std::vector<std::unique_ptr<benchmark_base>>& b,
-        int p,
-        int c,
-        int n) -> void {
-        b.emplace_back(std::make_unique<stack_mutex_benchmark<vector_stack_t>>(
-            "vector_stack (mutex)", p, c, n));
-        b.emplace_back(std::make_unique<stack_cv_benchmark<vector_stack_t>>(
-            "vector_stack (cv)", p, c, n));
-        b.emplace_back(std::make_unique<stack_mutex_benchmark<list_stack_t>>(
-            "list_stack (mutex)", p, c, n));
-        b.emplace_back(std::make_unique<stack_cv_benchmark<list_stack_t>>(
-            "list_stack (cv)", p, c, n));
+        std::vector<std::unique_ptr<benchmark_base>>& benchmark,
+        int producers_count,
+        int consumers_count,
+        int elements_count) -> void {
+        benchmark.emplace_back(std::make_unique<stack_mutex_benchmark<vector_stack_t>>(
+            "vector_stack (mutex)", producers_count, consumers_count, elements_count));
+        benchmark.emplace_back(std::make_unique<stack_cv_benchmark<vector_stack_t>>(
+            "vector_stack (cv)", producers_count, consumers_count, elements_count));
+        benchmark.emplace_back(std::make_unique<stack_mutex_benchmark<list_stack_t>>(
+            "list_stack (mutex)", producers_count, consumers_count, elements_count));
+        benchmark.emplace_back(std::make_unique<stack_cv_benchmark<list_stack_t>>(
+            "list_stack (cv)", producers_count, consumers_count, elements_count));
     }
 
     inline auto add_queue_benchmarks(
-        std::vector<std::unique_ptr<benchmark_base>>& b,
-        int p,
-        int c,
-        int n) -> void {
-        b.emplace_back(std::make_unique<queue_mutex_benchmark>(
-            "two_stack_queue (mutex)", p, c, n));
-        b.emplace_back(std::make_unique<queue_cv_benchmark>(
-            "two_stack_queue (cv)", p, c, n));
+        std::vector<std::unique_ptr<benchmark_base>>& benchmark,
+        int producers_count,
+        int consumers_count,
+        int elements_count) -> void {
+        benchmark.emplace_back(std::make_unique<queue_mutex_benchmark>(
+            "two_stack_queue (mutex)", producers_count, consumers_count, elements_count));
+        benchmark.emplace_back(std::make_unique<queue_cv_benchmark>(
+            "two_stack_queue (cv)", producers_count, consumers_count, elements_count));
     }
 
     inline auto add_lockfree_benchmarks(
-        std::vector<std::unique_ptr<benchmark_base>>& b,
-        int p,
-        int c,
-        int n) -> void {
-        b.emplace_back(std::make_unique<lock_free_queue_benchmark>(
-            "moodycamel::ConcurrentQueue", p, c, n));
-        if (p == single_producer && c == single_consumer) {
-            b.emplace_back(std::make_unique<reader_writer_queue_benchmark>(
-                "moodycamel::ReaderWriterQueue", n));
+        std::vector<std::unique_ptr<benchmark_base>>& benchmark,
+        int producers_count,
+        int consumers_count,
+        int elements_count) -> void {
+        benchmark.emplace_back(std::make_unique<lock_free_queue_benchmark>(
+            "moodycamel::ConcurrentQueue", producers_count, consumers_count, elements_count));
+        if (producers_count == single_producer && consumers_count == single_consumer) {
+            benchmark.emplace_back(std::make_unique<reader_writer_queue_benchmark>(
+                "moodycamel::ReaderWriterQueue", elements_count));
         }
     }
 
-    inline auto create_all_benchmarks(int p, int c, int n)
+    inline auto create_all_benchmarks(int producers_count, int consumers_count, int elements_count)
         -> std::vector<std::unique_ptr<benchmark_base>> {
-        std::vector<std::unique_ptr<benchmark_base>> b;
-        add_stack_benchmarks(b, p, c, n);
-        add_queue_benchmarks(b, p, c, n);
-        add_lockfree_benchmarks(b, p, c, n);
-        return b;
+        std::vector<std::unique_ptr<benchmark_base>> benchmark;
+        add_stack_benchmarks(benchmark, producers_count, consumers_count, elements_count);
+        add_queue_benchmarks(benchmark, producers_count, consumers_count, elements_count);
+        add_lockfree_benchmarks(benchmark, producers_count, consumers_count, elements_count);
+        return benchmark;
     }
 
-    inline auto run_and_report(std::vector<std::unique_ptr<benchmark_base>> b,
+    inline auto run_and_report(std::vector<std::unique_ptr<benchmark_base>> benchmark,
                                std::string_view file_name) -> void {
-        for (auto& bench : b) {
+        for (auto& bench : benchmark) {
             timer t;
             bench->prepare_threads();
             t.start();
@@ -83,10 +83,10 @@ namespace benchmark_script {
         }
     }
 
-    inline auto run_for_config(int p, int c, int n, std::string_view file_name)
+    inline auto run_for_config(int producers_count, int consumers_count, int elements_count, std::string_view file_name)
         -> void {
-        std::print("{} producer(s), {} consumer(s):\n", p, c);
-        auto benchmarks = create_all_benchmarks(p, c, n);
+        std::print("{} producer(s), {} consumer(s):\n", producers_count, consumers_count);
+        auto benchmarks = create_all_benchmarks(producers_count, consumers_count, elements_count);
         run_and_report(std::move(benchmarks), file_name);
         std::print("\n");
     }
@@ -101,8 +101,8 @@ namespace benchmark_script {
             std::fclose(file);
         }
         std::print("Running all benchmarks:\n========================\n\n");
-        for (auto [p, c] : std::views::cartesian_product(prod, cons)) {
-            run_for_config(p, c, total, filename);
+        for (auto [producers_count, consumers_count] : std::views::cartesian_product(prod, cons)) {
+            run_for_config(producers_count, consumers_count, total, filename);
         }
     }
 }  // namespace benchmark_script
