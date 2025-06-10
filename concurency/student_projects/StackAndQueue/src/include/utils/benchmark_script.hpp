@@ -105,4 +105,11 @@ namespace benchmark_script {
             run_for_config(producers_count, consumers_count, total, filename);
         }
     }
+
+    inline auto run_all_configurations(std::string_view filename) -> void {
+        constexpr int elements_per_benchmark = 30000;
+        const std::vector<int> producer_counts{1, 2, 4};
+        const std::vector<int> consumer_counts{1, 2, 4};
+        run_all_benchmarks(producer_counts, consumer_counts, elements_per_benchmark, filename);
+    }
 }  // namespace benchmark_script
