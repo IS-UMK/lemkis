@@ -7,7 +7,7 @@
 // #include <include/utils/benchmark_script.hpp>
 
 namespace {
-    constexpr std::string_view file_name = "../results/results.csv";
+    constexpr std::string_view file_name = "results.csv";
     constexpr int benchmark_count = 100000;
     constexpr int zero = 0;
     constexpr int one = 1;
