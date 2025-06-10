@@ -101,3 +101,24 @@ moodycamel::ReaderWriterQueue: 1 producers, 1 consumers, 30000 items total - 8 m
 - **Lock-free structures** typically show best performance
 - **Vector-based structures** often faster than list-based for stack operations
 - **Single producer/consumer** scenarios favor specialized implementations
+
+### Plot Examples Schowcasing Characteristics
+![Benchmark Comparison](results/wsl/benchmark_4P_2C.png)
+
+As expected, vector-based implementation of stack yields far better results than it's list-based counterpart.
+
+![Benchmark Comparison](results/wsl/benchmark_1P_1C.png)
+
+As seen here in case of single producer single consumer scenario specialized implementation yields far better results.
+
+
+![Benchmark Comparison](results/wsl/benchmark_4P_2C.png)
+
+Lock-free implementation proved to generally provide the best performance.
+
+![Benchmark Comparison](results/wsl/benchmark_1P_4C.png)
+Benchmark ran on WSL
+![Benchmark Comparison](results/windows/benchmark_1P_4C.png)
+Benchmark ran on Windows
+
+During benchmarking on WSL it turned out that in configurations where number of consumers is greater than number of producents the cv-based implementations severely underperform. Comparing results to the same benchmark ran in Windows environment proved the issue to be system-specific. It might have to do with how WSL gets access to hardware where communication between schedulers of both Windows and WSL severely slows the process down.
