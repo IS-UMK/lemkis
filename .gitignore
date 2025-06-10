@@ -36,6 +36,6 @@
 /Testing/
 
 # Student projects unnecessary files
-/concurency/student_projects/**/build
-/concurency/student_projects/**/.vscode
+/concurency/student_projects/StackAndQueue/build
+/concurency/student_projects/StackAndQueue/.vscode
 /concurency/student_projects/StackAndQueue/*.sh
