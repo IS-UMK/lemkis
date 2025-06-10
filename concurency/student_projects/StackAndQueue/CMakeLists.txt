@@ -24,7 +24,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++26 -fexperimental-library -ftemplate-backtrace-limit=0 -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++23 -fexperimental-library -ftemplate-backtrace-limit=0 -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall --pedantic -g3 -ggdb")
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
