@@ -15,7 +15,7 @@ class vector_stack {
 
   public:
     // Unsafe methods (not thread-safe)
-    void unsafe_push(T value) { m_data.push_back(std::move(value)); }
+    auto unsafe_push(T value) -> void { m_data.push_back(std::move(value)); }
 
     auto unsafe_pop() -> std::optional<T> {
         if (m_data.empty()) { return std::nullopt; }

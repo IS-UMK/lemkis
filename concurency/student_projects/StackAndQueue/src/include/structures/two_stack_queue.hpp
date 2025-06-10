@@ -26,7 +26,7 @@ class two_stack_queue {
 
   public:
     // Unsafe methods (not thread-safe)
-    void unsafe_enqueue(T value) {
+    auto unsafe_enqueue(T value) -> void {
         m_stack_input.unsafe_push(std::move(value));
     }
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string_view>
-
 #include <concurrentqueue.h>
+
 #include <benchmark_base.hpp>
+#include <string_view>
 
 class lock_free_queue_benchmark : public benchmark_base {
   private:
