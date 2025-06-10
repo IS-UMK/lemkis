@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <benchmark_base.hpp>
 #include <format>
 #include <fstream>

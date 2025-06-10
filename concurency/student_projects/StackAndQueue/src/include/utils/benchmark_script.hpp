@@ -129,9 +129,9 @@ namespace benchmark_script {
         std::print("\n");
     }
 
-    inline auto run_all_benchmarks(const std::vector<int>& prod,
-                                   const std::vector<int>& cons,
-                                   int total,
+    inline auto run_all_benchmarks(const std::vector<int>& producer_counts,
+                                   const std::vector<int>& consumer_counts,
+                                   int total_items,
                                    std::string_view file_name) -> void {
         if (std::ofstream out(file_name.data()); out) {
             std::string header(
@@ -139,9 +139,11 @@ namespace benchmark_script {
             out.write(header.data(), header.size());
         }
         std::print("Running all benchmarks:\n========================\n\n");
-        for (auto [producers_count, consumers_count] :
-             std::views::cartesian_product(prod, cons)) {
-            run_for_config(producers_count, consumers_count, total, file_name);
+        for (int producer_count : producer_counts) {
+            for (int consumer_count : consumer_counts) {
+                run_for_config(
+                    producer_count, consumer_count, total_items, file_name);
+            }
         }
     }
 
