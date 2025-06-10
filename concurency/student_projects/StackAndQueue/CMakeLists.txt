@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(${PROJECT_NAME}
+set(SOURCES
   src/main.cpp
   src/benchmarks/benchmark_base.cpp
 )
@@ -17,6 +17,8 @@ set(INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/include/structures
   ${CMAKE_CURRENT_SOURCE_DIR}/src/include/utils
 )
+
+add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
 find_package(Threads REQUIRED)

@@ -17,7 +17,7 @@ class benchmark_base {
     int m_items_per_consumer;
     int m_total_items;
 
-    std::string m_name;
+    std::string_view m_name;
 
     std::atomic<int> m_produced_count = 0;
     std::atomic<int> m_consumed_count = 0;

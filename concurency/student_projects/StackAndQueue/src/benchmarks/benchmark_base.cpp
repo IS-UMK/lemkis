@@ -1,5 +1,6 @@
 #include <benchmark_base.hpp>
-#include <cstdio>
+#include <format>
+#include <fstream>
 #include <print>
 
 benchmark_base::benchmark_base(std::string_view name,
@@ -50,15 +51,14 @@ auto benchmark_base::print_result(Duration duration) -> void {
 }
 
 auto benchmark_base::write_result_to_file(Duration duration,
-                                          std::string_view filename) -> void {
-    if (auto file = std::fopen(filename.data(), "a"); file != nullptr) {
-        std::fprintf(file,
-                     "%s,%d,%d,%d,%lld\n",
-                     m_name.c_str(),
-                     m_num_producers,
-                     m_num_consumers,
-                     m_total_items,
-                     static_cast<long long>(duration.count()));
-        std::fclose(file);
+                                          std::string_view file_name) -> void {
+    if (std::ofstream out(file_name.data(), std::ios::app); out) {
+        std::string formatted = std::format("{},{},{},{},{}\n",
+                                            m_name,
+                                            m_num_producers,
+                                            m_num_consumers,
+                                            m_total_items,
+                                            duration.count());
+        out.write(formatted.data(), formatted.size());
     }
 }

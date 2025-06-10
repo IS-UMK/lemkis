@@ -10,7 +10,7 @@ namespace {
 auto main() noexcept -> int {
     constexpr int success_code = 0;
     constexpr int error_code = 1;
-    
+
     try {
         benchmark_script::run_all_configurations(file_name);
         return success_code;
@@ -18,8 +18,6 @@ auto main() noexcept -> int {
         std::fputs("Unhandled std::exception: ", stdout);
         std::fputs(e.what(), stdout);
         std::fputs("\n", stdout);
-    } catch (...) { 
-        std::fputs("Unhandled unknown exception\n", stdout); 
-    }
+    } catch (...) { std::fputs("Unhandled unknown exception\n", stdout); }
     return error_code;
 }
