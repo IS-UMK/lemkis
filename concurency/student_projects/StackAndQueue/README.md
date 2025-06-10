@@ -22,7 +22,7 @@ This project benchmarks several stack and queue implementations with different s
 ## Requirements
 
 ### Compiler
-- C++23 compatible compiler (GCC 13+, Clang 16+, MSVC 19.30+)
+- C++23 compatible compiler (GCC 14+, Clang 17+)
 - Required for `std::print`, `std::format`, and other C++23 features
 
 ### Dependencies
@@ -33,7 +33,6 @@ This project benchmarks several stack and queue implementations with different s
 ### Standard Library Features Used
 - `std::jthread` (C++20)
 - `std::print` and `std::format` (C++23)
-- `std::views::cartesian_product` (C++23)
 - `std::generate_n`, `std::back_inserter`
 - Threading primitives (`std::mutex`, `std::condition_variable`, `std::atomic`)
 
