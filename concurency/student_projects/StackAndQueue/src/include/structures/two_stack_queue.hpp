@@ -9,15 +9,13 @@
 template <typename T>
 class two_stack_queue {
   private:
-    vector_stack<T> m_stack_input;   // For enqueue operations
-    vector_stack<T> m_stack_output;  // For dequeue operations
+    vector_stack<T> m_stack_input;
+    vector_stack<T> m_stack_output;
     mutable std::mutex m_mutex;
     std::condition_variable m_cv;
 
     // Helper method to transfer elements from input stack to output stack
     void transfer_if_needed() {
-        // Only transfer if output stack is empty (no need for a lock here as
-        // this is called within methods that already hold the lock)
         if (m_stack_output.unsafe_empty()) {
             // Move all elements from input stack to output stack
             while (auto item = m_stack_input.unsafe_pop()) {

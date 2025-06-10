@@ -1,35 +1,25 @@
 #include <benchmark_script.hpp>
 #include <cstdio>
 #include <exception>
-#include <print>
 #include <string_view>
-
-// #include <include/utils/benchmark_script.hpp>
 
 namespace {
     constexpr std::string_view file_name = "results.csv";
-    constexpr int benchmark_count = 100000;
-    constexpr int zero = 0;
-    constexpr int one = 1;
-}  // namespace
-
-namespace {
-    inline auto run_all_configurations() -> void {
-        const std::vector<int> producer_counts{1, 2, 4};
-        const std::vector<int> consumer_counts{1, 2, 4};
-        benchmark_script::run_all_benchmarks(
-            producer_counts, consumer_counts, benchmark_count, file_name);
-    }
-}  // namespace
+}
 
 auto main() noexcept -> int {
+    constexpr int success_code = 0;
+    constexpr int error_code = 1;
+    
     try {
-        run_all_configurations();
-        return zero;
+        benchmark_script::run_all_configurations(file_name);
+        return success_code;
     } catch (const std::exception& e) {
         std::fputs("Unhandled std::exception: ", stdout);
         std::fputs(e.what(), stdout);
         std::fputs("\n", stdout);
-    } catch (...) { std::fputs("Unhandled unknown exception\n", stdout); }
-    return one;
+    } catch (...) { 
+        std::fputs("Unhandled unknown exception\n", stdout); 
+    }
+    return error_code;
 }
