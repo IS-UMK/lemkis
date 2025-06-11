@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "Company.h"
+#include "CompanyPack.h"
 #include "Printer.h"
 #include "Utility.h"
 
@@ -21,67 +22,95 @@ class employee {
 
     employee(int id,
              int company_id,
-             company* companies,
+             company_pack* companies,
              printer* printers,
-             int num_printers,
-             // sem_t* mutex,
-             sem_t* condition)
+             sem_t* notify_from_company)
         : employee_id_(id),
           company_id_(company_id),
           companies_(companies),
           printers_(printers),
-          num_printers_(num_printers),
-          // mutex_(mutex),
-          condition_(condition) {}
+          notify_from_office_condition_(notify_from_company) {}
 
-    void run();
+    void init_communication(sem_t* notify_company_acquire_condition,
+                            sem_t* notify_company_release_condition) {
+        notify_company_acquire_condition_ = notify_company_acquire_condition;
+        notify_company_release_condition_ = notify_company_release_condition;
+    }
+
+    void run() {
+        auto& printer = acquire();
+        printing(printer);
+        stop_printing(printer);
+    }
+
 
   private:
     int employee_id_;
     int company_id_;
-    company* companies_;
+    company_pack* companies_;
     printer* printers_;
-    int num_printers_;
-    // sem_t* mutex_;
-    sem_t* condition_;
 
-    auto get_company() -> company& { return companies_[company_id_]; }
+    sem_t* notify_from_office_condition_;
+    sem_t* notify_company_acquire_condition_;
+    sem_t* notify_company_release_condition_;
 
-    void acquire_printer_print(int printer_id) const {
-        std::println("Company {} acquired printer {}", company_id_, printer_id);
-        std::fflush(stdout);
+    auto get_company() -> company& {
+        return companies_[company_id_].company_instance;
     }
 
-    void employee_start_printing_print(int printer_id) const {
-        auto text = printers_[printer_id].generate_printer_doc();
-        std::println(
-            "Employee {} from company {} is printing on printer {} - with doc: "
-            "{}",
-            employee_id_,
-            company_id_,
-            printer_id,
-            text);
-        std::fflush(stdout);
+    auto acquire() -> printer& {
+        while (true) {
+            mes_util::employee_trying_to_acquire_printer_print(employee_id_,
+                                                               company_id_);
+            if (!does_my_company_has_printer()) {
+                handle_employee_waiting();
+                continue;
+            }
+            return handle_employee_getting_to_printer();
+        }
     }
 
-    void employee_stop_printing_print(int printer_id) const {
-        std::println(
-            "Employee {} from company {} has stopped printing on printer {}",
-            employee_id_,
-            company_id_,
-            printer_id);
-        std::fflush(stdout);
+    void handle_employee_waiting() {
+        mes_util::employee_waiting_for_printer_print(employee_id_, company_id_);
+        sem_post(notify_company_acquire_condition_);
+        sem_wait(notify_from_office_condition_);
+        mes_util::employee_got_notification_print(employee_id_, company_id_);
     }
 
-    void release_printer_print(int printer_id) const {
-        std::println(
-            "Company {} has released printer {}", company_id_, printer_id);
-        std::fflush(stdout);
+    auto handle_employee_getting_to_printer() -> printer& {
+        mes_util::employee_got_to_printer_print(
+            employee_id_, company_id_, get_company().assigned_printer.load());
+        auto& printer = printers_[get_company().assigned_printer];
+        return printer;
     }
 
-    void acquire();
-    auto printing() -> int;
-    void release(int printer_id);
+
+    auto does_my_company_has_printer() -> bool {
+        auto& company = get_company();
+        return company.assigned_printer.load() != utility::no_printer;
+    }
+
+    void printing(printer& printer) {
+        mes_util::employee_start_printing_print(get_company().company_id,
+                                                employee_id_,
+                                                printer.printer_id,
+                                                printer.generate_printer_doc());
+        update_printer_usage(printer);
+        simulate_work();
+        mes_util::employee_stop_printing_print(
+            get_company().company_id, employee_id_, printer.printer_id);
+    }
+
+    void stop_printing(printer& printer) {
+        printer.usage_count.fetch_sub(usage_value);
+        if (!printer::is_printer_free_usage_empty(printer)) { return; }
+        utility::print("Employee {} wants to release printer with ID {}.",
+                       employee_id_,
+                       printer.printer_id);
+        sem_post(notify_company_release_condition_);
+        utility::print("Employee {} successfully sent release notify.",
+                       employee_id_);
+    }
 
     static void simulate_work() {
         const int print_time =
@@ -93,110 +122,4 @@ class employee {
         printer.usage_count.fetch_add(usage_value);
         printer.times_used.fetch_add(usage_value);
     }
-
-    auto try_to_get_printer() -> bool;
-    void get_printer(printer& printer);
-    auto run_printer_checks(printer& printer) -> bool;
-    void company_release_printer(printer& printer);
-    void handle_printer_release(printer& printer);
 };
-
-inline void employee::run() {
-    acquire();
-    const int printer_id = printing();
-    release(printer_id);
-}
-
-/// <summary>
-/// Acquires a printer for the employee.
-/// It will wait until a printer is available.
-/// </summary>
-inline void employee::acquire() {
-    while (true) {
-        if (try_to_get_printer()) { break; }
-        sem_wait(condition_);
-    }
-}
-
-
-/// <summary>
-/// Tries to get a printer for the employee.
-/// It first checks if the company has an assigned printer.
-/// If not, it checks all printers.
-/// </summary>
-inline auto employee::try_to_get_printer() -> bool {
-    if (get_company().assigned_printer != utility::no_printer) {
-        auto& printer = printers_[get_company().assigned_printer];
-        update_printer_usage(printer);
-        return true;
-    }
-    for (auto i = 0; i < num_printers_; i++) {
-        if (run_printer_checks(printers_[i])) { return true; }
-    }
-    return false;
-}
-
-/// <summary>
-/// Runs checks on the printer to determine if the employee can use it.
-/// </summary>
-inline auto employee::run_printer_checks(printer& printer) -> bool {
-    sem_wait(&printer.mutex);
-    if (printer.current_company == utility::no_company) {
-        get_printer(printer);
-        sem_post(&printer.mutex);
-        return true;
-    }
-    sem_post(&printer.mutex);
-    return false;
-}
-
-/// <summary>
-/// Employee gets the printer and assigns it to the company.
-/// </summary>
-inline void employee::get_printer(printer& printer) {
-    printer.current_company = company_id_;
-    update_printer_usage(printer);
-    get_company().assigned_printer = printer.printer_id;
-    acquire_printer_print(printer.printer_id);
-}
-
-/// <summary>
-/// Employee starts printing on the assigned printer.
-/// </summary>
-inline auto employee::printing() -> int {
-    const int printer_id = get_company().assigned_printer;
-    employee_start_printing_print(printer_id);
-    simulate_work();
-    return printer_id;
-}
-
-
-/// <summary>
-/// Employee releases the printer after printing. If printer is free it realeses
-/// it and notifies others that it is available.
-/// </summary>
-inline void employee::release(int printer_id) {
-    auto& printer = printers_[printer_id];
-    printer.usage_count.fetch_sub(usage_value);
-    employee_stop_printing_print(printer_id);
-    handle_printer_release(printer);
-}
-
-inline void employee::handle_printer_release(printer& printer) {
-    int expected = 0;
-    if (printer.usage_count.compare_exchange_strong(expected, 0)) {
-        company_release_printer(printer);
-    }
-}
-
-/// <summary>
-/// Company releases the printer and sets the assigned printer to no printer.
-/// </summary>
-inline void employee::company_release_printer(printer& printer) {
-    sem_wait(&printer.mutex);
-    printer.current_company = utility::no_company;
-    get_company().assigned_printer = utility::no_printer;
-    release_printer_print(printer.printer_id);
-    sem_post(&printer.mutex);
-    sem_post(condition_);
-}

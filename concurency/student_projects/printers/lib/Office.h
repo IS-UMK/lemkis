@@ -6,9 +6,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <print>
+
 #include "Company.h"
+#include "CompanyPack.h"
 #include "Employee.h"
 #include "Printer.h"
+#include "SharedData.h"
 #include "Utility.h"
 
 
@@ -18,170 +22,135 @@
 /// </summary>
 class office {
   public:
-    office(int num_companies, int num_printers, int num_of_all_employees)
-        : num_companies_(num_companies),
-          num_printers_(num_printers),
-          num_of_all_employees_(num_of_all_employees) {}
+    office(int num_companies, int num_printers, int num_of_all_employees) {
+        shared_data_ = new shared_data(num_companies, num_printers);
+        num_of_all_employees_ = num_of_all_employees;
+        num_companies_ = num_companies;
+    }
 
     auto run_chaos() -> void;
-    void run_employee_process(int i, sem_t* condition) const;
 
   private:
-    const static int shm_mode = 0666;  // file permissions for shared memory
-    const static int shm_value = 1;    // initial value for semaphores
-    const char* shm_printers_name = "/printers_shared_memory";
-    const char* shm_companies_name = "/companies_shared_memory";
-
-  public:
-    int num_companies_;
-    int num_printers_;
+    shared_data* shared_data_ = nullptr;
     int num_of_all_employees_;
+    int num_companies_;
 
-    printer* printers_;   // shared memory for printers
-    company* companies_;  // shared memory for companies
 
     static void prepare_printers(printer* printers, int num_printers) {
         for (int i = 0; i < num_printers; i++) {
-            printers[i].printer_id = i;
-            printers[i].current_company.store(utility::no_company);
-            printers[i].usage_count.store(0);
-            sem_init(&printers[i].mutex, shm_value, shm_value);
+            printers[i].init_data(i);
+            printers[i].init_communication();
         }
     }
 
-    static void prepare_companies(company* companies, int num_companies) {
+    static void prepare_companies(shared_data& sh,
+                                  company_pack* company_packs,
+                                  int num_companies) {
         for (int i = 0; i < num_companies; i++) {
-            companies[i].company_id = i;
-            companies[i].assigned_printer = utility::no_printer;
+            company_packs[i].company_instance.init_data(
+                i, sh.printers_, sh.num_printers_);
+            company_packs[i].init_communication();
         }
     }
 
-    static void prepare_office(printer* printers,
-                               int num_printers,
-                               company* companies,
-                               int num_companies) {
+    static void prepare_office(shared_data& shared_data) {
+        auto& printers = shared_data.printers_;
+        auto& company_packs = shared_data.companies_packs_;
+        auto num_printers = shared_data.num_printers_;
+        auto num_companies = shared_data.num_companies_;
         prepare_printers(printers, num_printers);
-        prepare_companies(companies, num_companies);
+        prepare_companies(shared_data, company_packs, num_companies);
     }
 
-    auto create_employee(const int i, sem_t* condition) const -> employee {
-        auto company_id = i % num_companies_;
-        employee emp(
-            i, company_id, companies_, printers_, num_printers_, condition);
-        return emp;
-    }
+    void run_companies();
+    void run_employees();
+
+    void run_employee_process(int employee_id);
+    [[nodiscard]] auto create_employee(int employee_id,
+                                       int company_id,
+                                       company_pack& cp) const -> employee;
 
     void wait_for_employees() const {
         for (int i = 0; i < num_of_all_employees_; i++) { wait(nullptr); }
+        utility::print("All employees finished.");
     }
 
-    static void clean_up_printers(printer* printers, int num_printers) {
-        for (int i = 0; i < num_printers; i++) {
-            sem_destroy(&printers[i].mutex);
+    void wait_for_companies() const {
+        for (int i = 0; i < num_companies_; i++) {
+            auto& company_pack = shared_data_->companies_packs_[i];
+            company_pack.company_instance.stop();
         }
+        utility::print("All companies finished.");
     }
 
-    void clean_up() {
-        clean_up_printers(printers_, num_printers_);
-        printers_ = nullptr;
-        companies_ = nullptr;
-        sem_unlink("/condition");
-        shm_unlink(shm_printers_name);
-        shm_unlink(shm_companies_name);
-    }
-
+    void clean_up() const { delete shared_data_; }
     void print_summary() const;
-    void run_employees(sem_t* condition) const;
-
-    [[nodiscard]] static auto stage_init_semaphores() -> sem_t*;
-
-    auto init_printers_shm(int num_printers) -> printer*;
-    auto init_companies_shm(int num_companies) -> company*;
-    void init_shared_memory();
 };
 
 inline void office::run_chaos() {
-    clean_up();
-    init_shared_memory();
-    prepare_office(printers_, num_printers_, companies_, num_companies_);
-    auto* condition = stage_init_semaphores();
-    run_employees(condition);
+    prepare_office(*shared_data_);
+    run_companies();
+    run_employees();
     wait_for_employees();
+    wait_for_companies();
     print_summary();
     clean_up();
 }
 
-/// <summary>
-/// Initializes shared memory for printers and companies.
-/// </summary>
-inline void office::init_shared_memory() {
-    printers_ = init_printers_shm(num_printers_);
-    companies_ = init_companies_shm(num_companies_);
+inline void office::run_companies() {
+    for (int i = 0; i < num_companies_; i++) {
+        auto& company_pack = shared_data_->companies_packs_[i];
+        company_pack.company_instance.start();
+        company_pack.init_threads(shared_data_->companies_packs_,
+                                  shared_data_->num_companies_);
+    }
 }
 
-/// <summary>
-/// Initializes semaphores for synchronization.
-/// </summary>
-inline auto office::stage_init_semaphores() -> sem_t* {
-    // sem_t* mutex = sem_open("/mutex", O_CREAT, shm_mode, shm_value);
-    sem_t* condition = sem_open("/condition", O_CREAT, shm_mode, 0);
-    return condition;
-}
 
 /// <summary>
 /// Runs the employee processes.
 /// </summary>
-inline void office::run_employees(sem_t* condition) const {
+inline void office::run_employees() {
     for (auto i = 0; i < num_of_all_employees_; i++) {
         const pid_t pid = fork();
-        if (pid == 0) { run_employee_process(i, condition); }
+        if (pid == 0) {
+            run_employee_process(i);
+        } else {
+            utility::print("Error creating employee {}", i);
+        }
     }
 }
 
-inline void office::run_employee_process(int i, sem_t* condition) const {
+inline void office::run_employee_process(const int employee_id) {
     auto process_id = getpid();
-    std::println("Employee {} with PID {} is starting.", i, process_id);
-    std::fflush(stdout);
-    auto emp = create_employee(i, condition);
+    auto company_id = employee_id % num_companies_;
+    auto& pack = shared_data_->companies_packs_[company_id];
+    mes_util::employee_is_starting_print(employee_id, company_id, process_id);
+    auto emp = create_employee(employee_id, company_id, pack);
+    emp.init_communication(&pack.notify_company_acquire_condition,
+                           &pack.notify_company_release_condition);
     emp.run();
     exit(0);
 }
 
-/// <summary>
-/// Initializes shared memory for printers.
-/// </summary>
-inline auto office::init_printers_shm(const int num_printers) -> printer* {
-    const size_t printer_size = sizeof(printer) * num_printers;
-    const int shm_fd = shm_open(shm_printers_name, O_CREAT | O_RDWR, shm_mode);
-    auto length = static_cast<long>(printer_size);
-    ftruncate(shm_fd, length);
-
-    auto* printers = static_cast<printer*>(
-        mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0));
-    return printers;
-}
-
-/// <summary>
-/// Initializes shared memory for companies.
-/// </summary>
-inline auto office::init_companies_shm(const int num_companies) -> company* {
-    const size_t company_size = sizeof(company) * num_companies;
-    const int shm_fd = shm_open(shm_companies_name, O_CREAT | O_RDWR, shm_mode);
-    auto length = static_cast<long>(company_size);
-    ftruncate(shm_fd, length);
-
-    auto* companies = static_cast<company*>(
-        mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0));
-    return companies;
+inline auto office::create_employee(const int employee_id,
+                                    const int company_id,
+                                    company_pack& cp) const -> employee {
+    employee emp(employee_id,
+                 company_id,
+                 shared_data_->companies_packs_,
+                 shared_data_->printers_,
+                 &cp.notify_my_employees_from_office_condition);
+    return emp;
 }
 
 inline void office::print_summary() const {
     std::println("Printers usage summary:");
     std::fflush(stdout);
-    for (int i = 0; i < num_printers_; i++) {
+    for (int i = 0; i < shared_data_->num_printers_; i++) {
         std::println("Printer {} was used {} times.",
-                     printers_[i].printer_id,
-                     printers_[i].times_used.load());
+                     shared_data_->printers_[i].printer_id,
+                     shared_data_->printers_[i].times_used.load());
         std::fflush(stdout);
     }
 }

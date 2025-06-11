@@ -2,8 +2,11 @@
 #include <cerrno>
 #include <climits>
 #include <cstring>
+#include <format>
 #include <mutex>
+#include <print>
 #include <random>
+
 
 /// <summary>
 /// back-alley in the office, where all the utility functions are stored.
@@ -12,6 +15,7 @@ class utility {
   public:
     static constexpr auto no_company = -1;
     static constexpr auto no_printer = -1;
+    static constexpr auto communication_delay = 1000;
 
     /// <summary>
     /// Generate a random integer in [min, max]
@@ -20,6 +24,12 @@ class utility {
         const std::lock_guard<std::mutex> lock(rng_mutex());
         std::uniform_int_distribution<> dist(min, max);
         return dist(generator());
+    }
+
+    template <typename... Args>
+    static void print(std::format_string<Args...> fmt, Args&&... args) {
+        std::println(fmt, std::forward<Args>(args)...);
+        std::fflush(stdout);
     }
 
     /// <summary>
