@@ -2,8 +2,8 @@
 
 #include <benchmark_utils.hpp>
 #include <iostream>
-#include <own_test.hpp>
 #include <thread>
+#include <transform_dot_benchmark.hpp>
 
 constexpr int k_default_threads =
     4;  // Default number of producer and consumer threads

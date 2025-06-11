@@ -7,10 +7,6 @@
 #include <benchmark_utils.hpp>
 #include <omp_queue.hpp>
 
-constexpr int item_limit = 1000000;  // Total number of items to be pushed
-constexpr int id_offset =
-    10000;                      // Offset used to differentiate producers' data
-constexpr int k_increment = 1;  // Increment value for atomic counters
 
 // --------------------------------------------------------------
 // Internal State and OpenMP Logic (anonymous namespace)
@@ -20,7 +16,9 @@ namespace {
     omp_queue<int> queue;  // OpenMP-compatible thread-safe queue
     int pushed = 0;        // Total number of items pushed
     int popped = 0;        // Total number of items popped
-
+    int const id_offset =
+        10000;                  // Offset used to differentiate producers' data
+    int const k_increment = 1;  // Increment value for atomic counters
     // Producer function executed by threads with ID < number of producers
     // Each thread pushes 'per' items with unique base offset
     auto omp_producer(int tid, int per) -> void {
@@ -98,6 +96,7 @@ namespace omp_bench {
     // - Returns pushed, popped counts and remaining queue size
     auto omp_queue_test(int producers, int consumers)
         -> std::tuple<int, int, std::size_t> {
+        int const item_limit = 1000000;  // Total number of items to be pushed
         int const per = item_limit / producers;
         int const total = per * producers;
         run_omp_threads(producers, consumers, per, total);

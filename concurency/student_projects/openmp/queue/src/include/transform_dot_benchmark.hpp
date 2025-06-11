@@ -1,9 +1,6 @@
 #include <string>
 #include <vector>
 
-// Constants for dataset sizes used in performance benchmarks
-constexpr size_t small_size = 10'000;       // Small dataset for quick tests
-constexpr size_t large_size = 300'000'000;  // Large dataset for stress tests
 
 // Namespace for custom benchmarking functions
 namespace own_bench {

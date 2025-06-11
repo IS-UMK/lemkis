@@ -5,19 +5,17 @@
 #include <execution>
 #include <iostream>
 #include <numeric>
-#include <own_test.hpp>
-#include <print>  // Required for std::print (C++23)
+#include <print>
 #include <random>
+#include <transform_dot_benchmark.hpp>
 #include <vector>
 
-constexpr int random_seed = 42;
-constexpr double distribution_min = 0.0;
-constexpr double distribution_max = 1.0;
-constexpr int thousand = 1000;
 
 namespace {
     double res = 0.0;
-
+    int const random_seed = 42;
+    double const distribution_min = 0.0;
+    double const distribution_max = 1.0;
     // Generates a vector of random doubles in the [distribution_min,
     // distribution_max] range.
     auto generate_random_vector(std::size_t size) -> std::vector<double> {
@@ -153,6 +151,7 @@ namespace {
 
 // Runs benchmarks with small and large datasets from public interface.
 namespace own_bench {
+    int const thousand = 1000;
     auto run_own_test() -> void {
         prepare_and_run_tests(thousand);  // Small dataset
         prepare_and_run_tests(static_cast<std::size_t>(thousand) *
