@@ -1,3 +1,8 @@
+/**
+ * @file benchmark_script.hpp
+ * @brief Provides functions to construct and run benchmark configurations.
+ */
+
 #pragma once
 
 #include <fstream>
@@ -17,12 +22,35 @@
 #include <vector_stack.hpp>
 
 namespace benchmark_script {
+
+    /**
+     * @brief Alias for vector_stack instantiated with int.
+     */
     using vector_stack_t = vector_stack<int>;
+
+    /**
+     * @brief Alias for list_stack instantiated with int.
+     */
     using list_stack_t = list_stack<int>;
+
+    /**
+     * @brief Container type for dynamically allocated benchmarks.
+     */
     using benchmark_list_t = std::vector<std::unique_ptr<benchmark_base>>;
+
+    /**
+     * @brief Constant representing single-threaded benchmark configuration.
+     */
     static constexpr int single_producer = 1;
     static constexpr int single_consumer = 1;
 
+    /**
+     * @brief Adds vector_stack-based benchmarks to the list.
+     * @param list Output container for benchmark instances.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     */
     inline auto add_vector_stack_benchmarks(benchmark_list_t& list,
                                             int prod_count,
                                             int cons_count,
@@ -34,6 +62,13 @@ namespace benchmark_script {
             "vector_stack (cv)", prod_count, cons_count, elem_count));
     }
 
+    /**
+     * @brief Adds list_stack-based benchmarks to the list.
+     * @param list Output container for benchmark instances.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     */
     inline auto add_list_stack_benchmarks(benchmark_list_t& list,
                                           int prod_count,
                                           int cons_count,
@@ -44,6 +79,13 @@ namespace benchmark_script {
             "list_stack (cv)", prod_count, cons_count, elem_count));
     }
 
+    /**
+     * @brief Adds all stack-based benchmarks to the list.
+     * @param list Output container for benchmark instances.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     */
     inline auto add_stack_benchmarks(benchmark_list_t& list,
                                      int prod_count,
                                      int cons_count,
@@ -52,6 +94,13 @@ namespace benchmark_script {
         add_list_stack_benchmarks(list, prod_count, cons_count, elem_count);
     }
 
+    /**
+     * @brief Adds queue-based benchmarks using two_stack_queue to the list.
+     * @param list Output container for benchmark instances.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     */
     inline auto add_queue_benchmarks(benchmark_list_t& list,
                                      int prod_count,
                                      int cons_count,
@@ -62,6 +111,17 @@ namespace benchmark_script {
             "two_stack_queue (cv)", prod_count, cons_count, elem_count));
     }
 
+    /**
+     * @brief Adds lock-free queue benchmarks to the list.
+     *
+     * Includes moodycamel::ConcurrentQueue and optionally ReaderWriterQueue
+     * if producer and consumer counts are both 1.
+     *
+     * @param list Output container for benchmark instances.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     */
     inline auto add_lockfree_benchmarks(benchmark_list_t& list,
                                         int prod_count,
                                         int cons_count,
@@ -74,6 +134,13 @@ namespace benchmark_script {
         }
     }
 
+    /**
+     * @brief Creates all benchmark variants for a given configuration.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     * @return A list of dynamically allocated benchmark instances.
+     */
     inline auto create_all_benchmarks(int prod_count,
                                       int cons_count,
                                       int elem_count) -> benchmark_list_t {
@@ -84,6 +151,11 @@ namespace benchmark_script {
         return list;
     }
 
+    /**
+     * @brief Executes and reports results for a list of benchmarks.
+     * @param list List of benchmark instances.
+     * @param file_name Path to output CSV file.
+     */
     inline auto run_and_report(benchmark_list_t list,
                                std::string_view file_name) -> void {
         for (auto& bench : list) {
@@ -97,6 +169,13 @@ namespace benchmark_script {
         }
     }
 
+    /**
+     * @brief Runs all benchmarks for a single configuration.
+     * @param prod_count Number of producer threads.
+     * @param cons_count Number of consumer threads.
+     * @param elem_count Total number of elements.
+     * @param file_name Path to output CSV file.
+     */
     inline auto run_for_config(int prod_count,
                                int cons_count,
                                int elem_count,
@@ -107,6 +186,10 @@ namespace benchmark_script {
         std::print("\n");
     }
 
+    /**
+     * @brief Writes CSV header to the result file.
+     * @param file_name Path to the output file.
+     */
     inline auto write_csv_header(std::string_view file_name) -> void {
         if (std::ofstream out(std::string{file_name}); out) {
             constexpr auto header =
@@ -116,6 +199,11 @@ namespace benchmark_script {
         }
     }
 
+    /**
+     * @brief Runs all benchmark configurations (Cartesian product of thread
+     * counts).
+     * @param file_name Path to the output file.
+     */
     inline auto run_all_configurations(std::string_view file_name) -> void {
         constexpr int total_elements = 100000;
         const std::vector<int> prod_counts{1, 2, 4};
@@ -127,9 +215,14 @@ namespace benchmark_script {
         }
     }
 
+    /**
+     * @brief Entry function to run all benchmarks and write results to CSV.
+     * @param file_name Output file name.
+     */
     inline auto run_all_benchmarks(std::string_view file_name) -> void {
         write_csv_header(file_name);
         std::print("Running all benchmarks:\n========================\n\n");
         run_all_configurations(file_name);
     }
+
 }  // namespace benchmark_script
