@@ -1,6 +1,6 @@
 /**
  * @file lock_free_queue_benchmark.hpp
- * @brief Benchmark for the moodycamel::ConcurrentQueue (lock-free queue).
+ * @brief Benchmark for a lock-free queue using moodycamel::ConcurrentQueue.
  */
 
 #pragma once
@@ -12,23 +12,22 @@
 
 /**
  * @class lock_free_queue_benchmark
- * @brief Measures performance of a lock-free queue using multiple threads.
+ * @brief Benchmark using moodycamel::ConcurrentQueue in a multithreaded setup.
  *
- * This benchmark uses moodycamel::ConcurrentQueue to test producer-consumer
- * scenarios in a multithreaded environment.
+ * This benchmark evaluates performance of a lock-free queue
+ * under concurrent producer and consumer threads.
  */
 class lock_free_queue_benchmark : public benchmark_base {
   private:
-    /// The lock-free concurrent queue instance used for benchmarking.
     moodycamel::ConcurrentQueue<int> m_queue;
 
   public:
     /**
-     * @brief Constructs the benchmark with given parameters.
-     * @param name Name of the benchmark.
+     * @brief Constructs the benchmark with the specified configuration.
+     * @param name Benchmark label for output.
      * @param producers Number of producer threads.
      * @param consumers Number of consumer threads.
-     * @param total_items Total number of items to be produced.
+     * @param total_items Total number of items to process.
      */
     lock_free_queue_benchmark(std::string_view name,
                               int producers,
@@ -63,7 +62,7 @@ class lock_free_queue_benchmark : public benchmark_base {
 
     /**
      * @brief Attempts to dequeue one item from the queue.
-     * @return true if successful, false otherwise.
+     * @return true if an item was consumed, false otherwise.
      */
     auto try_consume() -> bool {
         int value;
@@ -73,9 +72,9 @@ class lock_free_queue_benchmark : public benchmark_base {
     }
 
     /**
-     * @brief Checks whether the consumer should stop.
+     * @brief Checks if the consumer should stop consuming.
      * @param count Number of items consumed by this thread.
-     * @return true if consumer loop should terminate.
+     * @return true if the loop should exit.
      */
     auto should_break(int count) -> bool {
         return count >= m_items_per_consumer ||
