@@ -1,3 +1,8 @@
+/**
+ * @file benchmark_base.cpp
+ * @brief Defines common functionality for thread-based benchmarks.
+ */
+
 #include <algorithm>
 #include <benchmark_base.hpp>
 #include <format>
@@ -39,7 +44,9 @@ auto benchmark_base::launch_threads() -> void {
 
 auto benchmark_base::wait_for_completion() -> void {
     for (auto& p : m_producers) { p.join(); }
+
     m_producers_done.store(true, std::memory_order_release);
+
     for (auto& c : m_consumers) { c.join(); }
 }
 
