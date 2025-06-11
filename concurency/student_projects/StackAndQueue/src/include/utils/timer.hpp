@@ -14,5 +14,5 @@ class timer {
     }
 
   private:
-    clock::time_point m_start{};
+    clock::time_point m_start;
 };
