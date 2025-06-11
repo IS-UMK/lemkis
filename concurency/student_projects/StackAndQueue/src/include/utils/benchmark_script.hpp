@@ -39,7 +39,7 @@ namespace benchmark_script {
     using benchmark_list_t = std::vector<std::unique_ptr<benchmark_base>>;
 
     /**
-     * @brief Constant representing single-threaded benchmark configuration.
+     * @brief Constants representing single-threaded benchmark configuration.
      */
     static constexpr int single_producer = 1;
     static constexpr int single_consumer = 1;
