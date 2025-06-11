@@ -1,153 +1,149 @@
 #pragma once
 
-#include <semaphore.h>
-#include <sys/wait.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 #include <iostream>
 #include <memory>
 #include <print>
-#include <queue>
-#include <string>
-#include <thread>
-#include <utility>
 #include <vector>
 
+#include "court.h"
 #include "team.h"
 
+/// @brief The match_manager class handles the lifecycle and coordination of
+/// courts and teams,
 class match_manager {
-    std::vector<std::shared_ptr<team>> teams;
-    std::vector<sem_t *> court_sems;
-    const int dur = 5000;
-    const int process_chmod = 0666;
-    const int process_on = 1;
-    const int delay = 100;
-
   public:
-    auto create_court_sem(int court_count) -> void {
-        for (int i = 0; i < court_count; ++i) {
-            auto name = "/court_sem_" + std::to_string(i);
-            sem_unlink(name.c_str());
-            court_sems.push_back(
-                sem_open(name.c_str(), O_CREAT, process_chmod, process_on));
+    static constexpr int k_default_file_mode = 0666;
+    static constexpr int k_players_per_team_multiplier = 2;
+    static constexpr int k_unassigned_id = -1;
+
+    int num_teams;
+    int num_players;
+    int num_courts;
+
+    shared_court_data* shared_courts{nullptr};
+    int shm_fd;
+
+    std::vector<std::shared_ptr<court>> courts;
+    std::vector<std::shared_ptr<team>> teams;
+
+    /// @brief Constructs a match_manager with the given number of teams,
+    /// players per team, and courts.
+    match_manager(int n_teams, int n_players, int n_courts)
+        : num_teams(n_teams), num_players(n_players), num_courts(n_courts) {}
+
+    /// @brief Maps the shared memory region into the process’s address space.
+    void set_memory() {
+        shared_courts = static_cast<shared_court_data*>(
+            mmap(nullptr,
+                 sizeof(shared_court_data) * num_courts,
+                 PROT_READ | PROT_WRITE,
+                 MAP_SHARED,
+                 shm_fd,
+                 0));
+    }
+
+    /// @brief Initializes shared memory to store the state of all courts.
+    void initialize_shared_memory() {
+        shm_fd = shm_open("/court_shm", O_CREAT | O_RDWR, k_default_file_mode);
+        const auto shared_mem_size =
+            static_cast<off_t>(sizeof(shared_court_data) * num_courts);
+        ftruncate(shm_fd, shared_mem_size);
+        set_memory();
+    }
+
+    /// @brief Initializes all courts with shared memory and launches their
+    /// processes.
+    void initialize_courts() {
+        const int max_players_per_court =
+            num_players * k_players_per_team_multiplier;
+
+        for (int i = 0; i < num_courts; ++i) {
+            initialize_court(i, max_players_per_court);
         }
     }
 
-    match_manager(int court_count, int team_count, int player_count) {
-        create_court_sem(court_count);
-        for (int i = 0; i < team_count; ++i) {
-            teams.emplace_back(
-                std::make_shared<team>(i + process_on, player_count));
+    /// @brief Creates a court instance and starts its process.
+    void add_court(int court_id, int max_players) {
+        shared_courts[court_id].max_players = max_players;
+        shared_courts[court_id].player_ids =
+            static_cast<int*>(malloc(sizeof(int) * max_players));
+        initialize_mutex(court_id);
+        auto newcourt = std::make_shared<court>(court_id, shared_courts);
+        courts.push_back(newcourt);
+        newcourt->start_process();
+    }
+
+    /// @brief Initializes shared data and internal state for a specific court.
+    void initialize_court(int court_id, int max_players) {
+        shared_courts[court_id].id = court_id;
+        shared_courts[court_id].is_active = false;
+        shared_courts[court_id].team1_id = k_unassigned_id;
+        shared_courts[court_id].team2_id = k_unassigned_id;
+        shared_courts[court_id].player_count = 0;
+        shared_courts[court_id].is_playing = false;
+
+        add_court(court_id, max_players);
+    }
+
+    /// @brief Initializes the mutex for accessing a court's shared memory
+    /// safely.
+    void initialize_mutex(int court_id) const {
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+        pthread_mutex_init(&shared_courts[court_id].lock, &attr);
+    }
+
+    /// @brief Initializes all teams and starts their internal threads
+    /// (players).
+    void initialize_teams() {
+        for (int i = 0; i < num_teams; ++i) {
+            teams.push_back(std::make_shared<team>(
+                i, num_players, shared_courts, num_courts));
         }
     }
 
-
-    auto start() -> std::queue<std::pair<int, int>> {
-        std::queue<std::pair<int, int>> matches;
-        for (size_t i = 0; i < teams.size(); ++i) {
-            for (size_t j = i + process_on; j < teams.size(); ++j) {
-                matches.emplace(i, j);
-            }
+    /// @brief Starts the full match simulation:
+    void start() {
+        if(num_teams < 2) {
+            std::println("Error: At least 2 teams are required");
+            return;
         }
-        return matches;
+        initialize_shared_memory();
+        initialize_courts();
+        initialize_teams();
     }
 
-    void match_fork(std::queue<std::pair<int, int>> &matches, size_t court) {
-        auto match = matches.front();
-        matches.pop();
-
-        if (fork() == 0) {
-            run_match(court, match.first, match.second);
-            exit(0);
-        }
+    /// @brief Stops all court processes gracefully.
+    void cleanup_courts() {
+        for (auto& court : courts) { court->stop(); }
     }
 
-    auto check(size_t court) -> bool {
-        if (court == -process_on) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-            return true;
-        }
-        return false;
+    /// @brief Unmaps and unlinks the shared memory used by courts.
+    void cleanup_shared_memory() const {
+        munmap(shared_courts, sizeof(shared_court_data) * num_courts);
+        close(shm_fd);
+        shm_unlink("/court_shm");
     }
 
-    void match_loop(std::queue<std::pair<int, int>> &matches) {
-        while (!matches.empty()) {
-            const size_t court = find_available_court();
-            if (check(court)) { continue; };
-            match_fork(matches, court);
-        }
-
-        while (wait(nullptr) > 0) {};
-    }
-
-    void run() {
-        // Create all possible matches
-        auto matches = start();
-
-        match_loop(matches);
-    }
-    ~match_manager() {
-        for (auto *sem : court_sems) {
-            sem_close(sem);
-            sem_unlink("/court_sem_*");
+    /// @brief Destroys all synchronization primitives and frees dynamically
+    /// allocated memory.
+    void destroy_mutexes() const {
+        for (int i = 0; i < num_courts; ++i) {
+            pthread_mutex_destroy(&shared_courts[i].lock);
+            free(shared_courts[i].player_ids);
         }
     }
 
-  private:
-    auto find_available_court() -> size_t {
-        for (size_t k = 0; k < court_sems.size(); ++k) {
-            if (sem_trywait(court_sems[k]) == 0) { return k; }
-        }
-        return -process_on;
-    }
-
-    void start_match_players(int team1_idx, int team2_idx, size_t court) {
-        sem_wait(teams[team1_idx]->match_mutex);
-        sem_wait(teams[team2_idx]->match_mutex);
-        std::println("Court {}: Match started between Team {} and Team {}",
-                     court,
-                     teams[team1_idx]->id,
-                     teams[team2_idx]->id);
-
-        teams[team1_idx]->start_players(dur);
-        teams[team2_idx]->start_players(dur);
-    }
-
-    void print_match_abandoned(size_t court, int team1_idx, int team2_idx) {
-        std::println("Court {}: Match abandoned by Team {}",
-                     court,
-                     teams[team1_idx]->is_abandoned() ? teams[team1_idx]->id
-                                                      : teams[team2_idx]->id);
-        teams[team1_idx]->stop_players();
-        teams[team2_idx]->stop_players();
-    }
-
-    void match_loop(size_t court, int team1_idx, int team2_idx) {
-        while (true) {
-            if (teams[team1_idx]->is_abandoned() ||
-                teams[team2_idx]->is_abandoned()) {
-                print_match_abandoned(court, team1_idx, team2_idx);
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-        }
-    }
-
-    void end_match(size_t court, int team1_idx, int team2_idx) {
-        std::println("Court {}: Match finished between Team {} and Team {}",
-                     court,
-                     teams[team1_idx]->id,
-                     teams[team2_idx]->id);
-
-        sem_post(teams[team1_idx]->match_mutex);
-        sem_post(teams[team2_idx]->match_mutex);
-        sem_post(court_sems[court]);
-    }
-
-    void run_match(size_t court, int team1_idx, int team2_idx) {
-
-        start_match_players(team1_idx, team2_idx, court);
-
-        match_loop(court, team1_idx, team2_idx);
-        end_match(court, team1_idx, team2_idx);
+    /// @brief Stops the simulation and cleans up all resources.
+    void stop() {
+        cleanup_courts();
+        destroy_mutexes();
+        cleanup_shared_memory();
+        std::println("match_manager cleanup complete.");
     }
 };
