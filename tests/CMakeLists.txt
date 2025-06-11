@@ -1,5 +1,6 @@
 # add_subdirectory(./external/catch)
 add_subdirectory(./utils)
 add_subdirectory(./matrix)
+add_subdirectory(./recursion)
 add_subdirectory(./eigen)
 add_subdirectory(./gaussian_elimination)
