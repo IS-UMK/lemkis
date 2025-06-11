@@ -1,30 +1,36 @@
+/**
+ * @file main.cpp
+ * @brief Entry point for the benchmark execution program.
+ *
+ * This file initializes the benchmarking process and handles any exceptions
+ * that might occur during execution.
+ */
+
+#include <benchmark_script.hpp>
 #include <cstdio>
 #include <exception>
-#include <print>
-
-#include "include/utils/benchmark_script.hpp"
-
-constexpr int benchmark_count = 30000;
-constexpr int zero = 0;
-constexpr int one = 1;
+#include <return_codes.hpp>
+#include <string_view>
 
 namespace {
-    inline auto run_all_configurations() -> void {
-        const std::vector<int> producer_counts{1, 2, 4};
-        const std::vector<int> consumer_counts{1, 2, 4};
-        benchmark_script::run_all_benchmarks(
-            producer_counts, consumer_counts, benchmark_count);
-    }
+    /**
+     * @brief Name of the output CSV file where benchmark results are stored.
+     */
+    constexpr std::string_view file_name = "results.csv";
 }  // namespace
 
+/**
+ * @brief Main function that runs all benchmarks.
+ * @return int Return code indicating success or failure.
+ */
 auto main() noexcept -> int {
     try {
-        run_all_configurations();
-        return zero;
+        benchmark_script::run_all_benchmarks(file_name);
+        return static_cast<int>(return_codes::success);
     } catch (const std::exception& e) {
         std::fputs("Unhandled std::exception: ", stdout);
         std::fputs(e.what(), stdout);
         std::fputs("\n", stdout);
     } catch (...) { std::fputs("Unhandled unknown exception\n", stdout); }
-    return one;
+    return static_cast<int>(return_codes::error);
 }
