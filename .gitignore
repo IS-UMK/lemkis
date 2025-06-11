@@ -31,5 +31,11 @@
 *.out
 *.app
 
+# Root directories
 /build/
 /Testing/
+
+# Student projects unnecessary files
+/concurency/student_projects/StackAndQueue/build
+/concurency/student_projects/StackAndQueue/.vscode
+/concurency/student_projects/StackAndQueue/*.sh
