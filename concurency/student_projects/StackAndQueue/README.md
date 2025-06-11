@@ -82,14 +82,14 @@ Running all benchmarks:
 ========================
 
 1 producer(s), 1 consumer(s):
-vector_stack (mutex): 1 producers, 1 consumers, 30000 items total - 45 ms
-vector_stack (cv): 1 producers, 1 consumers, 30000 items total - 38 ms
-list_stack (mutex): 1 producers, 1 consumers, 30000 items total - 52 ms
-list_stack (cv): 1 producers, 1 consumers, 30000 items total - 41 ms
-two_stack_queue (mutex): 1 producers, 1 consumers, 30000 items total - 35 ms
-two_stack_queue (cv): 1 producers, 1 consumers, 30000 items total - 28 ms
-moodycamel::ConcurrentQueue: 1 producers, 1 consumers, 30000 items total - 15 ms
-moodycamel::ReaderWriterQueue: 1 producers, 1 consumers, 30000 items total - 8 ms
+vector_stack (mutex): 1 producers, 1 consumers, 100000 items total - 45 ms
+vector_stack (cv): 1 producers, 1 consumers, 100000 items total - 38 ms
+list_stack (mutex): 1 producers, 1 consumers, 100000 items total - 52 ms
+list_stack (cv): 1 producers, 1 consumers, 100000 items total - 41 ms
+two_stack_queue (mutex): 1 producers, 1 consumers, 100000 items total - 35 ms
+two_stack_queue (cv): 1 producers, 1 consumers, 100000 items total - 28 ms
+moodycamel::ConcurrentQueue: 1 producers, 1 consumers, 100000 items total - 15 ms
+moodycamel::ReaderWriterQueue: 1 producers, 1 consumers, 100000 items total - 8 ms
 
 2 producer(s), 2 consumer(s):
 [... additional results ...]
