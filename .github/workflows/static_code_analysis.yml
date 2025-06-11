@@ -24,19 +24,41 @@ jobs:
     # - name: Install  g++
     #   run: sudo apt update && sudo apt install g++ gcc && sudo apt upgrade
     - name: Install standard library headers for clang and clang tools
-      run: sudo apt install clang-tidy-18 clang-format-18 libc++-18-dev 
+      run: sudo apt install clang-tidy-19 clang-format-19 libc++-19-dev 
     - name: Install the newest ninja
-      run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
+      run: sudo wget -qO /usr/local/bin/ninja.gz https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip && sudo gunzip -f /usr/local/bin/ninja.gz && sudo chmod a+x /usr/local/bin/ninja
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12' 
     - name: Configure
       run: pip install cpplint 
+    - name: Install TBB library
+      run: sudo apt install libtbb-dev
+    - name: Setup OpenMP headers
+      run: |
+        # Install specific OpenMP dev package for clang-19
+        sudo apt-get update
+        sudo apt-get install -y libomp-19-dev || sudo apt-get install -y libomp-dev
+        # Find omp.h
+        OMP_INCLUDE_PATH=$(find /usr -name "omp.h" | grep -v "android" | head -1 | xargs dirname)
+        echo "Found omp.h at: $OMP_INCLUDE_PATH"
+        # Make omp.h available to clang-19
+        sudo ln -sf $OMP_INCLUDE_PATH/omp.h /usr/include/omp.h || true
+        # Show debug info
+        ls -la /usr/include/omp.h || echo "Failed to create symlink"
+    - name: Setup correct OpenMP library path
+      run: |
+        # Find the system libomp
+        SYSTEM_LIBOMP=$(find /usr/lib -name "libomp.so*" | grep -v "android" | head -1)
+        echo "System OpenMP library: $SYSTEM_LIBOMP"
+        # Create symlink
+        sudo mkdir -p /usr/lib || true
+        sudo ln -sf $SYSTEM_LIBOMP /usr/lib/libomp.so
     - name: Build project
       run: ./scripts/make_debug.sh
     - name: Run clang-format on all module files
       run: |
-        if find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-format-18 --Werror --dry-run; then  
+        if find ./concurency/student_projects -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-format-19 --Werror --dry-run; then  
           echo "clang-format-result=0" >>  $GITHUB_OUTPUT 
         else 
           echo "clang-format-result=1" >>  $GITHUB_OUTPUT 
@@ -45,7 +67,7 @@ jobs:
       id: run_clang_format
     - name: Run clang-tidy on all module files
       run: |
-        if find ./algebra2 ./discrete_math/ -iname '*.cxx' -o -iname '*.ixx' | xargs clang-tidy-18  -p ./build/debug/ --extra-arg=-std=c++26; then  
+        if find ./concurency/student_projects -iname '*.cxx' -o -iname '*.ixx' -o -iname '*.cpp'  -o -iname '*.hpp' | xargs clang-tidy-19  -p ./build/debug/ --extra-arg=-std=c++26 --config-file=./.clang-tidy; then  
           echo "clang-tidy-result=0" >>  $GITHUB_OUTPUT 
         else 
           echo "clang-tidy-result=1" >>  $GITHUB_OUTPUT 
@@ -58,4 +80,5 @@ jobs:
     - name: clang-tidy check
       if: steps.run_clang_tidy.outputs.clang-tidy-result > 0
       run: echo "You failed to fulfill some of requirements posed in the .clang-tidy file" && exit 1
+      
     
