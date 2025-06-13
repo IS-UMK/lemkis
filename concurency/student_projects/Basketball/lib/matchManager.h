@@ -19,6 +19,7 @@ class match_manager {
     static constexpr int k_default_file_mode = 0666;
     static constexpr int k_players_per_team_multiplier = 2;
     static constexpr int k_unassigned_id = -1;
+    static constexpr int k_min_teams = 2;
 
     int num_teams;
     int num_players;
@@ -109,7 +110,7 @@ class match_manager {
 
     /// @brief Starts the full match simulation:
     void start() {
-        if(num_teams < 2) {
+        if (num_teams < k_min_teams) {
             std::println("Error: At least 2 teams are required");
             return;
         }

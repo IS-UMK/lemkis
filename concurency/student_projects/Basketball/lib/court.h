@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #include <chrono>
-#include <csignal>  // Replaced <signal.h>
+#include <csignal>
 #include <cstring>
 #include <iostream>
 #include <print>
