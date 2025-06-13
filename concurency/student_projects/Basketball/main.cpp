@@ -4,11 +4,8 @@
 #include <iostream>
 
 #include "matchManager.h"
+#include "utility.h"
 
-std::atomic<bool> shutdown_requested = false;
-
-/// @brief Signal handler that triggers simulation shutdown.
-void signal_handler(int /*signum*/) { shutdown_requested = true; }
 
 namespace {
     constexpr int k_number_of_teams = 4;
@@ -18,8 +15,6 @@ namespace {
     constexpr std::chrono::seconds k_sleep_duration(1);
 }  // namespace
 
-/// @brief Registers the SIGINT handler.
-void setup_signal_handler() { signal(SIGINT, signal_handler); }
 
 /// @brief Runs the entire match simulation.
 void run_simulation() {
@@ -27,7 +22,7 @@ void run_simulation() {
         k_number_of_teams, k_number_of_players, k_number_of_courts);
     manager.start();
 
-    while (!shutdown_requested) {
+    while (!utility::shutdown_requested) {
         std::this_thread::sleep_for(k_sleep_duration);
     }
 
@@ -37,7 +32,7 @@ void run_simulation() {
 /// @brief Entry point of the program.
 auto main() -> int {
     try {
-        setup_signal_handler();
+        utility::setup_signal_handler();
         run_simulation();
         return 0;
     } catch (...) {

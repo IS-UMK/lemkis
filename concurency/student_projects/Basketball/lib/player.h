@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "shared_court.h"
+#include "utility.h"
 
-extern std::atomic<bool> shutdown_requested;
+// extern std::atomic<bool> shutdown_requested;
 
 class player {
   public:
@@ -186,7 +187,7 @@ class player {
         std::mt19937 gen(std::random_device{}());
         std::uniform_int_distribution<> delay(k_min_delay_ms, k_max_delay_ms);
 
-        while (!shutdown_requested) {
+        while (!utility::shutdown_requested) {
             std::this_thread::sleep_for(std::chrono::milliseconds(delay(gen)));
             process_court_selection();
         }
