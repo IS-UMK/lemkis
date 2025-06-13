@@ -17,7 +17,7 @@ namespace {
 
 
 /// @brief Runs the entire match simulation.
-void run_simulation() {
+void static run_simulation() {
     match_manager manager(
         k_number_of_teams, k_number_of_players, k_number_of_courts);
     manager.start();
