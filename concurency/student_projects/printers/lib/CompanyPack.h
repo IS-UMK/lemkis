@@ -73,8 +73,8 @@ struct company_pack {
     }
 
   private:
-    static auto handle_try_to_notify_printer(company& my_company, company& comp)
-        -> bool {
+    static auto handle_try_to_notify_printer(company& my_company,
+                                             company& comp) -> bool {
         sem_wait(comp.mutex);
         if (company::is_company_waiting_for_printer(comp)) {
             my_company.notify_waiting_printer(comp);

@@ -37,7 +37,7 @@ struct shared_data {
     }
 
     static auto init_printers_shm(int num_printers) -> printer* {
-        int fd = shm_open(shm_printers_name, O_CREAT | O_RDWR, shm_mode);
+        const int fd = shm_open(shm_printers_name, O_CREAT | O_RDWR, shm_mode);
         auto length = static_cast<long>(sizeof(printer) * num_printers);
         ftruncate(fd, length);
         return static_cast<printer*>(
@@ -45,7 +45,7 @@ struct shared_data {
     }
 
     static auto init_companies_shm(int num_companies) -> company_pack* {
-        int fd = shm_open(shm_companies_name, O_CREAT | O_RDWR, shm_mode);
+        const int fd = shm_open(shm_companies_name, O_CREAT | O_RDWR, shm_mode);
         auto length = static_cast<long>(sizeof(company_pack) * num_companies);
         ftruncate(fd, length);
         return static_cast<company_pack*>(
