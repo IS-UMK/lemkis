@@ -11,9 +11,9 @@ std::atomic<bool> shutdown_requested = false;
 void signal_handler(int /*signum*/) { shutdown_requested = true; }
 
 namespace {
-    constexpr int k_number_of_teams = 2;
-    constexpr int k_number_of_players = 3;
-    constexpr int k_number_of_courts = 2;
+    constexpr int k_number_of_teams = 4;
+    constexpr int k_number_of_players = 5;
+    constexpr int k_number_of_courts = 1;
     constexpr int k_error_code = -1;
     constexpr std::chrono::seconds k_sleep_duration(1);
 }  // namespace

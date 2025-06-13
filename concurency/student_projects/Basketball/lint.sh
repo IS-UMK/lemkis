@@ -37,7 +37,7 @@ for file in $clang_format_targets; do
       --quiet \
       --config-file=.clang-tidy \
       --warnings-as-errors='*' \
-      --extra-arg=-std=c++20 \
+      --extra-arg=-std=c++26 \
       --extra-arg=-I/usr/include/c++/$(g++ -dumpversion) \
       --extra-arg=-I/usr/include/x86_64-linux-gnu/c++/$(g++ -dumpversion) \
       -p "$BUILD_DIR"
