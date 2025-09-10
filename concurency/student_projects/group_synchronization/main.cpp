@@ -111,13 +111,13 @@ class group_sync {
     }
 };
 
-auto main() -> int {
+auto main() noexcept -> int {
     try {
         shared_data& data = group_sync::create_shared_data();
         group_sync::run_processes(data);
         group_sync::destroy_shared_data(data);
-    } catch (const std::exception& e) {
-        std::println("Exception: {}", e.what());
+    } catch (...) {
+        std::println("Exception occured");
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
