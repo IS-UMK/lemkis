@@ -8,6 +8,7 @@
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <print>
 
 
 constexpr int n_groups = 3;
@@ -50,15 +51,16 @@ class shared_data {
 class group_sync {
     static auto local_section(int group_id, int proc_id) -> void {
         usleep(local_section_min + (rand() % local_section_range));
-        printf("[Group %d] Process %d finished local section\n",
-               group_id,
-               proc_id);
+        std::println(
+            "[Group {}] Process {} finished local section", group_id, proc_id);
     }
 
     static auto compute(int group_id, int proc_id) -> void {
-        printf("[Group %d] Process %d entered compute()\n", group_id, proc_id);
+        std::println(
+            "[Group {}] Process {} entered compute()", group_id, proc_id);
         usleep(compute_min + (rand() % compute_range));
-        printf("[Group %d] Process %d exiting compute()\n", group_id, proc_id);
+        std::println(
+            "[Group {}] Process {} exiting compute()", group_id, proc_id);
     }
 
   public:
