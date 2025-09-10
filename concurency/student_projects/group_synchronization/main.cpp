@@ -99,6 +99,7 @@ class group_sync {
     }
 
     static auto run_processes(shared_data& data) -> void {
+        srand(time(nullptr));
         for (int group = 0; group < n_groups; ++group) {
             for (int proc = 0; proc < processes_per_group; ++proc) {
                 run_process(group, proc, data);
@@ -111,9 +112,13 @@ class group_sync {
 };
 
 auto main() -> int {
-    srand(time(nullptr));
-    shared_data& data = group_sync::create_shared_data();
-    group_sync::run_processes(data);
-    group_sync::destroy_shared_data(data);
-    return 0;
+    try {
+        shared_data& data = group_sync::create_shared_data();
+        group_sync::run_processes(data);
+        group_sync::destroy_shared_data(data);
+    } catch (const std::exception& e) {
+        std::println("Exception: {}", e.what());
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
