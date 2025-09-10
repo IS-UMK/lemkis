@@ -116,9 +116,9 @@ auto main() noexcept -> int {
         shared_data& data = group_sync::create_shared_data();
         group_sync::run_processes(data);
         group_sync::destroy_shared_data(data);
+        return EXIT_SUCCESS;
     } catch (...) {
         std::println("Exception occured");
         return EXIT_FAILURE;
     }
-    return EXIT_SUCCESS;
 }
