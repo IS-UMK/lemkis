@@ -14,14 +14,15 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
 # Parse the output to get the first path
 string(REPLACE "\n" ";" LIBOMP_PATH_LIST "${LIBOMP_PATHS}")
 list(GET LIBOMP_PATH_LIST 0 LIBOMP_PATH)
 get_filename_component(LIBOMP_DIR "${LIBOMP_PATH}" DIRECTORY)
 
 # Set OpenMP configuration
-set(OpenMP_C_FLAGS "-fopenmp=libomp" CACHE STRING "OpenMP C flags")
-set(OpenMP_CXX_FLAGS "-fopenmp=libomp" CACHE STRING "OpenMP C++ flags") 
+set(OpenMP_C_FLAGS "-fopenmp" CACHE STRING "OpenMP C flags")
+set(OpenMP_CXX_FLAGS "-fopenmp" CACHE STRING "OpenMP C++ flags") 
 set(OpenMP_C_LIB_NAMES "omp" CACHE STRING "OpenMP C libraries")
 set(OpenMP_CXX_LIB_NAMES "omp" CACHE STRING "OpenMP C++ libraries")
 set(OpenMP_omp_LIBRARY "${LIBOMP_PATH}" CACHE FILEPATH "Path to the omp library")
@@ -50,27 +51,32 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 # Corrected include directories
 set(INCLUDE_DIRS
-  ${CURRENT_CMAKE_SOURCE_DIR}/include
-  ${CURRENT_CMAKE_SOURCE_DIR}/src/Benchmark
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Benchmark
 )
-
 find_package(OpenMP REQUIRED)
+find_package(TBB REQUIRED)
+
 
 # Create an executable
 add_executable(${PROJECT_NAME} 
-  ./src/main.cpp 
-  ./src/Benchmark/omp_queue_test.cpp
-  ./src/Benchmark/test_own_example.cpp)
+./src/main.cpp 
+./src/Benchmark/omp_queue_benchmark.cpp
+./src/Benchmark/concurrent_queue_benchmark.cpp
+./src/Benchmark/test_own_example.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
 target_compile_options(${PROJECT_NAME} PRIVATE
-  -ftemplate-backtrace-limit=0
-  -O3
-  -Wall
-  -Wextra
-  -pedantic
+-ftemplate-backtrace-limit=0
+-O3
+-Wall
+-Wextra
+-pedantic
 )
+target_link_libraries(${PROJECT_NAME}
+ TBB::tbb
+ )
 
 target_link_libraries(${PROJECT_NAME}
   OpenMP::OpenMP_CXX
