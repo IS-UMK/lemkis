@@ -1,0 +1,5 @@
+# ninja log v5
+1	3017	1749584978777779949	CMakeFiles/cafe_modules.dir/src/cafe/Cafe.cpp.o	66f2b0ea7876f0d2
+1	3341	1749584979102222873	CMakeFiles/cafe_modules.dir/src/main.cpp.o	8313a17541f1399d
+2	3507	1749584979266295498	CMakeFiles/cafe_modules.dir/src/cafe/Process.cpp.o	24aa93cf0fabf3f5
+3507	3630	1749584979398338937	cafe_modules	3a23725c86565b68
