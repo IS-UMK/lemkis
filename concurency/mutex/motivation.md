@@ -236,12 +236,12 @@ int main() {
 <details>
 <summary><strong>Dlaczego to działa? — kliknij, aby rozwinąć</strong></summary>
 
-**Bezpieczeństwo:** Załóżmy, że oba wątki są w sekcji krytycznej. Wtedy `wants1 = true` i `wants2 = true`. Aby P₁ przeszedł przez pętlę, musiałby zajść warunek `who_waits ≠ 1`, czyli `who_waits = 2`. Analogicznie P₂ potrzebuje `who_waits = 1`. Ale `who_waits` nie może być jednocześnie 1 i 2 — **sprzeczność**. ∎
+**Bezpieczeństwo:** Załóżmy, że oba wątki są w sekcji krytycznej. Wtedy `wants[0] = true` i `wants[1] = true`. Aby P₀ przeszedł przez pętlę, musiałby zajść warunek `who_waits ≠ 0`, czyli `who_waits = 1`. Analogicznie P₁ potrzebuje `who_waits = 0`. Ale `who_waits` nie może być jednocześnie 0 i 1 — **sprzeczność**. ∎
 
-**Żywotność:** Załóżmy, że P₁ utknął w pętli `while`. Zatem `wants2 = true` i `who_waits = 1`. Rozważmy dwa przypadki:
+**Żywotność:** Załóżmy, że P₀ utknął w pętli `while`. Zatem `wants[1] = true` i `who_waits = 0`. Rozważmy dwa przypadki:
 
-1. P₂ nie chce wejść do sekcji ⟹ `wants2 = false` ⟹ P₁ wychodzi z pętli. Sprzeczność.
-2. P₂ chce wejść ⟹ wykona `who_waits = 2` ⟹ P₁ wychodzi z pętli (bo `who_waits ≠ 1`). Sprzeczność. ∎
+1. P₁ nie chce wejść do sekcji ⟹ `wants[1] = false` ⟹ P₀ wychodzi z pętli. Sprzeczność.
+2. P₁ chce wejść ⟹ wykona `who_waits = 1` ⟹ P₀ wychodzi z pętli (bo `who_waits ≠ 0`). Sprzeczność. ∎
 
 </details>
 
@@ -250,10 +250,10 @@ int main() {
 
 | Pytanie | Odpowiedź |
 |---------|-----------|
-| Czy można zamienić kolejność `wants = true` i `who_waits = i`? | ❌ **NIE** |
-| Czy można przenieść `who_waits = i` do protokołu końcowego? | ❌ **NIE** |
+| Czy można zamienić kolejność `wants[id] = true` i `who_waits = id`? | ❌ **NIE** |
+| Czy można przenieść `who_waits = id` do protokołu końcowego? | ❌ **NIE** |
 | Czy można zamienić kolejność sprawdzania warunków w `while`? | ✅ TAK |
-| Czy można zmienić wartość początkową `who_waits`? | ✅ TAK (1 lub 2) |
+| Czy można zmienić wartość początkową `who_waits`? | ✅ TAK (0 lub 1) |
 | Czy można zmienić wartość początkową `wants`? | ❌ **NIE** (musi być `false`) |
 
 </details>
