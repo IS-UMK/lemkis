@@ -244,17 +244,48 @@ int main() {
 2. P₁ chce wejść ⟹ wykona `who_waits = 1` ⟹ P₀ wychodzi z pętli (bo `who_waits ≠ 0`). Sprzeczność. ∎
 
 </details>
-
 <details>
 <summary><strong>Kluczowe pytania do analizy — kliknij, aby rozwinąć</strong></summary>
 
-| Pytanie | Odpowiedź |
-|---------|-----------|
-| Czy można zamienić kolejność `wants[id] = true` i `who_waits = id`? | ❌ **NIE** |
-| Czy można przenieść `who_waits = id` do protokołu końcowego? | ❌ **NIE** |
-| Czy można zamienić kolejność sprawdzania warunków w `while`? | ✅ TAK |
-| Czy można zmienić wartość początkową `who_waits`? | ✅ TAK (0 lub 1) |
-| Czy można zmienić wartość początkową `wants`? | ❌ **NIE** (musi być `false`) |
+**1. Czy można zamienić kolejność `wants[id] = true` i `who_waits = id`?**
+<details>
+<summary>Pokaż odpowiedź</summary>
+
+❌ **NIE**
+
+</details>
+
+**2. Czy można przenieść `who_waits = id` do protokołu końcowego?**
+<details>
+<summary>Pokaż odpowiedź</summary>
+
+❌ **NIE**
+
+</details>
+
+**3. Czy można zamienić kolejność sprawdzania warunków w `while`?**
+<details>
+<summary>Pokaż odpowiedź</summary>
+
+✅ TAK
+
+</details>
+
+**4. Czy można zmienić wartość początkową `who_waits`?**
+<details>
+<summary>Pokaż odpowiedź</summary>
+
+✅ TAK (0 lub 1)
+
+</details>
+
+**5. Czy można zmienić wartość początkową `wants`?**
+<details>
+<summary>Pokaż odpowiedź</summary>
+
+❌ **NIE** (musi być `false`)
+
+</details>
 
 </details>
 
