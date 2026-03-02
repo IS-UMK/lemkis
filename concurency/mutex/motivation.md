@@ -202,45 +202,29 @@ Sprytne połączenie prób 1 i 3: utrzymujemy flagi `wants`, a konflikty rozstrz
 #include <thread>
 #include <atomic>
 
-std::atomic<bool> wants1{false};
-std::atomic<bool> wants2{false};
+std::atomic<bool> wants[2] = {false, false};
 std::atomic<int>  who_waits{1};
 
-void process1() {
+void process(int id) {
+    int other = 1 - id;
     while (true) {
         // own_stuff();
 
-        wants1 = true;          // deklaruję chęć wejścia
-        who_waits = 1;          // ustępuję: "ja mogę poczekać"
-        while (wants2 && who_waits == 1) {
+        wants[id] = true;          // deklaruję chęć wejścia
+        who_waits = id;            // ustępuję: "ja mogę poczekać"
+        while (wants[other] && who_waits == id) {
             /* busy wait */
         }
 
         // --- sekcja krytyczna ---
 
-        wants1 = false;         // opuszcza sekcję krytyczną
-    }
-}
-
-void process2() {
-    while (true) {
-        // own_stuff();
-
-        wants2 = true;
-        who_waits = 2;
-        while (wants1 && who_waits == 2) {
-            /* busy wait */
-        }
-
-        // --- sekcja krytyczna ---
-
-        wants2 = false;
+        wants[id] = false;         // opuszcza sekcję krytyczną
     }
 }
 
 int main() {
-    std::thread t1(process1);
-    std::thread t2(process2);
+    std::thread t1(process, 0);
+    std::thread t2(process, 1);
 
     t1.join();
     t2.join();
