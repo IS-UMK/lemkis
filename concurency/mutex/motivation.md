@@ -1,4 +1,3 @@
-
 ## Wzajemne wykluczanie bez mechanizmów synchronizacyjnych
 
 Struktura każdego wątku:
@@ -45,22 +44,26 @@ int main() {
 
 a może `whose_turn`?
 ```cpp
-std::atomic<int> whoose_turn{0};  // czyja kolej (0 lub 1)
+std::atomic<int> whose_turn{0};  // czyja kolej (0 lub 1)
 
 void process(int id) {
     int other = 1 - id;
     while (true) {
         // own_stuff();
-        while (whoose_turn == other) { /* busy wait */ }  // czekaj, dopóki kolej rywala
+        while (whose_turn == other) { /* busy wait */ }  // czekaj, dopóki kolej rywala
         // --- sekcja krytyczna ---
-        whoose_turn = other;                               // oddaj kolej rywalowi
+        whose_turn = other;                               // oddaj kolej rywalowi
     }
 }
 ```
-**Analiza:**
+
+<details>
+<summary><strong>Analiza — kliknij, aby rozwinąć</strong></summary>
 
 - ✅ **Bezpieczeństwo: TAK** — nigdy oba w sekcji krytycznej.
 - ❌ **Żywotność: NIE** — procesy są ściśle powiązane. Jeśli P₁ nie chce wchodzić do sekcji krytycznej (zostaje w `own_stuff()`), to P₂ nie może wejść, bo czeka na swoją kolej. **Ścisła alternacja.**
+
+</details>
 
 ### Próba 2 — zmienne `is_in` (sprawdź, potem ustaw)
 
@@ -81,7 +84,8 @@ void process(int id) {
 }
 ```
 
-**Analiza:**
+<details>
+<summary><strong>Analiza — kliknij, aby rozwinąć</strong></summary>
 
 - ✅ **Żywotność: TAK** — procesy nie są ze sobą ściśle powiązane. Jeśli jeden nie chce wchodzić, drugi wchodzi swobodnie.
 - ❌ **Bezpieczeństwo: NIE** — między sprawdzeniem flagi rywala (A) a ustawieniem swojej flagi (B) może nastąpić przełączenie kontekstu:
@@ -93,6 +97,8 @@ void process(int id) {
 | 3    | `is_in1 = true`                               |                                               | T      | F      |
 | 4    |                                               | `is_in2 = true`                               | T      | T      |
 | 5    | **Oba w sekcji krytycznej!**                  | **Oba w sekcji krytycznej!**                  | T      | T      |
+
+</details>
 
 ### Próba 3 — zmienne `wants` (ustaw, potem sprawdź)
 
@@ -113,7 +119,8 @@ void process(int id) {
 }
 ```
 
-**Analiza:**
+<details>
+<summary><strong>Analiza — kliknij, aby rozwinąć</strong></summary>
 
 - ✅ **Bezpieczeństwo: TAK** — jeśli oba ustawiły flagę, to oba utkną w pętli `while`.
 - ❌ **Żywotność: NIE** — właśnie dlatego! Jeśli oba ustawią flagi przed sprawdzeniem, **oba czekają w nieskończoność** — **deadlock (zakleszczenie)**:
@@ -125,6 +132,8 @@ void process(int id) {
 | 3    | `while(wants2)` → kręci się…     |                                   | T      | T      |
 | 4    |                                   | `while(wants1)` → kręci się…     | T      | T      |
 |      | **→ Deadlock! Żaden nie wejdzie do sekcji krytycznej.** | | | |
+
+</details>
 
 ### Próba 4 — chwilowe ustępowanie
 
@@ -148,7 +157,8 @@ void process(int id) {
 }
 ```
 
-**Analiza:**
+<details>
+<summary><strong>Analiza — kliknij, aby rozwinąć</strong></summary>
 
 - ✅ **Bezpieczeństwo: TAK** — wejście do sekcji krytycznej wymaga, by flaga rywala była `false`.
 - ❌ **Żywotność: NIE** — istnieje (złośliwy) przeplot, w którym oba procesy synchronicznie ustawiają i wycofują flagi w nieskończoność — **livelock**:
@@ -164,7 +174,12 @@ void process(int id) {
 
 **Uwaga:** Argument „w praktyce ten przeplot jest mało prawdopodobny" **nie jest** akceptowalny. Skoro *istnieje* scenariusz naruszający żywotność, program jest **niepoprawny**.
 
+</details>
+
 ### Podsumowanie prób
+
+<details>
+<summary><strong>Tabela podsumowująca — kliknij, aby rozwinąć</strong></summary>
 
 | Próba                            | Bezp. | Żywot. | Problem            |
 |----------------------------------|-------|--------|--------------------|
@@ -173,6 +188,8 @@ void process(int id) {
 | 3. `wants` (ustaw, sprawdź)     | ✅ TAK | ❌ NIE  | Deadlock           |
 | 4. `wants` + ustępowanie        | ✅ TAK | ❌ NIE  | Livelock           |
 | **Peterson**                     | ✅ **TAK** | ✅ **TAK** | **Poprawny!** |
+
+</details>
 
 ---
 
@@ -232,7 +249,8 @@ int main() {
 }
 ```
 
-### Dlaczego to działa?
+<details>
+<summary><strong>Dlaczego to działa? — kliknij, aby rozwinąć</strong></summary>
 
 **Bezpieczeństwo:** Załóżmy, że oba wątki są w sekcji krytycznej. Wtedy `wants1 = true` i `wants2 = true`. Aby P₁ przeszedł przez pętlę, musiałby zajść warunek `who_waits ≠ 1`, czyli `who_waits = 2`. Analogicznie P₂ potrzebuje `who_waits = 1`. Ale `who_waits` nie może być jednocześnie 1 i 2 — **sprzeczność**. ∎
 
@@ -241,7 +259,10 @@ int main() {
 1. P₂ nie chce wejść do sekcji ⟹ `wants2 = false` ⟹ P₁ wychodzi z pętli. Sprzeczność.
 2. P₂ chce wejść ⟹ wykona `who_waits = 2` ⟹ P₁ wychodzi z pętli (bo `who_waits ≠ 1`). Sprzeczność. ∎
 
-### Kluczowe pytania do analizy
+</details>
+
+<details>
+<summary><strong>Kluczowe pytania do analizy — kliknij, aby rozwinąć</strong></summary>
 
 | Pytanie | Odpowiedź |
 |---------|-----------|
@@ -250,6 +271,8 @@ int main() {
 | Czy można zamienić kolejność sprawdzania warunków w `while`? | ✅ TAK |
 | Czy można zmienić wartość początkową `who_waits`? | ✅ TAK (1 lub 2) |
 | Czy można zmienić wartość początkową `wants`? | ❌ **NIE** (musi być `false`) |
+
+</details>
 
 ### Wady algorytmu Petersena
 
@@ -322,11 +345,14 @@ int main() {
 }
 ```
 
-### Wady wersji *n*-wątkowej
+<details>
+<summary><strong>Wady wersji n-wątkowej — kliknij, aby rozwinąć</strong></summary>
 
 1. **Aktywne oczekiwanie** — jak w wersji dla 2 wątków.
 2. **Znana z góry liczba wątków** — *n* musi być stałą.
 3. **Duża złożoność protokołu wstępnego** — O(n²) w najgorszym przypadku (*n − 1* barier × sprawdzenie *n − 1* rywali).
+
+</details>
 
 > **Wniosek:** Algorytm Petersena dowodzi, że wzajemne wykluczanie jest *możliwe* bez specjalnych mechanizmów synchronizacyjnych.
 >
