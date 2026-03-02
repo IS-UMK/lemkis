@@ -26,7 +26,6 @@ Pomysł: zmienna `who_waits` mówi, kto musi czekać. Po wyjściu z sekcji kryty
 std::atomic<int> who_waits{1};  // kto musi czekać (0 lub 1)
 
 void process(int id) {
-    int other = 1 - id;  // id rywala: jeśli id=0 to other=1 i odwrotnie
     while (true) {
         // own_stuff();
         while (who_waits == id) { /* busy wait */ }  // protokół wstępny
@@ -44,6 +43,20 @@ int main() {
 }
 ```
 
+a może `whose_turn`?
+```cpp
+std::atomic<int> whoose_turn{0};  // czyja kolej (0 lub 1)
+
+void process(int id) {
+    int other = 1 - id;
+    while (true) {
+        // own_stuff();
+        while (whoose_turn == other) { /* busy wait */ }  // czekaj, dopóki kolej rywala
+        // --- sekcja krytyczna ---
+        whoose_turn = other;                               // oddaj kolej rywalowi
+    }
+}
+```
 **Analiza:**
 
 - ✅ **Bezpieczeństwo: TAK** — nigdy oba w sekcji krytycznej.
