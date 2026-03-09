@@ -85,7 +85,7 @@ void incrementCounter() {
 
 int main() {
     const int numThreads = 10;
-    std::vector<std::thread> threads;
+    std::vector&lt;std::thread&gt; threads;
 
     // Create multiple threads
     for (int i = 0; i < numThreads; ++i) {
