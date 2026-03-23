@@ -107,9 +107,9 @@ void pisarz() {
 }
 ```
 
-> **Ćwiczenie mentalne:** Ile różnych rodzajów błędów widzisz w tym kodzie?
+> **Ćwiczenie** Ile różnych rodzajów błędów widzisz w tym kodzie?
 > (Odpowiedź: data race na `reader_count`, busy waiting, brak wzajemnego
-> wykluczania pisarzy, brak ochrony sekcji pisania)
+> wykluczania pisarzy)
 
 ### 3.2 Poprawna implementacja ręczna
 
