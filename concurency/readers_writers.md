@@ -748,6 +748,41 @@ public:
 };
 ```
 
+Natomiast w c++20 można
+```cpp
+#include <atomic>
+#include <memory>
+#include <map>
+#include <string>
+
+class RCUConfig {
+    std::atomic<std::shared_ptr<const std::map<std::string, std::string>>> config_;
+
+public:
+    RCUConfig()
+        : config_(std::make_shared<const std::map<std::string, std::string>>()) {}
+
+    // Odczyt — atomowa kopia shared_ptr, BEZ LOCKA
+    std::shared_ptr<const std::map<std::string, std::string>> read() const {
+        return config_.load();  // atomowy odczyt
+    }
+
+    // Zapis — kopiuj, modyfikuj, podmień
+    void update(const std::string& key, const std::string& value) {
+        auto old_config = config_.load();
+        std::shared_ptr<std::map<std::string, std::string>> new_config;
+
+        do {
+            new_config = std::make_shared<std::map<std::string, std::string>>(*old_config);
+            (*new_config)[key] = value;
+            // Próbuj podmienić — jeśli ktoś inny zdążył zmienić, powtórz
+        } while (!config_.compare_exchange_weak(old_config, new_config));
+    }
+};
+```
+
+
+
 ---
 
 ## 8. Porównanie podejść — tabela podsumowująca
