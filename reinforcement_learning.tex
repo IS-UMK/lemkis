@@ -1,0 +1,1114 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{mathtools, amssymb, bbm, amsthm, xparse}
+\usepackage[draft=false]{hyperref}
+\usepackage{geometry}
+\usepackage{changepage, mathrsfs}
+\usepackage[shortlabels]{enumitem}
+\usepackage{tikz, amsbsy}
+\usepackage[normalem]{ulem}
+\usepackage[sort&compress, square, numbers]{natbib}
+\usepackage[cal=boondox,scr=boondoxo]{mathalfa}
+\geometry
+{
+	a4paper,
+	left=10mm,
+	right=10mm,
+	top=20mm,
+	heightrounded,
+}
+
+\hypersetup
+{
+	colorlinks = true,
+	linkcolor = {red},
+	anchorcolor = {black},
+	citecolor ={orange},
+	filecolor ={cyan},
+	menucolor= {red},
+	runcolor ={cyan},
+	urlcolor= {magenta},
+}
+
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage[most]{tcolorbox}
+
+\usepackage{cleveref}
+\newtcbtheorem{conj}{Conjecture}{label type=conj}{conj}
+
+\newtcbtheorem[auto counter, number within = section,
+crefname={remark}{Remark},
+Crefname={Remark}{Remark} ]
+{frema}{Remark}{%
+	breakable,
+	fonttitle = \bfseries,
+	colframe = brown!75!black,
+	colback = brown!10
+}{frema}
+
+\newtcbtheorem[auto counter, number within = section,
+crefname={definition}{Definition},
+Crefname={Definition}{Definition} ]
+{fdefi}{Definition}{%
+	breakable,
+	fonttitle = \bfseries,
+	colframe = brown!75!black,
+	colback = brown!10
+}{fdefi}
+
+\newtcbtheorem[auto counter, number within = section,
+crefname={example}{Example},
+Crefname={Example}{Example} ]
+{fexam}{Example}{%
+	breakable,
+	fonttitle = \bfseries,
+	colframe = brown!75!black,
+	colback = brown!10
+}{fexam}
+
+\newtcbtheorem[auto counter, number within = section,
+crefname={theorem}{Theorem},
+Crefname={Theorem}{Theorem} ]
+{ftheo}{Theorem}{%
+	breakable,
+	fonttitle = \bfseries,
+	colframe = brown!75!black,
+	colback = brown!10
+}{ftheo}
+
+\newtcbtheorem[auto counter, number within = section,
+crefname={proposition}{Proposition},
+Crefname={Proposition}{Proposition} ]
+{fprop}{Proposition}{%
+	breakable,
+	fonttitle = \bfseries,
+	colframe = brown!75!black,
+	colback = brown!10
+}{fprop}
+
+\newtcbtheorem[auto counter, number within = section,
+crefname={lemma}{Lemma},
+Crefname={Lemma}{Lemma} ]
+{flema}{Lemma}{%
+	breakable,
+	fonttitle = \bfseries,
+	colframe = brown!75!black,
+	colback = brown!10
+}{flema}
+
+\numberwithin{equation}{section}
+
+\theoremstyle{plain}
+\newtheorem{theo}{Theorem}[section]
+\newtheorem{lema}[theo]{Lemma}
+\newtheorem{fact}[theo]{Fact}
+\newtheorem{coro}[theo]{Corollary}
+\newtheorem{prop}{Proposition}
+\theoremstyle{definition}
+\newtheorem{defi}[theo]{Definition}
+\newtheorem{exam}[theo]{Example}
+\newtheorem{ques}[theo]{Question}
+\newtheorem{rema}[theo]{Remark}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAIRED %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclarePairedDelimiter{\br}{(}{)}
+\DeclarePairedDelimiter{\coi}{[}{)}
+\DeclarePairedDelimiter{\oci}{(}{]}
+
+%%%%%%%%%   PROBABILITY COMMANDS
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+
+\newcommand{\q}{\mathbf{q}}
+\NewDocumentCommand{\Prob}{O{what} O{\left(} O{\right)}}{\mathbb{P}#2 #1 #3}
+\newcommand{\Pro}[1][P]{\mathbb{#1}}
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\1}{{\mathbbm 1}}
+\newcommand{\p}[1][p]{\mathbf{#1}}
+\NewDocumentCommand{\tos}{O{=} O{a.s.}}{\stackrel{\smash{\scriptscriptstyle\mathrm{#2}}}{#1}}
+\NewDocumentCommand{\prp}{O{\p} O{n} O{T_n(\p)}}{#1^{\otimes #2} \left(#3\right)}
+
+\NewDocumentCommand{\pof}{O{} O{} O{P}}{\mathbb{#3}_{#2}\left(#1\right)}
+\NewDocumentCommand{\lof}{O{X} O{P}}{\mathbb{#2}_{#1}}
+\NewDocumentCommand{\cmv}{O{X} O{Y} O{}}{\E_{#3}\left(#1|#2\right)}
+\NewDocumentCommand{\proc}{O{X} O{\Z}}{\left(#1_{i}\right)_{i\in #2}}
+\newcommand{\iof}[1][]{\mathbbm{1}_{#1}}
+
+%%%%%%%%%%%% SPACE TOKENS COMMANDS
+\newcommand{\interior}[1]{#1^{\mathrm{o}}}
+\newcommand{\bmscr}[1][X]{\pmb{\mathscr{#1}}}
+\newcommand{\mbb}[1][P]{\mathbb{#1}}
+\newcommand{\mb}[1]{\mathbf{#1}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\ds}[1][X]{\bmscr[#1]}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\supp}{supp}
+\newcommand{\bi}[1]{\textbf{\textit{#1}}}
+
+%%%%%%%%%%%% PROBABILITY ENTROPY COMMANDS
+\NewDocumentCommand{\lo}{O{x} O{2}}{\log_{#2}\left(#1\right)}
+
+%%%%%%%%%%%%%%%%%%%%%%% NORM
+\NewDocumentCommand{\norm}{O{p} O{TV}}{\left\|#1\right\|_{#2}}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{{\mathbb{R}}}
+\newcommand{\Z}{{\mathbb{Z}}}
+\newcommand{\N}{{\mathbb{N}}}
+\newcommand{\C}{{\mathbb{C}}}
+\NewDocumentCommand{\shpr}{O{i} O{X}}{S^{#1}\mb{#2}}
+\NewDocumentCommand{\vof}{O{X} O{}}{\textnormal{Var}_{#2}\left(#1\right)}
+\NewDocumentCommand{\cof}{O{X} O{Y} O{}}{\textnormal{Cov}_{#3}\left(#1, #2\right)}
+\NewDocumentCommand{\corof}{O{X} O{Y} O{}}{\textnormal{Cor}_{#3}\left(#1, #2\right)}
+
+\NewDocumentCommand{\rop}{O{g}}{\ds[L]_{#1}}
+\NewDocumentCommand{\drop}{O{g}}{\ds[L]^*_{#1}}
+
+\NewDocumentCommand{\h}{O{X} O{}}{\mathbf{H}_{#2}\left(#1\right)}
+\NewDocumentCommand{\ph}{O{X} O{}}{\mathbf{H}_{#2}\left(\mb{#1}\right)}
+\NewDocumentCommand{\pch}{O{X} O{Y}}{\mathbf{H}\left(\mathbf{#1} | \mathbf{#2}\right)}
+\NewDocumentCommand{\ch}{O{X} O{Y} O{}}{\mathbf{H}_{#3}\left(#1\;|\; #2\right)}
+\NewDocumentCommand{\cph}{O{X} O{Y}}{\mathbf{H}\left(\mb{#1}\;|\; \mb{#2}\right)}
+\NewDocumentCommand{\nof}{O{1} O{in}}{\#_{#1}\left(#2\right)}
+
+\NewDocumentCommand{\bmix}{O{\mathcal{A}} O{\mathcal{B}} O{\Pro}}{\beta\left(#1, #2, #3\right)}
+\NewDocumentCommand{\amix}{O{\mathcal{A}} O{\mathcal{B}} O{\Pro} O{}}{\alpha^{#4}\left(#1, #2, #3\right)}
+\NewDocumentCommand{\rmix}{O{\mathcal{A}} O{\mathcal{B}} O{\Pro} O{} O{}}{\rho_{#4}^{#5}\left(#1, #2, #3\right)}
+\NewDocumentCommand{\lmix}{O{\mathcal{A}} O{\mathcal{B}} O{\Pro} O{}}{\lambda_{#4}\left(#1, #2, #3\right)}
+\NewDocumentCommand{\pmix}{O{\mathcal{A}} O{\mathcal{B}} O{\Pro} O{} O{}}{\phi_{#4}^{#5}\left(#1, #2, #3\right)}
+\NewDocumentCommand{\nsf}{O{0} O{}}{\mathcal{F}_{#1}^{#2}}
+\NewDocumentCommand{\ts}{O{past} O{}}{\mathcal{T}_{#1}}
+
+\def\a{{\textbf{\cal a}}}
+\def\b{{\textbf{\cal b}}}
+\def\c{{\textbf{\cal c}}}
+\def\d{{\textbf{\cal d}}}
+\newcommand{\hh}{\mathbf{H}}
+
+%%%%%%%%%%%%%%%%%%%%% PROOF STYLE
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+\NewDocumentCommand{\tk}{O{} O{} O{}}{\mb{#1}\left(#2\;|\; #3\right)}
+
+\title{Reinforcement Learning: A Probabilistic Perspective}
+\author{Micha\l{} D.\ Lema\'{n}czyk}
+\date{}
+
+\begin{document}
+	\maketitle
+	\tableofcontents
+	
+	\section{Introduction to Reinforcement Learning}
+	
+	Reinforcement learning (RL) is a framework for sequential decision-making under uncertainty. The fundamental probabilistic structure involves an agent interacting with an environment through a stochastic process.
+	
+	\subsection{The Agent-Environment Interface}
+	
+	The interaction between agent and environment is characterized by the following probabilistic elements at each discrete time step $t \in \{0, 1, 2, \ldots\}$:
+	
+	\begin{itemize}
+		\item \bi{State}: $S_t \in \mc{S}$ (state space)
+		\item \bi{Action}: $A_t \in \mc{A}$ (action space)
+		\item \bi{Reward}: $R_{t+1} \in \mc{R} \subseteq \R$ (reward signal)
+	\end{itemize}
+	
+	The probabilistic dynamics are governed by the joint probability distribution:
+	\begin{equation}
+		P(s', r \;|\; s, a) = \P(S_{t+1} = s', R_{t+1} = r \;|\; S_t = s, A_t = a)
+	\end{equation}
+	
+	\section{Markov Decision Processes (MDP)}
+	
+	Let $\mc{S}$ be a countable state space, $\mc{R} \subset \R$ be a \bi{reward space} and $\mc{A}$ be a countable \bi{space of actions}.
+	
+	\begin{fdefi}{State-reward transition kernel}{trans-kernel}
+		We assume that we are given a \bi{transition kernel}
+		\begin{equation}
+			P: \mc{S} \times \mc{A} \to \mc{P}(\mc{S} \times \mc{R})
+		\end{equation}
+		where $\mc{P}(\mc{S} \times \mc{R})$ denotes the space of probability measures on $\mc{S} \times \mc{R}$.
+	\end{fdefi}
+	
+	\begin{frema}{}{trans-int}
+		Intuitively, given current state $s \in \mc{S}$ and an action $a \in \mc{A}$, $P(s', r\;|\; s, a)$ is the probability of the event that if in the state $s$ we choose action $a$ then we pass to the state $s'$ and obtain reward $r$.
+	\end{frema}
+	
+	\begin{fdefi}{Reward and next state random variables, mean reward function}{reward-rv}
+		Given a state $s$ and an action $a \in \mc{A}$ we define a pair of \bi{next state} and \bi{reward} random variables
+		\begin{equation}
+			(S_{s, a}, R_{s, a}) \sim P(\cdot, \cdot\;|\; s, a).
+		\end{equation}
+		Furthermore, 
+		\begin{equation}
+			r(s, a) = \E R_{s, a} = \sum_{r \in \mc{R}} \sum_{s' \in \mc{S}} r \cdot P(s', r\;|\; s, a)
+		\end{equation}
+		is called the \bi{immediate reward function}.
+	\end{fdefi}
+	
+	\subsection{The Markov Property}
+	
+	\begin{fdefi}{Markov Property}{markov-prop}
+		A stochastic process $(S_t, R_t, A_t)_{t \in \N}$ satisfies the \bi{Markov property} if for all $t \in \N$:
+		\begin{equation}
+			\P(S_{t+1} = s', R_{t+1} = r \;|\; S_0, A_0, R_1, \ldots, S_t, A_t) = \P(S_{t+1} = s', R_{t+1} = r \;|\; S_t, A_t)
+		\end{equation}
+	\end{fdefi}
+	
+	\begin{frema}{}{markov-intuition}
+		The Markov property ensures that the current state $S_t$ and action $A_t$ contain all relevant information for predicting the future. Given the present, the future is conditionally independent of the past.
+	\end{frema}
+	
+	\begin{fdefi}{Action process and policy}{policy-def}
+		We assume that we are given a family of transition kernels
+		\begin{equation}
+			P^{\mc{A}}_{i + 1}(a_{i + 1}\;|\; a_0^{i}, s_{0}^{i + 1}, r_{1}^{i}).
+		\end{equation}
+		We define an \bi{action process} $\mb{A}$ consistent with the \bi{policy} 
+		\begin{equation}
+			\mc{P}^\mc{A} =(P^{\mc{A}}_i)_{i \in \N}.
+		\end{equation}
+		A policy is \bi{stationary} if for all $i$'s, 
+		\begin{equation}
+			P^{\mc{A}}_{i + 1}(a_{i + 1}\;|\; a_0^{i}, s_{0}^{i + 1}, r_{1}^{i}) =  P^{\mc{A}}(a_{i + 1}\;|\; s_{i +1 }),
+		\end{equation}
+		that is, it depends only on a current state. A policy is \bi{deterministic} if for all $i$'s
+		\begin{equation}
+			P^{\mc{A}}_{i + 1}(a_{i + 1}\;|\; a_0^{i}, s_{0}^{i + 1}, r_{1}^{i}) =  \delta_{a^*_{i+1}(s_0^{i+1}, a_0^i, r_1^i)}(a_{i+1}),
+		\end{equation}
+		where $\delta$ denotes the Dirac measure, that is, given a current history, the undertaken action is deterministic.
+	\end{fdefi}
+	
+	\begin{fdefi}{Formal definition of MDP}{mdp-formal}
+		For any initial state $s_0 \in \mc{S}$ we define MDP $(\mb{S}, \mb{A}, \mb{R})$ via
+		\begin{equation}\label{mdp}
+			\begin{split}
+				&\pof[S_{1}^{n} = s_{1}^{n}, A_0^{n} = a_0^{n},  R_{1}^{n} = r_{1}^{n}][s] := \pof[S_{1}^{n} = s_{1}^{n}, A_0^{n} = a_0^{n},  R_{1}^{n} = r_{1}^{n}][S_0 = s]\\
+				&  =P^{\mc{A}}_{n}(a_{n}\;|\; a_0^{n - 1}, s_{0}^{n}, r_{1}^{n})\cdots P(s_2, r_2\;|\; s_1, a_1) P_1^{\mc{A}}(a_1\;|\; a_0, s_1, r_1)P(s_1, r_1\;|\; s_0, a_0)P_0^{\mc{A}}(a_0\;|\; s_0) 
+			\end{split}
+		\end{equation}
+		For convenience we usually put $R_0 = 0$. 
+	\end{fdefi}
+	
+	\begin{frema}{}{mdp-policy-dependence}
+		Note that if the state-reward transition kernel is kept fixed (as is in our setting), the distribution of MDP $(\mb{S}, \mb{A}, \mb{R})$ \textbf{depends only on the choice of policy $\mc{P}^{\mc{A}}$}.
+	\end{frema}
+	
+	\begin{frema}{Intuition behind MDP}{mdp-intuition}
+		Suppose that MDP $(\mb{S}, \mb{A}, \mb{R})$ is given. Intuitively, this process describes the behavior of an \textbf{agent} in the following way. At time $i \in \N$, the agent is in state $S_i$. Then the agent decides to take action $A_i$ which results in immediate reward $R_{i + 1}$ and takes the agent to state $S_{i + 1}$.
+	\end{frema}
+	
+	\section{Value Functions and Optimal Policies}
+	
+	\begin{fdefi}{Total discounted reward}{disc-reward}
+		Given an MDP $(\mb{S}, \mb{A}, \mb{R})$ and a time $i \in \N$, the \bi{total discounted (by a factor $1 \ge \gamma > 0$) reward $T_i$} is defined via
+		\begin{equation}
+			T_i = \sum\limits_{j = i + 1}^{\infty} \gamma^{j - i - 1} R_j 
+		\end{equation}
+		If $\gamma  = 1$ then we call $T_i$ \bi{undiscounted}. We assume tacitly that the sum converges a.s. This is the case if, for example, the reward space $\mc{R}$ is a bounded subset of $\R$.
+	\end{fdefi}
+	
+	\begin{fdefi}{Value and action-value functions}{value-funcs}
+		Given an MDP $(\mb{S}, \mb{A}, \mb{R})$ (or equivalently a policy $\mc{P}^\mc{A}$) and a time $i \in \N$ we define respectively a \bi{value function (VF)} and an \bi{action-value function (AVF)} via
+		\begin{equation*}
+			V_{i}^{\mc{P}^\mc{A}}(s_0^{i}, a_0^{i - 1}, r_0^{i}) = \E_{S_0^{i} = s_0^{i }, A_0^{i - 1} = a_0^{i - 1}, R_0^{i } = r_0^{i}} T_i,
+		\end{equation*}
+		\begin{equation*}
+			Q^{\mc{P}^\mc{A}}_i(s_0^{i}, a_0^{i}, r_0^{i }) = \E_{S_0^{i } = s_0^{i }, A_0^{i} = a_0^{i}, R_0^{i } = r_0^{i }} T_i.
+		\end{equation*}
+		Furthermore, 
+		\begin{equation}\label{optimal}
+			V_i^*(s_0^{i}, a_0^{i - 1}, r_0^{i}) = \sup_{\mc{P}^\mc{A}} V_i^{\mc{P}^\mc{A}}(s_0^{i}, a_0^{i - 1}, r_0^{i}),
+		\end{equation}
+		\begin{equation*}
+			Q_i^*(s_0^{i}, a_0^{i}, r_0^{i}) = \sup_{\mc{P}^\mc{A}} Q_i^{\mc{P}^\mc{A}}(s_0^{i}, a_0^{i}, r_0^{i})
+		\end{equation*}	
+		stand for \bi{optimal VF (OVF)} and \bi{optimal AVF (OAVF)} respectively. A policy $\mc{P}^*$ is \bi{optimal for VF or AVF} respectively if
+		\begin{equation}
+			V_i^*(s_0^{i}, a_0^{i - 1}, r_0^{i}) =  V_i^{\mc{P}^*}(s_0^{i}, a_0^{i - 1}, r_0^{i}),
+		\end{equation}
+		\begin{equation*}
+			Q_i^*(s_0^{i}, a_0^{i}, r_0^{i}) =  Q_i^{\mc{P}^*}(s_0^{i}, a_0^{i}, r_0^{i})
+		\end{equation*}
+	\end{fdefi}
+	
+	\begin{frema}{}{policy-dependence}
+		All subpolicies in policy $\mc{P}^\mc{A}$ do depend on initial conditions $(s_0^{i}, a_0^{i}, r_0^{i})$. In other words, we allow different strategies for different initial conditions $(s_0^{i}, a_0^{i}, r_0^{i})$.
+	\end{frema}
+	
+	\section{Bellman Equations for Action-Value Functions}
+	
+	We start with the fundamental recurrence relation for action-value functions.
+	
+	\begin{ftheo}{Bellman Expectation Equation for $Q_i$}{bellman-q}
+		For any fixed policy $\mc{P}^{\mc{A}}$ and $i \in \N$,
+		\begin{equation}\label{recurrence qi}
+			\begin{split}
+				Q_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i }, r_0^i) &= r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} Q_{i + 1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i+1}, R_0^{i+1})
+			\end{split}
+		\end{equation}
+		where $(\mb{S}, \mb{A}, \mb{R})$ is consistent with policy $\mc{P}^{\mc{A}}$.
+	\end{ftheo}
+	
+	\begin{proof}
+		Note that for any $i \in \N$, using the Markov property,
+		\begin{equation*}
+			Q_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i }, r_0^i) =  \E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} T_i =  r(s_i, a_i) + \gamma \E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} T_{i + 1}.
+		\end{equation*}
+		Now, by the law of total expectation,
+		\begin{equation*}
+			\begin{split}
+				&\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} T_{i + 1}\\
+				& = \sum_{s_{i + 1}, a_{i + 1}, r_{i + 1}}\pof[S_{i + 1} =  s_{i + 1}, R_{i + 1} = r_{i + 1}, A_{i + 1} =  a_{i + 1}][S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i] \\
+				&\quad \times \E_{S_0^{i + 1} = s_0^{i + 1}, A_0^{i + 1} = a_0^{i + 1}, R_0^{i + 1} = r_0^{i + 1}} T_{i + 1}\\
+				&= \sum_{s_{i + 1}, a_{i + 1}, r_{i + 1}} P(s_{i + 1},r_{i + 1}\;|\; s_i, a_i) P^{\mc{A}}_{i + 1}( a_{i + 1}\;|\;s_0^{i + 1}, a_0^{i }, r_0^{i + 1}) Q_{i + 1}^{\mc{P}^\mc{A}}(s_0^{i + 1}, a_0^{i  + 1}, r_0^{i + 1})\\
+				&  = \E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} Q_{i + 1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i+1}, R_0^{i+1})
+			\end{split}
+		\end{equation*}
+		where we used the definition of the MDP from equation \eqref{mdp}.
+	\end{proof}
+	
+	\begin{ftheo}{Optimal Policy Recursion}{optimal-policy-rec}
+		If $\mc{P}^{*}$ is an optimal policy for $Q_i$ then it is optimal for $Q_{i + 1}$ as well. Furthermore, it must satisfy,
+		\begin{equation}\label{must be deterministic}
+			\supp P^*_{i + 1}(\cdot\;|\; s_0^{i + 1}, a_0^i, r_0^{i + 1}) \subseteq   \argmax_{a_{i + 1}} Q_{i + 1}^{*}(s_0^{i + 1}, a_0^{i + 1}, r_0^{i + 1})
+		\end{equation} 
+		In particular, there exists an \textbf{optimal deterministic policy} $\mc{P}^*$ (given by the optimal policy for $Q_1$) which is valid for all $Q_i$'s and satisfies \eqref{must be deterministic}. Furthermore, if $(\mb{S}, \mb{A}, \mb{R})$ is consistent with $\mc{P}^*$ then the OAVF must satisfy
+		\begin{equation}\label{recurrence optimal qi}
+			Q_i^{*}(s_0^i, a_0^{i }, r_0^i) = r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} \max_{a_{i + 1}} Q_{i + 1}^{*}(s_0^{i}, S_{i + 1}, a_0^{i + 1}, r_0^{i}, R_{i + 1})
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}
+		By the Bellman expectation equation \eqref{recurrence qi},
+		\begin{equation}\label{a}
+			Q_i^{\mc{P}^*}(s_0^i, a_0^{i }, r_0^i) = r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} Q_{i + 1}^{\mc{P}^*}(s_0^{i}, S_{i + 1}, a_0^{i}, A_{i + 1}, r_0^{i}, R_{i + 1})
+		\end{equation}
+		Since $\mc{P}^*$ is optimal and $Q_{i + 1}^{\mc{P}^*}$ does not depend on $P^*_{i + 1}$ (it depends on $P^*_{i+2}, P^*_{i+3}, \ldots$), we must have
+		\begin{equation}\label{aux1}
+			\supp P^*_{i + 1}(\cdot\;|\; s_0^i, s_{i + 1}, a_0^i, r_0^i, r_{i + 1}) \subseteq   \argmax_{a_{i + 1}} Q_{i + 1}^{\mc{P}^*}(s_0^{i + 1}, a_0^{i + 1}, r_0^{i + 1})
+		\end{equation} 
+		Otherwise, we could improve $Q_i^{\mc{P}^*}$ by modifying $P^*_{i+1}$ to place more mass on the maximizing actions.
+		
+		This implies
+		\begin{equation}\label{aux2}
+			Q_i^{\mc{P}^*}(s_0^i, a_0^{i }, r_0^i) = r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} \max_{a_{i + 1}} Q_{i + 1}^{\mc{P}^*}(s_0^{i}, S_{i + 1}, a_0^{i + 1}, r_0^{i}, R_{i + 1})
+		\end{equation} 
+		
+		Now suppose there exists a better policy $\mc{P}'$ for $Q_{i + 1}$, i.e., for some history,
+		\begin{equation*}
+			Q_{i+1}^{\mc{P}'}(s_0^{i+1}, a_0^{i+1}, r_0^{i+1}) > Q_{i+1}^{\mc{P}^*}(s_0^{i+1}, a_0^{i+1}, r_0^{i+1}).
+		\end{equation*}
+		We can construct a new policy $\tilde{\mc{P}}$ for $Q_i$ by setting $\tilde{P}_{i+1} = P'_{i+1}$ and $\tilde{P}_j = P'_j$ for all $j \geq i+2$. Then by \eqref{recurrence qi} and \eqref{aux2},
+		\begin{equation*}
+			\begin{split}
+				Q_i^{\tilde{\mc{P}}}(s_0^i, a_0^{i }, r_0^i) &= r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} \max_{a_{i + 1}} Q_{i + 1}^{\mc{P}'}(s_0^{i}, S_{i + 1}, a_0^{i + 1}, r_0^{i}, R_{i + 1})\\
+				&\geq Q_i^{\mc{P}^*}(s_0^i, a_0^{i }, r_0^i)
+			\end{split}
+		\end{equation*}
+		with strict inequality for at least one history where $Q_{i+1}^{\mc{P}'} > Q_{i+1}^{\mc{P}^*}$. This contradicts the optimality of $\mc{P}^*$ for $Q_i$.
+		
+		Therefore, $\mc{P}^*$ optimal for $Q_i$ implies $\mc{P}^*$ optimal for $Q_{i+1}$.
+		
+		If $\mc{P}^*$ is optimal for $Q_1$, then by induction it is optimal for all $Q_i$. The condition \eqref{must be deterministic} follows from \eqref{aux1}, and the policy can be chosen deterministic since we only need to select actions in $\argmax_{a_{i+1}} Q_{i+1}^*$.
+	\end{proof}
+	
+	\section{Bellman Equations for Value Functions}
+	
+	\begin{frema}{Relationship between $V_i$ and $Q_i$}{v-q-relation}
+		Note that by the very definitions,
+		\begin{equation}\label{v-from-q}
+			V_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i - 1}, r_0^i) = \sum_{a_i \in \mc{A}} \pof[A_i = a_i][S_0^i = s_0^i, A_0^{i - 1} = a_0^{i - 1}, R_0^i = r_0^i] Q^{\mc{P}^\mc{A}}_i(s_0^i, a_0^{i}, r_0^i) 
+		\end{equation}
+		In particular, $V_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i - 1}, r_0^i) \le \sup_{a_i \in \mc{A}} Q_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i}, r_0^i)$ with equality if and only if $P^{\mc{A}}_i(\cdot\;|\; s_0^i, a_0^{i - 1}, r_0^i)$ is concentrated on those $a_i$ which realize the supremum $\sup_{a_i \in \mc{A}} Q_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i}, r_0^i)$.
+	\end{frema}
+	
+	\begin{fprop}{Bellman Expectation Equation for $V_i$}{bellman-v}
+		For any fixed policy $\mc{P}^{\mc{A}}$ and $i \in \N$,
+		\begin{equation}\label{recurrence vi}
+			\begin{split}
+				V_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i-1}, r_0^i) &= \sum_{a_i \in \mc{A}} P^{\mc{A}}_i(a_i\;|\; s_0^i, a_0^{i-1}, r_0^i) \Big[ r(s_i, a_i) \\
+				&\quad + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} V_{i + 1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i}, R_0^{i+1}) \Big]
+			\end{split}
+		\end{equation}
+	\end{fprop}
+	
+	\begin{proof}
+		From equation \eqref{v-from-q} and the Bellman equation for $Q_i$ (equation \eqref{recurrence qi}), we have
+		\begin{equation*}
+			\begin{split}
+				V_i^{\mc{P}^\mc{A}}(s_0^i, a_0^{i - 1}, r_0^i) &= \sum_{a_i \in \mc{A}} P^{\mc{A}}_i(a_i\;|\; s_0^i, a_0^{i-1}, r_0^i) Q^{\mc{P}^\mc{A}}_i(s_0^i, a_0^{i}, r_0^i)\\
+				&= \sum_{a_i \in \mc{A}} P^{\mc{A}}_i(a_i\;|\; s_0^i, a_0^{i-1}, r_0^i) \Big[ r(s_i, a_i) \\
+				&\quad + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} Q_{i + 1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i+1}, R_0^{i+1}) \Big]
+			\end{split}
+		\end{equation*}
+		Now using the law of total expectation and equation \eqref{v-from-q} again,
+		\begin{equation*}
+			\begin{split}
+				&\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} Q_{i + 1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i+1}, R_0^{i+1})\\
+				&= \E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} \left[\sum_{a_{i+1}} P^{\mc{A}}_{i+1}(a_{i+1}\;|\; S_0^{i+1}, A_0^i, R_0^{i+1}) Q_{i+1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i+1}, R_0^{i+1})\right]\\
+				&= \E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} V_{i + 1}^{\mc{P}^\mc{A}}(S_0^{i+1}, A_0^{i}, R_0^{i+1})
+			\end{split}
+		\end{equation*}
+	\end{proof}
+	
+	\begin{fprop}{Bellman Optimality Equation for $V_i$}{bellman-v-opt}
+		The optimal value function satisfies
+		\begin{equation}\label{v-opt-bellman}
+			V_i^{*}(s_0^i, a_0^{i-1}, r_0^i) = \max_{a_i \in \mc{A}} \left[ r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} V_{i + 1}^{*}(S_0^{i+1}, A_0^{i}, R_0^{i+1}) \right]
+		\end{equation}
+	\end{fprop}
+	
+	\begin{proof}
+		From the remark on the relationship between $V_i$ and $Q_i$, we know that the optimal policy must place all probability mass on actions that maximize $Q_i$. Therefore,
+		\begin{equation*}
+			V_i^{*}(s_0^i, a_0^{i-1}, r_0^i) = \max_{a_i \in \mc{A}} Q_i^{*}(s_0^i, a_0^{i}, r_0^i)
+		\end{equation*}
+		Using the Bellman optimality equation for $Q_i$ (equation \eqref{recurrence optimal qi}),
+		\begin{equation*}
+			\begin{split}
+				V_i^{*}(s_0^i, a_0^{i-1}, r_0^i) &= \max_{a_i \in \mc{A}} \left[ r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} \max_{a_{i + 1}} Q_{i + 1}^{*}(S_0^{i+1}, A_0^{i+1}, R_0^{i+1}) \right]\\
+				&= \max_{a_i \in \mc{A}} \left[ r(s_i, a_i) + \gamma\E_{S_0^i = s_0^i, A_0^{i} = a_0^{i}, R_0^i = r_0^i} V_{i + 1}^{*}(S_0^{i+1}, A_0^{i}, R_0^{i+1}) \right]
+			\end{split}
+		\end{equation*}
+	\end{proof}
+	
+	\section{Stationary Policies}
+	
+	In many practical applications, we focus on \bi{stationary} policies where the action selection depends only on the current state.
+	
+	\begin{fdefi}{Stationary Policy}{stat-policy}
+		A policy $\mc{P}^{\mc{A}}$ is \bi{stationary} if there exists a transition kernel $\pi: \mc{S} \times \mc{A} \to [0,1]$ such that for all $i \in \N$,
+		\begin{equation}
+			P^{\mc{A}}_{i}(a_i\;|\; s_0^{i}, a_0^{i-1}, r_0^{i}) = \pi(a_i\;|\; s_i)
+		\end{equation}
+		where $\sum_{a \in \mc{A}} \pi(a\;|\; s) = 1$ for all $s \in \mc{S}$.
+	\end{fdefi}
+	
+	\begin{frema}{}{stat-simplification}
+		For stationary policies, the value functions simplify significantly:
+		\begin{equation}
+			V_i^{\pi}(s_0^i, a_0^{i-1}, r_0^i) = V^{\pi}(s_i), \qquad Q_i^{\pi}(s_0^i, a_0^{i}, r_0^i) = Q^{\pi}(s_i, a_i)
+		\end{equation}
+		where $V^{\pi}$ and $Q^{\pi}$ depend only on the current state (and action).
+	\end{frema}
+	
+	\begin{fprop}{Bellman Equations for Stationary Policies}{bellman-stat}
+		For a stationary policy $\pi$, the value functions satisfy:
+		\begin{equation}\label{bellman-v-stat}
+			V^{\pi}(s) = \sum_{a \in \mc{A}} \pi(a\;|\; s) \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V^{\pi}(s') \right]
+		\end{equation}
+		\begin{equation}\label{bellman-q-stat}
+			Q^{\pi}(s, a) = r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) \sum_{a' \in \mc{A}} \pi(a'\;|\; s') Q^{\pi}(s', a')
+		\end{equation}
+		where $P(s'\;|\; s, a) = \sum_{r \in \mc{R}} P(s', r\;|\; s, a)$ is the marginal state transition probability.
+	\end{fprop}
+	
+	\begin{proof}
+		For stationary policies, the Bellman expectation equation \eqref{recurrence vi} becomes time-homogeneous. We have
+		\begin{equation*}
+			\begin{split}
+				V^{\pi}(s) &= \sum_{a \in \mc{A}} \pi(a\;|\; s) Q^{\pi}(s, a)\\
+				&= \sum_{a \in \mc{A}} \pi(a\;|\; s) \left[ r(s, a) + \gamma \E_{S' \sim P(\cdot\;|\; s, a)} Q^{\pi}(S', A') \right]\\
+				&= \sum_{a \in \mc{A}} \pi(a\;|\; s) \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V^{\pi}(s') \right]
+			\end{split}
+		\end{equation*}
+		Similarly, for $Q^{\pi}$,
+		\begin{equation*}
+			\begin{split}
+				Q^{\pi}(s, a) &= r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V^{\pi}(s')\\
+				&= r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) \sum_{a' \in \mc{A}} \pi(a'\;|\; s') Q^{\pi}(s', a')
+			\end{split}
+		\end{equation*}
+	\end{proof}
+	
+	\begin{ftheo}{Existence of Optimal Stationary Policy}{opt-stat-exists}
+		For finite MDPs with bounded rewards, there exists an optimal \bi{stationary deterministic} policy $\pi^*$ such that
+		\begin{equation}
+			V^{\pi^*}(s) = V^{*}(s) = \sup_{\pi} V^{\pi}(s), \quad \forall s \in \mc{S}
+		\end{equation}
+		where the supremum is taken over all policies (including non-stationary ones).
+	\end{ftheo}
+	
+	\begin{proof}
+		From Theorem \ref{ftheo:optimal-policy-rec}, we know there exists an optimal deterministic policy for each $Q_i$. For stationary MDPs (with stationary transition kernel $P$), the optimal policy can be chosen to be stationary.
+		
+		Define $\pi^*(s) \in \argmax_{a \in \mc{A}} Q^{*}(s, a)$ for each $s \in \mc{S}$. This is a deterministic stationary policy. 
+		
+		We claim $V^{\pi^*}(s) = V^{*}(s)$ for all $s$. Suppose not, and there exists a policy $\tilde{\pi}$ with $V^{\tilde{\pi}}(s_0) > V^{\pi^*}(s_0)$ for some $s_0$. Then
+		\begin{equation*}
+			V^{\tilde{\pi}}(s_0) = \E^{\tilde{\pi}}[T_0\;|\; S_0 = s_0] > V^{\pi^*}(s_0) = V^{*}(s_0)
+		\end{equation*}
+		But this contradicts the definition of $V^{*}$ as the supremum over all policies.
+		
+		The optimality of $\pi^*$ follows from the Bellman optimality equation: since $\pi^*(s) \in \argmax_a Q^{*}(s, a)$, we have
+		\begin{equation*}
+			V^{\pi^*}(s) = Q^{*}(s, \pi^*(s)) = \max_{a} Q^{*}(s, a) = V^{*}(s)
+		\end{equation*}
+	\end{proof}
+	
+	\section{Dynamic Programming Algorithms}
+	
+	Dynamic programming provides methods to compute optimal value functions and policies when the model (transition probabilities and rewards) is known.
+	
+	\subsection{Policy Evaluation}
+	
+	\textbf{Goal}: Compute $V^{\pi}$ for a given stationary policy $\pi$.
+	
+	\textbf{Iterative Algorithm}: For $k = 0, 1, 2, \ldots$, update:
+	\begin{equation}\label{policy-eval-iter}
+		V_{k+1}(s) = \sum_{a \in \mc{A}} \pi(a\;|\; s) \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V_k(s') \right]
+	\end{equation}
+	
+	\begin{ftheo}{Convergence of Policy Evaluation}{policy-eval-conv}
+		Let $\mc{S}$ be finite and $\gamma < 1$. Then for any initial $V_0$, the sequence $(V_k)_{k \in \N}$ defined by \eqref{policy-eval-iter} converges to $V^{\pi}$:
+		\begin{equation}
+			\lim_{k \to \infty} V_k = V^{\pi}
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}
+		Define the Bellman operator $T^{\pi}: \R^{|\mc{S}|} \to \R^{|\mc{S}|}$ by
+		\begin{equation*}
+			(T^{\pi} V)(s) = \sum_{a \in \mc{A}} \pi(a\;|\; s) \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V(s') \right]
+		\end{equation*}
+		Then $V_{k+1} = T^{\pi} V_k$ and $V^{\pi}$ is the unique fixed point of $T^{\pi}$ (from \eqref{bellman-v-stat}).
+		
+		We show $T^{\pi}$ is a contraction mapping with respect to the supremum norm $\|V\|_{\infty} = \max_{s} |V(s)|$. For any $V, U \in \R^{|\mc{S}|}$,
+		\begin{equation*}
+			\begin{split}
+				|(T^{\pi} V)(s) - (T^{\pi} U)(s)| &= \left| \sum_{a} \pi(a\;|\; s) \gamma \sum_{s'} P(s'\;|\; s, a) [V(s') - U(s')] \right|\\
+				&\leq \sum_{a} \pi(a\;|\; s) \gamma \sum_{s'} P(s'\;|\; s, a) |V(s') - U(s')|\\
+				&\leq \gamma \|V - U\|_{\infty} \sum_{a} \pi(a\;|\; s) \sum_{s'} P(s'\;|\; s, a)\\
+				&= \gamma \|V - U\|_{\infty}
+			\end{split}
+		\end{equation*}
+		Therefore, $\|T^{\pi} V - T^{\pi} U\|_{\infty} \leq \gamma \|V - U\|_{\infty}$. By the Banach fixed-point theorem, $T^{\pi}$ has a unique fixed point and $V_k \to V^{\pi}$ exponentially fast.
+	\end{proof}
+	
+	\subsection{Policy Improvement}
+	
+	\begin{ftheo}{Policy Improvement Theorem}{policy-improve}
+		Let $\pi$ and $\pi'$ be stationary deterministic policies such that for all $s \in \mc{S}$:
+		\begin{equation}\label{greedy-condition}
+			Q^{\pi}(s, \pi'(s)) \geq V^{\pi}(s)
+		\end{equation}
+		Then $V^{\pi'}(s) \geq V^{\pi}(s)$ for all $s \in \mc{S}$.
+	\end{ftheo}
+	
+	\begin{proof}
+		We prove by induction on the horizon. Define the $n$-step value function:
+		\begin{equation*}
+			V_n^{\pi}(s) = \E^{\pi}\left[\sum_{t=0}^{n-1} \gamma^t R_{t+1} \;|\; S_0 = s\right]
+		\end{equation*}
+		
+		\textbf{Base case} ($n=1$): 
+		\begin{equation*}
+			\begin{split}
+				V_1^{\pi'}(s) &= \E^{\pi'}[R_1\;|\; S_0 = s] = r(s, \pi'(s))\\
+				V_1^{\pi}(s) &= r(s, \pi(s))
+			\end{split}
+		\end{equation*}
+		From \eqref{greedy-condition}, $Q^{\pi}(s, \pi'(s)) \geq V^{\pi}(s)$, which for $n=1$ gives us
+		\begin{equation*}
+			r(s, \pi'(s)) + \gamma \sum_{s'} P(s'\;|\; s, \pi'(s)) V^{\pi}(s') \geq r(s, \pi(s)) + \gamma \sum_{s'} P(s'\;|\; s, \pi(s)) V^{\pi}(s')
+		\end{equation*}
+		
+		\textbf{Inductive step}: Assume $V_n^{\pi'}(s') \geq V_n^{\pi}(s')$ for all $s'$. Then
+		\begin{equation*}
+			\begin{split}
+				V_{n+1}^{\pi'}(s) &= r(s, \pi'(s)) + \gamma \sum_{s'} P(s'\;|\; s, \pi'(s)) V_n^{\pi'}(s')\\
+				&\geq r(s, \pi'(s)) + \gamma \sum_{s'} P(s'\;|\; s, \pi'(s)) V_n^{\pi}(s')\\
+				&= Q_n^{\pi}(s, \pi'(s))
+			\end{split}
+		\end{equation*}
+		where $Q_n^{\pi}(s, a) = r(s, a) + \gamma \sum_{s'} P(s'\;|\; s, a) V_n^{\pi}(s')$.
+		
+		Now, taking limits as $n \to \infty$ and using the fact that condition \eqref{greedy-condition} holds,
+		\begin{equation*}
+			V^{\pi'}(s) = \lim_{n \to \infty} V_n^{\pi'}(s) \geq \lim_{n \to \infty} Q_n^{\pi}(s, \pi'(s)) = Q^{\pi}(s, \pi'(s)) \geq V^{\pi}(s)
+		\end{equation*}
+	\end{proof}
+	
+	The greedy policy with respect to $V^{\pi}$ is:
+	\begin{equation}
+		\pi'(s) \in \argmax_{a \in \mc{A}} \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V^{\pi}(s') \right] = \argmax_{a \in \mc{A}} Q^{\pi}(s, a)
+	\end{equation}
+	
+	\begin{fprop}{Greedy Policy Improvement}{greedy-improve}
+		If $\pi'$ is the greedy policy with respect to $V^{\pi}$, then either $V^{\pi'} = V^{\pi}$ (and both are optimal), or $V^{\pi'}(s) > V^{\pi}(s)$ for at least one $s$.
+	\end{fprop}
+	
+	\begin{proof}
+		By construction, $\pi'(s) \in \argmax_a Q^{\pi}(s, a)$, so
+		\begin{equation*}
+			Q^{\pi}(s, \pi'(s)) = \max_a Q^{\pi}(s, a) \geq Q^{\pi}(s, \pi(s)) = V^{\pi}(s)
+		\end{equation*}
+		Thus condition \eqref{greedy-condition} is satisfied, and by the Policy Improvement Theorem, $V^{\pi'}(s) \geq V^{\pi}(s)$ for all $s$.
+		
+		If $V^{\pi'} = V^{\pi}$, then for all $s$,
+		\begin{equation*}
+			V^{\pi}(s) = V^{\pi'}(s) = Q^{\pi}(s, \pi'(s)) = \max_a Q^{\pi}(s, a)
+		\end{equation*}
+		This is the Bellman optimality equation, so $\pi$ (and $\pi'$) are optimal.
+	\end{proof}
+	
+	\subsection{Policy Iteration}
+	
+	\textbf{Algorithm}:
+	\begin{enumerate}
+		\item Initialize $\pi_0$ arbitrarily
+		\item For $n = 0, 1, 2, \ldots$:
+		\begin{enumerate}
+			\item \textbf{Policy Evaluation}: Compute $V^{\pi_n}$
+			\item \textbf{Policy Improvement}: Set $\pi_{n+1}$ to be greedy w.r.t. $V^{\pi_n}$
+			\item If $\pi_{n+1} = \pi_n$, stop and return $\pi_n$ as $\pi^*$
+		\end{enumerate}
+	\end{enumerate}
+	
+	\begin{ftheo}{Convergence of Policy Iteration}{policy-iter-conv}
+		For finite MDPs with $\gamma < 1$, policy iteration converges to an optimal policy in finitely many steps.
+	\end{ftheo}
+	
+	\begin{proof}
+		From Proposition \ref{fprop:greedy-improve}, at each iteration either:
+		\begin{itemize}
+			\item $V^{\pi_{n+1}} = V^{\pi_n}$, in which case $\pi_n$ is optimal and the algorithm terminates, or
+			\item $V^{\pi_{n+1}}(s) > V^{\pi_n}(s)$ for at least one $s$.
+		\end{itemize}
+		
+		Since $\mc{S}$ and $\mc{A}$ are finite, there are only finitely many deterministic policies. The value function strictly improves (in at least one state) at each step until an optimal policy is found. Therefore, the algorithm must terminate in at most $|\mc{A}|^{|\mc{S}|}$ iterations.
+		
+		When the algorithm terminates with $\pi_{n+1} = \pi_n$, we have shown that $\pi_n$ satisfies the Bellman optimality equation, hence $\pi_n$ is optimal.
+	\end{proof}
+	
+	\subsection{Value Iteration}
+	
+	Combine policy evaluation and improvement in a single update:
+	\begin{equation}\label{value-iter}
+		V_{k+1}(s) = \max_{a \in \mc{A}} \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V_k(s') \right]
+	\end{equation}
+	
+	This is equivalent to turning the Bellman optimality equation into an update rule.
+	
+	\begin{ftheo}{Convergence of Value Iteration}{value-iter-conv}
+		For finite MDPs with $\gamma < 1$, the sequence $(V_k)_{k \in \N}$ defined by \eqref{value-iter} converges to $V^*$:
+		\begin{equation}
+			\lim_{k \to \infty} V_k = V^*
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}
+		Define the Bellman optimality operator $T^*: \R^{|\mc{S}|} \to \R^{|\mc{S}|}$ by
+		\begin{equation*}
+			(T^* V)(s) = \max_{a \in \mc{A}} \left[ r(s, a) + \gamma \sum_{s' \in \mc{S}} P(s'\;|\; s, a) V(s') \right]
+		\end{equation*}
+		Then $V_{k+1} = T^* V_k$ and $V^*$ is the unique fixed point of $T^*$.
+		
+		We show $T^*$ is a contraction mapping. For any $V, U \in \R^{|\mc{S}|}$,
+		\begin{equation*}
+			\begin{split}
+				|(T^* V)(s) - (T^* U)(s)| &= \left| \max_a \left[r(s,a) + \gamma \sum_{s'} P(s'\;|\; s, a) V(s')\right] - \max_a \left[r(s,a) + \gamma \sum_{s'} P(s'\;|\; s, a) U(s')\right] \right|
+			\end{split}
+		\end{equation*}
+		Using the property $|\max_i x_i - \max_i y_i| \leq \max_i |x_i - y_i|$,
+		\begin{equation*}
+			\begin{split}
+				|(T^* V)(s) - (T^* U)(s)| &\leq \max_a \left| \gamma \sum_{s'} P(s'\;|\; s, a) [V(s') - U(s')] \right|\\
+				&\leq \gamma \max_a \sum_{s'} P(s'\;|\; s, a) |V(s') - U(s')|\\
+				&\leq \gamma \|V - U\|_{\infty}
+			\end{split}
+		\end{equation*}
+		Therefore, $\|T^* V - T^* U\|_{\infty} \leq \gamma \|V - U\|_{\infty}$. By the Banach fixed-point theorem, $V_k \to V^*$ exponentially fast with rate $\gamma$.
+	\end{proof}
+	
+	\section{Monte Carlo Methods}
+	
+	Monte Carlo (MC) methods learn value functions from experience without requiring a model of environment dynamics. These methods are based on averaging sample returns.
+	
+	\subsection{Monte Carlo Prediction}
+	
+	For policy $\pi$, estimate $V^{\pi}(s)$ by averaging returns following visits to $s$:
+	\begin{equation}
+		V^{\pi}(s) \approx \frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i(s)
+	\end{equation}
+	where $N(s)$ is the number of visits to state $s$, and $G_i(s)$ is the return following the $i$-th visit.
+	
+	\textbf{First-Visit MC}: Average returns following first visits to $s$ in each episode.
+	
+	\textbf{Every-Visit MC}: Average returns following all visits to $s$.
+	
+	\begin{ftheo}{Consistency of Monte Carlo Estimation}{mc-consistency}
+		For both first-visit and every-visit MC, as $N(s) \to \infty$,
+		\begin{equation}
+			\frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i(s) \to V^{\pi}(s) \quad \text{almost surely}
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}
+		\textbf{First-Visit MC}: Let $G_1(s), G_2(s), \ldots$ be the sequence of returns following first visits to state $s$ in different episodes. These are i.i.d. random variables with $\E[G_i(s)] = V^{\pi}(s)$. By the strong law of large numbers,
+		\begin{equation*}
+			\frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i(s) \tos[a.s.] \E[G_1(s)] = V^{\pi}(s)
+		\end{equation*}
+		
+		\textbf{Every-Visit MC}: The returns following all visits to $s$ within and across episodes form an ergodic sequence under mild conditions on the MDP (e.g., irreducibility). By the ergodic theorem for Markov chains,
+		\begin{equation*}
+			\frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i(s) \tos[a.s.] \E_{\mu}[G\;|\; S = s] = V^{\pi}(s)
+		\end{equation*}
+		where $\mu$ is the stationary distribution of the Markov chain under policy $\pi$.
+	\end{proof}
+	
+	\subsection{Incremental Update}
+	
+	After observing return $G_n$ following the $n$-th visit to state $s$:
+	\begin{equation}\label{mc-incremental}
+		V_{n+1}(s) = V_n(s) + \frac{1}{n}(G_n - V_n(s)) = V_n(s) + \alpha_n(G_n - V_n(s))
+	\end{equation}
+	where $\alpha_n = 1/n$ is the learning rate.
+	
+	\begin{frema}{}{mc-stepsize}
+		For non-stationary environments, a constant step-size $\alpha \in (0, 1]$ is often used instead of $1/n$, giving more weight to recent observations:
+		\begin{equation}
+			V_{n+1}(s) = V_n(s) + \alpha(G_n - V_n(s)) = (1-\alpha)V_n(s) + \alpha G_n
+		\end{equation}
+	\end{frema}
+	
+	\section{Temporal Difference Learning}
+	
+	Temporal Difference (TD) learning combines ideas from Monte Carlo and dynamic programming by bootstrapping: using current estimates to update estimates.
+	
+	\subsection{TD(0) Prediction}
+	
+	Update the value function after each step using the observed reward and bootstrapped estimate:
+	\begin{equation}\label{td0-update}
+		V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
+	\end{equation}
+	
+	The \textbf{TD error} is:
+	\begin{equation}
+		\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t)
+	\end{equation}
+	
+	\begin{frema}{Comparison: MC vs TD}{mc-td-compare}
+		\textbf{Monte Carlo}:
+		\begin{equation*}
+			V(S_t) \leftarrow V(S_t) + \alpha [G_t - V(S_t)]
+		\end{equation*}
+		uses the actual return $G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$.
+		
+		\textbf{TD(0)}:
+		\begin{equation*}
+			V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
+		\end{equation*}
+		uses the one-step return $R_{t+1} + \gamma V(S_{t+1})$, which is an estimate of $G_t$.
+		
+		TD methods bootstrap (use current estimates), while MC methods use actual returns. TD methods can learn online and from incomplete episodes.
+	\end{frema}
+	
+	\begin{ftheo}{Convergence of TD(0)}{td0-conv}
+		For a fixed policy $\pi$ and under Robbins-Monro conditions on the step size $\alpha_t$:
+		\begin{itemize}
+			\item $\sum_{t=0}^{\infty} \alpha_t = \infty$ (guarantees sufficient exploration)
+			\item $\sum_{t=0}^{\infty} \alpha_t^2 < \infty$ (guarantees variance goes to zero)
+		\end{itemize}
+		the TD(0) algorithm converges to $V^{\pi}$ with probability 1:
+		\begin{equation}
+			V_t \tos[a.s.] V^{\pi} \quad \text{as } t \to \infty
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}[Proof sketch]
+		The TD(0) update can be written as a stochastic approximation:
+		\begin{equation*}
+			V_{t+1}(S_t) = V_t(S_t) + \alpha_t [R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)]
+		\end{equation*}
+		
+		Taking conditional expectation given $S_t = s$:
+		\begin{equation*}
+			\begin{split}
+				\E[R_{t+1} + \gamma V_t(S_{t+1})\;|\; S_t = s] &= \sum_a \pi(a\;|\; s) \sum_{s', r} P(s', r\;|\; s, a) [r + \gamma V_t(s')]\\
+				&= (T^{\pi} V_t)(s)
+			\end{split}
+		\end{equation*}
+		
+		This shows that the expected update direction points toward the Bellman operator $T^{\pi}$. Under the Robbins-Monro conditions and the contraction property of $T^{\pi}$ (shown in Theorem \ref{ftheo:policy-eval-conv}), standard stochastic approximation theory guarantees convergence to the fixed point $V^{\pi}$.
+		
+		The full proof requires showing that the Markov chain induced by the policy visits all states infinitely often (ergodicity assumption) and bounding the variance of the updates, which follows from the Robbins-Monro condition $\sum_t \alpha_t^2 < \infty$.
+	\end{proof}
+	
+	\subsection{TD Control: SARSA}
+	
+	SARSA (State-Action-Reward-State-Action) is an on-policy TD control method that updates the action-value function:
+	\begin{equation}\label{sarsa-update}
+		Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha [R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)]
+	\end{equation}
+	where $A_{t+1} \sim \pi(\cdot\;|\; S_{t+1})$ is sampled from the current policy.
+	
+	\begin{frema}{}{sarsa-onpolicy}
+		SARSA is \bi{on-policy} because it evaluates and improves the same policy $\pi$ that is being used to select actions. The tuple $(S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1})$ gives the method its name.
+	\end{frema}
+	
+	\subsection{Q-Learning}
+	
+	Q-learning is an off-policy TD control method:
+	\begin{equation}\label{qlearning-update}
+		Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[R_{t+1} + \gamma \max_{a'} Q(S_{t+1}, a') - Q(S_t, A_t)\right]
+	\end{equation}
+	
+	The TD error for Q-learning:
+	\begin{equation}
+		\delta_t = R_{t+1} + \gamma \max_{a'} Q(S_{t+1}, a') - Q(S_t, A_t)
+	\end{equation}
+	
+	\begin{ftheo}{Convergence of Q-Learning}{qlearning-conv}
+		Under the Robbins-Monro conditions on $\alpha_t$ and assuming all state-action pairs are visited infinitely often, Q-learning converges to $Q^*$ with probability 1:
+		\begin{equation}
+			Q_t \tos[a.s.] Q^* \quad \text{as } t \to \infty
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}[Proof sketch]
+		The Q-learning update can be written as:
+		\begin{equation*}
+			Q_{t+1}(S_t, A_t) = Q_t(S_t, A_t) + \alpha_t [R_{t+1} + \gamma \max_{a'} Q_t(S_{t+1}, a') - Q_t(S_t, A_t)]
+		\end{equation*}
+		
+		Taking conditional expectation given $S_t = s, A_t = a$:
+		\begin{equation*}
+			\begin{split}
+				&\E[R_{t+1} + \gamma \max_{a'} Q_t(S_{t+1}, a')\;|\; S_t = s, A_t = a]\\
+				&= \sum_{s', r} P(s', r\;|\; s, a) [r + \gamma \max_{a'} Q_t(s', a')]\\
+				&= (T^* Q_t)(s, a)
+			\end{split}
+		\end{equation*}
+		where $T^*$ is the Bellman optimality operator.
+		
+		The expected update points toward $T^* Q$, and we showed in Theorem \ref{ftheo:value-iter-conv} that $T^*$ is a contraction with fixed point $Q^*$. Under the Robbins-Monro conditions and the assumption that all state-action pairs are visited infinitely often (which ensures the ergodicity needed for stochastic approximation), Q-learning converges to $Q^*$.
+		
+		The key property is that Q-learning learns $Q^*$ independently of the behavior policy used to generate experience, making it an \bi{off-policy} method.
+	\end{proof}
+	
+	\begin{frema}{}{qlearning-offpolicy}
+		Q-learning is \bi{off-policy} because it learns the optimal action-value function $Q^*$ regardless of the policy being followed. This allows for exploration (e.g., $\varepsilon$-greedy) while still learning the optimal greedy policy.
+	\end{frema}
+	
+	\section{Exploration vs Exploitation}
+	
+	A fundamental challenge in reinforcement learning is balancing exploration (trying new actions to discover better strategies) with exploitation (using current knowledge to maximize rewards).
+	
+	\subsection{$\varepsilon$-Greedy Policy}
+	
+	With probability $\varepsilon$, select a random action; otherwise, select greedily:
+	\begin{equation}\label{epsilon-greedy}
+		\pi(a\;|\; s) = \begin{cases}
+			1 - \varepsilon + \frac{\varepsilon}{|\mc{A}(s)|} & \text{if } a = \argmax_{a'} Q(s, a') \\
+			\frac{\varepsilon}{|\mc{A}(s)|} & \text{otherwise}
+		\end{cases}
+	\end{equation}
+	
+	\begin{frema}{}{epsilon-greedy-properties}
+		The $\varepsilon$-greedy policy ensures all actions are tried with non-zero probability, guaranteeing exploration. As learning progresses, $\varepsilon$ can be decreased (e.g., $\varepsilon_t = 1/t$) to reduce exploration and focus on exploitation.
+	\end{frema}
+	
+	\subsection{Softmax Policy (Boltzmann Exploration)}
+	
+	Select actions according to a Gibbs (Boltzmann) distribution:
+	\begin{equation}\label{softmax-policy}
+		\pi(a\;|\; s) = \frac{\exp(Q(s, a) / \tau)}{\sum_{a' \in \mc{A}} \exp(Q(s, a') / \tau)}
+	\end{equation}
+	where $\tau > 0$ is the temperature parameter.
+	
+	\begin{frema}{}{softmax-properties}
+		As $\tau \to 0$, the softmax policy approaches the greedy policy (all mass on the best action). As $\tau \to \infty$, it approaches the uniform distribution (complete exploration). The softmax policy provides a smooth probabilistic trade-off between exploration and exploitation.
+	\end{frema}
+	
+	\section{Function Approximation}
+	
+	For large or continuous state spaces, we cannot store value functions in tables. Instead, we represent them parametrically.
+	
+	\subsection{Parametric Value Function Approximation}
+	
+	Represent the value function with parameters $\mb{w} \in \R^d$:
+	\begin{equation}
+		V(s) \approx \hat{V}(s, \mb{w})
+	\end{equation}
+	
+	\textbf{Goal}: Minimize the mean squared value error:
+	\begin{equation}
+		J(\mb{w}) = \E_{\mu}\left[(V^{\pi}(S) - \hat{V}(S, \mb{w}))^2\right]
+	\end{equation}
+	where $\mu$ is a distribution over states (e.g., the stationary distribution under $\pi$).
+	
+	\subsection{Gradient Descent Update}
+	
+	Update the weights in the direction of the negative gradient:
+	\begin{equation}\label{gd-update}
+		\mb{w}_{t+1} = \mb{w}_t - \frac{\alpha}{2} \nabla_{\mb{w}} \left[\hat{V}(S_t, \mb{w}_t) - V^{\pi}(S_t)\right]^2 = \mb{w}_t + \alpha [V^{\pi}(S_t) - \hat{V}(S_t, \mb{w}_t)] \nabla_{\mb{w}} \hat{V}(S_t, \mb{w}_t)
+	\end{equation}
+	
+	Since $V^{\pi}(S_t)$ is unknown, we use targets from MC or TD methods:
+	
+	\textbf{MC with function approximation}:
+	\begin{equation}
+		\mb{w}_{t+1} = \mb{w}_t + \alpha [G_t - \hat{V}(S_t, \mb{w}_t)] \nabla_{\mb{w}} \hat{V}(S_t, \mb{w}_t)
+	\end{equation}
+	
+	\textbf{TD(0) with function approximation}:
+	\begin{equation}\label{td-fa}
+		\mb{w}_{t+1} = \mb{w}_t + \alpha [R_{t+1} + \gamma \hat{V}(S_{t+1}, \mb{w}_t) - \hat{V}(S_t, \mb{w}_t)] \nabla_{\mb{w}} \hat{V}(S_t, \mb{w}_t)
+	\end{equation}
+	
+	\begin{frema}{}{fa-convergence}
+		With linear function approximation $\hat{V}(s, \mb{w}) = \mb{w}^T \mb{\phi}(s)$ where $\mb{\phi}(s)$ are features, TD methods with function approximation may not converge to the global optimum but converge to a point close to the best approximation within the function class. MC methods are guaranteed to converge to a local minimum of the mean squared error.
+	\end{frema}
+	
+	\section{Policy Gradient Methods}
+	
+	Instead of learning value functions and deriving a policy, policy gradient methods directly parameterize and optimize the policy.
+	
+	\subsection{Parameterized Policies}
+	
+	Let $\pi(a\;|\; s, \boldsymbol{\theta})$ be a policy parameterized by $\boldsymbol{\theta} \in \R^m$.
+	
+	\textbf{Objective}: Maximize the expected return:
+	\begin{equation}\label{pg-objective}
+		J(\boldsymbol{\theta}) = \E_{\pi_{\boldsymbol{\theta}}}[G_0] = \sum_{s \in \mc{S}} d^{\pi}(s) V^{\pi}(s)
+	\end{equation}
+	where $d^{\pi}(s)$ is the stationary distribution of states under policy $\pi$.
+	
+	\begin{ftheo}{Policy Gradient Theorem}{pg-theorem}
+		The gradient of the objective function with respect to the policy parameters is:
+		\begin{equation}\label{pg-gradient}
+			\nabla_{\boldsymbol{\theta}} J(\boldsymbol{\theta}) = \E_{\pi_{\boldsymbol{\theta}}} \left[ \nabla_{\boldsymbol{\theta}} \log \pi(A_t\;|\; S_t, \boldsymbol{\theta}) Q^{\pi_{\boldsymbol{\theta}}}(S_t, A_t) \right]
+		\end{equation}
+	\end{ftheo}
+	
+	\begin{proof}[Proof sketch]
+		We use the likelihood ratio trick. For a trajectory $\tau = (s_0, a_0, r_1, s_1, a_1, \ldots)$ with probability
+		\begin{equation*}
+			P(\tau\;|\; \boldsymbol{\theta}) = \mu(s_0) \prod_{t=0}^{T-1} \pi(a_t\;|\; s_t, \boldsymbol{\theta}) P(s_{t+1}, r_{t+1}\;|\; s_t, a_t)
+		\end{equation*}
+		and return $G(\tau) = \sum_{t=0}^{T-1} \gamma^t r_{t+1}$, we have
+		\begin{equation*}
+			J(\boldsymbol{\theta}) = \sum_{\tau} P(\tau\;|\; \boldsymbol{\theta}) G(\tau)
+		\end{equation*}
+		
+		Taking the gradient:
+		\begin{equation*}
+			\begin{split}
+				\nabla_{\boldsymbol{\theta}} J(\boldsymbol{\theta}) &= \sum_{\tau} \nabla_{\boldsymbol{\theta}} P(\tau\;|\; \boldsymbol{\theta}) G(\tau)\\
+				&= \sum_{\tau} P(\tau\;|\; \boldsymbol{\theta}) \nabla_{\boldsymbol{\theta}} \log P(\tau\;|\; \boldsymbol{\theta}) G(\tau)\\
+				&= \E_{\tau \sim \pi_{\boldsymbol{\theta}}} \left[ G(\tau) \nabla_{\boldsymbol{\theta}} \log P(\tau\;|\; \boldsymbol{\theta}) \right]
+			\end{split}
+		\end{equation*}
+		
+		Since the transition probabilities do not depend on $\boldsymbol{\theta}$,
+		\begin{equation*}
+			\nabla_{\boldsymbol{\theta}} \log P(\tau\;|\; \boldsymbol{\theta}) = \sum_{t=0}^{T-1} \nabla_{\boldsymbol{\theta}} \log \pi(a_t\;|\; s_t, \boldsymbol{\theta})
+		\end{equation*}
+		
+		Combining and using the definition of $Q^{\pi}$, we obtain equation \eqref{pg-gradient}. The full proof requires careful handling of the expectation and showing that the baseline subtraction does not introduce bias.
+	\end{proof}
+	
+	\subsection{REINFORCE Algorithm}
+	
+	Monte Carlo policy gradient using sample returns:
+	\begin{equation}\label{reinforce}
+		\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_t + \alpha G_t \nabla_{\boldsymbol{\theta}} \log \pi(A_t\;|\; S_t, \boldsymbol{\theta}_t)
+	\end{equation}
+	
+	\begin{frema}{}{reinforce-variance}
+		REINFORCE is an unbiased estimate of the policy gradient but has high variance because it uses the full return $G_t$. Variance reduction techniques include baselines and actor-critic methods.
+	\end{frema}
+	
+	\subsection{Actor-Critic Methods}
+	
+	Combine policy gradient (actor) with value function approximation (critic) to reduce variance:
+	\begin{equation}\label{actor-critic}
+		\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_t + \alpha \delta_t \nabla_{\boldsymbol{\theta}} \log \pi(A_t\;|\; S_t, \boldsymbol{\theta}_t)
+	\end{equation}
+	where $\delta_t = R_{t+1} + \gamma \hat{V}(S_{t+1}, \mb{w}) - \hat{V}(S_t, \mb{w})$ is the TD error from the critic.
+	
+	The critic's weights $\mb{w}$ are updated using TD learning (equation \eqref{td-fa}).
+	
+	\begin{frema}{}{actor-critic-benefit}
+		Actor-critic methods reduce the variance of REINFORCE by replacing the Monte Carlo return $G_t$ with the bootstrapped TD error $\delta_t$, while maintaining low bias. The critic learns the value function to provide a better baseline for the actor's updates.
+	\end{frema}
+	
+	\section{Key Probabilistic Concepts in Reinforcement Learning}
+	
+	\subsection{Probability Distributions in RL}
+	
+	\begin{itemize}
+		\item \textbf{Transition Probability}: $P(s', r\;|\; s, a)$ characterizes environmental dynamics
+		\item \textbf{Policy}: $\pi(a\;|\; s)$ defines the agent's behavior as a conditional probability distribution
+		\item \textbf{State Distribution}: $d_t(s) = \P(S_t = s)$ evolves according to
+		\begin{equation}
+			d_{t+1}(s') = \sum_{s \in \mc{S}} \sum_{a \in \mc{A}} d_t(s) \pi(a\;|\; s) P(s'\;|\; s, a)
+		\end{equation}
+		\item \textbf{Stationary Distribution}: Under an ergodic Markov chain, $d^{\pi}$ satisfies
+		\begin{equation}
+			d^{\pi}(s') = \sum_{s \in \mc{S}} \sum_{a \in \mc{A}} d^{\pi}(s) \pi(a\;|\; s) P(s'\;|\; s, a)
+		\end{equation}
+	\end{itemize}
+	
+	\subsection{Expectations and Conditional Expectations}
+	
+	Value functions are fundamentally conditional expectations:
+	\begin{align}
+		V^{\pi}(s) &= \E^{\pi}[G_t\;|\; S_t = s] = \E^{\pi} \left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \;|\; S_t = s \right]\\
+		Q^{\pi}(s, a) &= \E^{\pi}[G_t\;|\; S_t = s, A_t = a]
+	\end{align}
+	
+	Using the tower property of conditional expectation:
+	\begin{equation}
+		\E^{\pi}[G_t\;|\; S_t = s] = \E^{\pi}[\E^{\pi}[G_t\;|\; S_t, A_t]\;|\; S_t = s]
+	\end{equation}
+	which leads to the relationship $V^{\pi}(s) = \sum_a \pi(a\;|\; s) Q^{\pi}(s, a)$.
+	
+	\subsection{Law of Total Probability}
+	
+	Used extensively in deriving Bellman equations:
+	\begin{equation}
+		V^{\pi}(s) = \sum_{a} \pi(a\;|\; s) \sum_{s'} \sum_{r} P(s', r\;|\; s, a) \left[ r + \gamma V^{\pi}(s') \right]
+	\end{equation}
+	
+	\subsection{Convergence and Stochastic Approximation}
+	
+	TD learning and Q-learning are forms of stochastic approximation. The Robbins-Monro conditions on the step size $\alpha_t$:
+	\begin{itemize}
+		\item $\sum_{t=0}^{\infty} \alpha_t = \infty$ (guarantees convergence)
+		\item $\sum_{t=0}^{\infty} \alpha_t^2 < \infty$ (guarantees variance goes to zero)
+	\end{itemize}
+	ensure convergence of the stochastic gradient descent procedures.
+	
+	Typical choices: $\alpha_t = \frac{1}{t+1}$ satisfies both conditions, or constant $\alpha \in (0, 1]$ for non-stationary environments (violates second condition but adapts to changes).
+	
+	\section{Summary and Conclusions}
+	
+	Reinforcement learning provides a rigorous probabilistic framework for sequential decision-making under uncertainty. The key components are:
+	
+	\begin{itemize}
+		\item \textbf{Environment}: Modeled as an MDP with transition probabilities $P(s', r\;|\; s, a)$ satisfying the Markov property
+		\item \textbf{Agent}: Characterized by a policy $\pi(a\;|\; s)$ that maps states to probability distributions over actions
+		\item \textbf{Value Functions}: Expected returns $V^{\pi}(s)$ and $Q^{\pi}(s, a)$ quantify the quality of states and state-action pairs
+		\item \textbf{Bellman Equations}: Recursive decomposition of value functions using conditional expectations
+		\item \textbf{Optimal Policies}: Policies $\pi^*$ that maximize value functions, satisfying Bellman optimality equations
+		\item \textbf{Learning Algorithms}: Methods to estimate value functions and improve policies from experience:
+		\begin{itemize}
+			\item Dynamic Programming (model-based)
+			\item Monte Carlo methods (model-free, high variance, unbiased)
+			\item Temporal Difference learning (model-free, low variance, bootstrapped)
+			\item Policy gradient methods (direct policy optimization)
+		\end{itemize}
+	\end{itemize}
+	
+	The probabilistic foundations are essential: randomness in the environment (stochastic transitions), stochasticity in policies (exploration), and statistical estimation from samples (learning from experience) all play crucial roles in the theory and practice of reinforcement learning.
+	
+	The convergence results rely on fundamental theorems from probability theory and stochastic processes: the law of large numbers (for Monte Carlo), contraction mappings (for dynamic programming and TD), and stochastic approximation theory (for gradient-based methods).
+	
+\end{document}
