@@ -1224,3 +1224,264 @@ Potrzebujesz wielu mutexów jednocześnie?
 ## Literatura
 
 - E.W. Dijkstra, *Hierarchical Ordering of Sequential Processes*, Acta Informatica, 1971
+
+
+
+# Warunki Coffmana — precyzyjne sformułowanie i dowód
+
+---
+
+## Uwaga wstępna
+
+Coffman et al. (1971) sformułowali cztery warunki jako **warunki konieczne** deadlocka,
+nie jako warunki konieczne **i wystarczające**.
+
+| Twierdzenie | Status |
+|-------------|--------|
+| Deadlock → wszystkie 4 warunki spełnione | ✅ **Udowodnione** (warunki konieczne) |
+| Wszystkie 4 warunki spełnione → deadlock | ❌ **Nieprawda w ogólności!** |
+
+Cztery warunki spełnione jednocześnie oznaczają, że deadlock **może** wystąpić,
+ale **nie musi**. Zależy od konkretnego timingu.
+
+---
+
+## Model formalny
+
+### Definicje
+
+- **Procesy** (wątki): T = {t₁, t₂, …, tₙ}
+- **Zasoby** (muteksy): R = {r₁, r₂, …, rₘ}, każdy z jedną instancją
+- **Funkcja trzymania:** H(tᵢ) ⊆ R — zbiór zasobów trzymanych przez tᵢ
+- **Funkcja oczekiwania:** W(tᵢ) ⊆ R — zbiór zasobów na które tᵢ czeka
+- **Graf przydziału zasobów** (Resource Allocation Graph, RAG):
+  - Wierzchołki: T ∪ R
+  - Krawędź żądania: tᵢ → rⱼ gdy rⱼ ∈ W(tᵢ) (wątek czeka na zasób)
+  - Krawędź przydziału: rⱼ → tᵢ gdy rⱼ ∈ H(tᵢ) (zasób przydzielony wątkowi)
+
+### Definicja deadlocka
+
+Zbiór procesów D ⊆ T, D ≠ ∅, jest w stanie **deadlocka** wtedy i tylko wtedy gdy:
+
+```
+∀ tᵢ ∈ D:  W(tᵢ) ≠ ∅  ∧  ∀ rⱼ ∈ W(tᵢ):  ∃ tₖ ∈ D:  rⱼ ∈ H(tₖ)
+```
+
+Słownie: każdy proces w D czeka na zasób trzymany przez inny proces w D.
+
+---
+
+## Cztery warunki — formalne sformułowanie
+
+### Warunek 1: Mutual Exclusion (Wzajemne wykluczanie)
+
+```
+∀ rⱼ ∈ R:  |{tᵢ ∈ T : rⱼ ∈ H(tᵢ)}| ≤ 1
+```
+
+Każdy zasób może być trzymany przez **co najwyżej jeden** proces w danym momencie.
+
+### Warunek 2: Hold and Wait (Trzymaj i czekaj)
+
+```
+∃ tᵢ ∈ T:  H(tᵢ) ≠ ∅  ∧  W(tᵢ) ≠ ∅
+```
+
+Istnieje proces, który **trzyma** co najmniej jeden zasób
+**i jednocześnie czeka** na kolejny.
+
+### Warunek 3: No Preemption (Brak wywłaszczania)
+
+Zasobu nie można odebrać procesowi siłą — proces sam go zwalnia
+dobrowolnie po zakończeniu użycia.
+
+Formalnie: jedyna operacja usuwająca rⱼ z H(tᵢ) to jawne zwolnienie przez tᵢ.
+
+### Warunek 4: Circular Wait (Cykliczne oczekiwanie)
+
+```
+∃ t₁, t₂, …, tₖ ∈ T,  k ≥ 2:
+  t₁ czeka na zasób trzymany przez t₂
+  t₂ czeka na zasób trzymany przez t₃
+  ⋮
+  tₖ czeka na zasób trzymany przez t₁
+```
+
+Formalnie: w **grafie wait-for** istnieje cykl.
+
+**Graf wait-for:** tᵢ → tₖ  wtw.  ∃ rⱼ: rⱼ ∈ W(tᵢ) ∧ rⱼ ∈ H(tₖ)
+
+---
+
+## Twierdzenie (Coffman et al., 1971)
+
+> **Jeśli w systemie wystąpił deadlock, to wszystkie cztery warunki są spełnione.**
+>
+> (Warunki konieczne)
+
+---
+
+## Dowód (⇒: deadlock implikuje 4 warunki)
+
+Niech D = {t₁, …, tₖ} będzie zbiorem procesów w deadlocku.
+
+### Krok 1: Mutual Exclusion musi zachodzić
+
+Z definicji deadlocka: ∀ tᵢ ∈ D: W(tᵢ) ≠ ∅.
+
+Tzn. każdy tᵢ czeka na jakiś zasób rⱼ. Czekanie oznacza, że tᵢ **nie może uzyskać** rⱼ.
+Gdyby zasób mógł być współdzielony (brak mutual exclusion), tᵢ nie musiałby czekać —
+mógłby go użyć jednocześnie z obecnym posiadaczem.
+
+Zatem mutual exclusion musi zachodzić (na zasobach zaangażowanych w deadlock). ∎
+
+### Krok 2: Hold and Wait musi zachodzić
+
+Z definicji deadlocka:
+- ∀ tᵢ ∈ D: W(tᵢ) ≠ ∅  (każdy czeka)
+- Każdy zasób na który czeka tᵢ jest trzymany przez jakiś tₖ ∈ D
+
+Gdyby żaden tᵢ ∈ D nie trzymał żadnego zasobu (tzn. H(tᵢ) = ∅ dla wszystkich tᵢ ∈ D),
+to nie byłoby na co czekać — sprzeczność z definicją deadlocka (kto trzyma te zasoby?).
+
+Zatem ∃ tᵢ ∈ D: H(tᵢ) ≠ ∅ ∧ W(tᵢ) ≠ ∅. ∎
+
+### Krok 3: No Preemption musi zachodzić
+
+Gdyby zasoby mogły być wywłaszczone, system mógłby odebrać zasób rⱼ procesowi tₖ
+i dać go tᵢ (który na niego czeka). Wtedy tᵢ przestałby czekać → nie byłby w deadlocku.
+
+Zatem: jeśli deadlock trwa, to zasoby **nie mogą być odebrane** siłą. ∎
+
+### Krok 4: Circular Wait musi zachodzić
+
+Konstruujemy cykl:
+- t₁ ∈ D czeka na zasób rⱼ₁ ∈ W(t₁)
+- rⱼ₁ jest trzymany przez jakiś t₂ ∈ D (z definicji deadlocka)
+- t₂ czeka na rⱼ₂, trzymany przez t₃ ∈ D
+- Kontynuujemy: t₃ → t₄ → …
+
+Ponieważ D jest **skończony**, w ciągu tym musi pojawić się
+powtórzenie: tₛ = tₗ dla s < l.
+
+Zatem mamy cykl: tₛ → tₛ₊₁ → … → tₗ = tₛ. ∎
+
+---
+
+## Dlaczego implikacja w drugą stronę NIE zachodzi
+
+### Kontrprzykład
+
+4 warunki spełnione, ale brak deadlocka:
+
+```
+Zasoby: r1, r2 (mutual exclusion ✅)
+Procesy: t1, t2
+
+Stan:
+  t1: trzyma r1, MOŻE poprosić o r2 (ale jeszcze nie poprosił)
+  t2: trzyma r2, MOŻE poprosić o r1 (ale jeszcze nie poprosił)
+
+Analiza warunków:
+  1. Mutual exclusion ✅ (r1 i r2 exclusive)
+  2. Hold and wait    ✅ (oba trzymają i MOGĄ czekać)
+  3. No preemption    ✅ (nie zabieramy siłą)
+  4. Circular wait    ✅ (POTENCJALNY cykl t1→t2→t1)
+```
+
+```
+Linia czasu — scenariusz BEZ deadlocka:
+
+t1: [trzyma r1, pracuje......., unlock(r1), lock(r2), pracuje, unlock(r2)]
+t2: [trzyma r2, pracuje, lock(r1)──czeka──, ──dostaje r1!──, pracuje.....]
+                                                ↑
+                                    t1 zwolnił r1 zanim poprosił o r2
+                                    → brak cyklu → brak deadlocka
+
+Linia czasu — scenariusz Z deadlockiem:
+
+t1: [trzyma r1, lock(r2)��─czeka──────── ☠️]
+t2: [trzyma r2, lock(r1)──czeka──────── ☠️]
+                    ↑
+        Obaj poprosili zanim zwolnili → cykl → deadlock
+```
+
+Warunki opisują **strukturę systemu** umożliwiającą deadlock, ale **czy deadlock
+faktycznie wystąpi** zależy od konkretnego **przeplotu** (interleaving) operacji.
+
+---
+
+## Kiedy warunki SĄ wystarczające?
+
+Dla **zasobów z jedną instancją** (tak jak w problemie filozofów —
+każdy widelec jest unikalny):
+
+> **Twierdzenie:** W systemie z zasobami jednoinstancyjnymi, deadlock istnieje
+> **wtedy i tylko wtedy** gdy graf wait-for zawiera cykl.
+
+### Dowód (⇐: cykl w grafie wait-for → deadlock)
+
+Niech cykl to: t₁ → t₂ → … → tₖ → t₁.
+
+- t₁ → t₂ oznacza: t₁ czeka na zasób trzymany przez t₂
+- t₂ nie może zwolnić tego zasobu, bo sam czeka (na zasób trzymany przez t₃)
+- t₃ nie może zwolnić, bo czeka na t₄
+- …
+- tₖ nie może zwolnić, bo czeka na t₁
+
+Żaden proces w cyklu nie może uczynić postępu → deadlock. ∎
+
+**Uwaga:** Dla zasobów z wieloma instancjami (np. semafor z count > 1)
+cykl w RAG jest konieczny ale **nie wystarczający** — potrzeba dodatkowej
+analizy (algorytm bankiera Dijkstry).
+
+---
+
+## Podsumowanie — co dokładnie wiemy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │ 4 warunki Coffmana spełnione                        │   │
+│   │                                                     │   │
+│   │  ┌──────────────────────────────┐                   │   │
+│   │  │ DEADLOCK                     │                   │   │
+│   │  │ (wystarczy złamać            │ ← deadlock jest   │   │
+│   │  │  jeden warunek               │   TUTAJ           │   │
+│   │  │  aby wyeliminować)           │   (podzbiór)      │   │
+│   │  └──────────────────────────────┘                   │   │
+│   │                                                     │   │
+│   │  Reszta tego zbioru = systemy ZAGROŻONE             │   │
+│   │  deadlockiem ale akurat timing uratował             │   │
+│   └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│   Poza zbiorem = systemy BEZPIECZNE                         │
+│   (co najmniej 1 warunek Coffmana złamany)                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Praktyczna implikacja
+
+Mimo że 4 warunki nie gwarantują deadlocka, **łamanie warunków jest
+skuteczną strategią prewencji**, bo:
+
+| Strategia | Co robimy | Pewność |
+|-----------|-----------|---------|
+| **Prewencja** (złam warunek) | Uniemożliwiamy deadlock strukturalnie | 100% — deadlock **niemożliwy** |
+| **Unikanie** (algorytm bankiera) | Dynamicznie odmawiamy przydziału | 100% — wymaga wiedzy z góry |
+| **Detekcja + recovery** | Pozwalamy na deadlock, wykrywamy, naprawiamy | Deadlock chwilowo możliwy |
+| **Ignorowanie** (struś) | Liczymy na szczęście | 🙃 |
+
+> Złamanie **jednego** warunku Coffmana → warunki konieczne niespełnione
+> → deadlock **logicznie niemożliwy**. Dlatego ta strategia działa
+> pomimo tego, że warunki nie są wystarczające.
+
+---
+
+## Literatura
+
+- E.G. Coffman, M.J. Elphick, A. Shoshani, *System Deadlocks*, Computing Surveys 3(2), 1971
+- A. Silberschatz, P. Galvin, G. Gagne, *Operating System Concepts*, rozdziały 7–8
+- A.S. Tanenbaum, *Modern Operating Systems*, rozdział 6
