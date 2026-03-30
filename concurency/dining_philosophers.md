@@ -1372,42 +1372,19 @@ Zatem mamy cykl: tₛ → tₛ₊₁ → … → tₗ = tₛ. ∎
 
 ### Kontrprzykład
 
-4 warunki spełnione, ale brak deadlocka:
+Zasoby: R1 (2 instancje), R2 (2 instancje)
+Procesy: t1, t2, t3
 
-```
-Zasoby: r1, r2 (mutual exclusion ✅)
-Procesy: t1, t2
+  t1: trzyma 1× R1, czeka na R2
+  t2: trzyma 1× R2, czeka na R1
+  t3: trzyma 1× R1, trzyma 1× R2 (nie czeka na nic)
 
-Stan:
-  t1: trzyma r1, MOŻE poprosić o r2 (ale jeszcze nie poprosił)
-  t2: trzyma r2, MOŻE poprosić o r1 (ale jeszcze nie poprosił)
+Graf RAG ma cykl: t1 → R2 → t2 → R1 → t1
 
-Analiza warunków:
-  1. Mutual exclusion ✅ (r1 i r2 exclusive)
-  2. Hold and wait    ✅ (oba trzymają i MOGĄ czekać)
-  3. No preemption    ✅ (nie zabieramy siłą)
-  4. Circular wait    ✅ (POTENCJALNY cykl t1→t2→t1)
-```
-
-```
-Linia czasu — scenariusz BEZ deadlocka:
-
-t1: [trzyma r1, pracuje......., unlock(r1), lock(r2), pracuje, unlock(r2)]
-t2: [trzyma r2, pracuje, lock(r1)──czeka──, ──dostaje r1!──, pracuje.....]
-                                                ↑
-                                    t1 zwolnił r1 zanim poprosił o r2
-                                    → brak cyklu → brak deadlocka
-
-Linia czasu — scenariusz Z deadlockiem:
-
-t1: [trzyma r1, lock(r2)��─czeka──────── ☠️]
-t2: [trzyma r2, lock(r1)──czeka──────── ☠️]
-                    ↑
-        Obaj poprosili zanim zwolnili → cykl → deadlock
-```
-
-Warunki opisują **strukturę systemu** umożliwiającą deadlock, ale **czy deadlock
-faktycznie wystąpi** zależy od konkretnego **przeplotu** (interleaving) operacji.
+Ale: gdy t3 skończy, zwolni R1 i R2
+  → t1 dostanie R2 → skończy → zwolni R1
+  → t2 dostanie R1 → skończy
+  → BRAK DEADLOCKA mimo cyklu w RAG!
 
 ---
 
