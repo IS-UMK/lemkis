@@ -9,5 +9,5 @@ g++ -std=c++23 -Wall -Wextra -pthread -O0 "$SRC_FILE" -o "$EXE_NAME"
 
 echo "=== URUCHAMIAM ==="
 # Unbuffered output + timeout 10s
-timeout 10 ./$EXE_NAME 
+ ./$EXE_NAME 
 echo "=== EXIT CODE: $? ==="

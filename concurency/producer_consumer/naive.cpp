@@ -1,4 +1,4 @@
-#include <iostream>
+#include <print>
 #include <queue>
 #include <thread>
 
@@ -9,7 +9,7 @@ void producent() {
     for (int i = 0; i < 20; ++i) {
         while (bufor.size() >= MAX_SIZE) {}
         bufor.push(i);
-        std::cout << "Wyprodukowano: " << i << "\n";
+        std::println("Wyprodukowano: {}", i);
     }
 }
 
@@ -18,7 +18,7 @@ void konsument() {
         while (bufor.empty()) {}
         int val = bufor.front();
         bufor.pop();
-        std::cout << "Skonsumowano: " << val << "\n";
+        std::println("Skonsumowano: {}", val);
     }
 }
 

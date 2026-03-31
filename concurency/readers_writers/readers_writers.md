@@ -1,4 +1,5 @@
 # Czytelnicy-Pisarze (Readers-Writers)
+
 ## Notatki do wykładu/ćwiczeń z programowania współbieżnego w C++
 
 ---
@@ -14,23 +15,27 @@ pamięć podręczną), przy czym:
 
 ### Kluczowa obserwacja
 
-| Operacja | Czytelnik | Pisarz |
-|----------|:---------:|:------:|
+
+| Operacja      | Czytelnik                       | Pisarz                |
+| ------------- | ------------------------------- | --------------------- |
 | **Czytelnik** | ✅ Mogą działać **jednocześnie** | ❌ Muszą się wykluczać |
-| **Pisarz** | ❌ Muszą się wykluczać | ❌ Muszą się wykluczać |
+| **Pisarz**    | ❌ Muszą się wykluczać           | ❌ Muszą się wykluczać |
+
 
 > **Wielu czytelników naraz** — bo odczyt nie zmienia danych.
 > **Pisarz musi być sam** — bo zapis + odczyt jednocześnie = data race.
 
 ### Przykłady z życia
 
-| Czytelnicy | Pisarze | Współdzielony zasób |
-|------------|---------|---------------------|
-| Wątki obsługujące HTTP GET | Wątek aktualizujący konfigurację | `std::map<string, string> config` |
-| Wątki renderujące scenę gry | Wątek physics engine | Pozycje obiektów |
-| Wątki odpytujące cache | Wątek odświeżający cache | `std::unordered_map` |
-| `SELECT` w bazie danych | `UPDATE`/`INSERT` | Tabela |
-| Wiele wątków DNS lookup | Wątek odświeżający wpisy DNS | Tablica DNS |
+
+| Czytelnicy                  | Pisarze                          | Współdzielony zasób               |
+| --------------------------- | -------------------------------- | --------------------------------- |
+| Wątki obsługujące HTTP GET  | Wątek aktualizujący konfigurację | `std::map<string, string> config` |
+| Wątki renderujące scenę gry | Wątek physics engine             | Pozycje obiektów                  |
+| Wątki odpytujące cache      | Wątek odświeżający cache         | `std::unordered_map`              |
+| `SELECT` w bazie danych     | `UPDATE`/`INSERT`                | Tabela                            |
+| Wiele wątków DNS lookup     | Wątek odświeżający wpisy DNS     | Tablica DNS                       |
+
 
 ### Dlaczego nie po prostu `std::mutex`?
 
@@ -68,16 +73,19 @@ Czytelnik C: ████████
 Są **trzy klasyczne warianty**, różniące się tym, kogo faworyzujemy:
 
 ### Wariant 1: Preferencja czytelników (readers-preference)
+
 - Dopóki jest choć jeden czytelnik, kolejni czytelnicy **wchodzą natychmiast**
 - Pisarz czeka aż **wszyscy** czytelnicy skończą
 - ⚠️ **Zagłodzenie pisarzy** — ciągły napływ czytelników = pisarz nigdy nie wejdzie
 
 ### Wariant 2: Preferencja pisarzy (writers-preference)
+
 - Gdy pisarz czeka, **nowi czytelnicy są blokowani**
 - Pisarz wchodzi gdy aktywni czytelnicy skończą
 - ⚠️ **Zagłodzenie czytelników** — ciągły napływ pisarzy = czytelnicy nigdy nie wejdą
 
 ### Wariant 3: Fair (bez zagłodzenia)
+
 - Obsługa w kolejności zgłoszeń (FIFO)
 - Żaden wątek nie jest faworyzowany
 - ⚠️ Najtrudniejszy do zaimplementowania
@@ -249,18 +257,35 @@ void pisarz(int id) {
     // unique_lock — wyłączny dostęp
     std::unique_lock<std::shared_mutex> lock(rw_mutex);
     shared_data = "Wersja " + std::to_string(id);
+}#include <shared_mutex>
+
+std::shared_mutex rw_mutex;
+std::string shared_data = "Wersja 0";
+
+void czytelnik(int id) {
+    // shared_lock — wielu czytelników jednocześnie
+    std::shared_lock<std::shared_mutex> lock(rw_mutex);
+    std::cout << "Czytelnik " << id << ": " << shared_data << "\n";
+}
+
+void pisarz(int id) {
+    // unique_lock — wyłączny dostęp
+    std::unique_lock<std::shared_mutex> lock(rw_mutex);
+    shared_data = "Wersja " + std::to_string(id);
 }
 ```
 
 ### Zestawienie typów locków
 
-| Typ locka | Mutex | Współdzielenie | Użycie |
-|-----------|-------|:--------------:|--------|
-| `std::lock_guard<std::mutex>` | exclusive | ❌ | Prosty exclusive |
-| `std::unique_lock<std::mutex>` | exclusive | ❌ | Exclusive + CV |
-| `std::unique_lock<std::shared_mutex>` | **exclusive** | ❌ | **Pisarz** |
-| `std::shared_lock<std::shared_mutex>` | **shared** | ✅ | **Czytelnik** |
-| `std::scoped_lock<std::shared_mutex>` | **exclusive** | ❌ | Pisarz (RAII) |
+
+| Typ locka                             | Mutex         | Współdzielenie | Użycie           |
+| ------------------------------------- | ------------- | -------------- | ---------------- |
+| `std::lock_guard<std::mutex>`         | exclusive     | ❌              | Prosty exclusive |
+| `std::unique_lock<std::mutex>`        | exclusive     | ❌              | Exclusive + CV   |
+| `std::unique_lock<std::shared_mutex>` | **exclusive** | ❌              | **Pisarz**       |
+| `std::shared_lock<std::shared_mutex>` | **shared**    | ✅              | **Czytelnik**    |
+| `std::scoped_lock<std::shared_mutex>` | **exclusive** | ❌              | Pisarz (RAII)    |
+
 
 ### Zachowanie `std::shared_mutex` — tabela stanów
 
@@ -277,11 +302,13 @@ Exclusive (pisarz)      ❌ Czeka               ❌ Czeka
 
 **Standard C++ tego NIE SPECYFIKUJE!** Zależy od implementacji:
 
-| Implementacja | Wariant | Uwagi |
-|--------------|---------|-------|
-| libstdc++ (GCC, Linux) | Zwykle writers-preference (pthread_rwlock) | Zależy od konfiguracji pthreads |
-| libc++ (Clang) | Zależy od platformy | |
-| MSVC (Windows) | SRW Lock — ani readers ani writers preference | Bliżej fair, ale bez gwarancji |
+
+| Implementacja          | Wariant                                       | Uwagi                           |
+| ---------------------- | --------------------------------------------- | ------------------------------- |
+| libstdc++ (GCC, Linux) | Zwykle writers-preference (pthread_rwlock)    | Zależy od konfiguracji pthreads |
+| libc++ (Clang)         | Zależy od platformy                           |                                 |
+| MSVC (Windows)         | SRW Lock — ani readers ani writers preference | Bliżej fair, ale bez gwarancji  |
+
 
 > **Wniosek:** Nie możesz polegać na konkretnym zachowaniu `std::shared_mutex`
 > w kwestii fairness — jeśli potrzebujesz gwarancji, musisz implementować sam.
@@ -345,6 +372,7 @@ int main() {
 ```
 
 ### Zadanie dla studentów (przy komputerze):
+
 > Skompiluj i uruchom powyższy program kilka razy. Zaobserwuj czasy czekania pisarza.
 > Czy są stabilne? Czy pisarz w ogóle się doczekał?
 
@@ -464,6 +492,8 @@ class FairRWLock {
 
     // Próbuje przyznać dostęp następnym w kolejce
     void try_grant_next(std::unique_lock<std::mutex>& /*lock*/) {
+
+
         while (!wait_queue_.empty()) {
             Request* front = wait_queue_.front();
 
@@ -645,12 +675,14 @@ Dlaczego? shared_mutex ma wewnętrznie WIĘCEJ logiki:
 
 **Reguła kciuka:**
 
-| Scenariusz | Lepszy wybór |
-|------------|-------------|
-| 90%+ odczytów, sekcja krytyczna > 1μs | `std::shared_mutex` ✅ |
-| 50/50 odczyty/zapisy | `std::mutex` ✅ (prostszy, mniejszy overhead) |
-| Bardzo krótka sekcja krytyczna (< 100ns) | `std::mutex` ✅ |
-| Jeden wątek pisarza, wiele czytelników | `std::shared_mutex` ✅ |
+
+| Scenariusz                               | Lepszy wybór                                 |
+| ---------------------------------------- | -------------------------------------------- |
+| 90%+ odczytów, sekcja krytyczna > 1μs    | `std::shared_mutex` ✅                        |
+| 50/50 odczyty/zapisy                     | `std::mutex` ✅ (prostszy, mniejszy overhead) |
+| Bardzo krótka sekcja krytyczna (< 100ns) | `std::mutex` ✅                               |
+| Jeden wątek pisarza, wiele czytelników   | `std::shared_mutex` ✅                        |
+
 
 ### 6.4 Inwersja priorytetów
 
@@ -740,15 +772,63 @@ public:
     void update(const std::string& key, const std::string& value) {
         std::unique_lock lock(mutex_);
         // Kopia istniejącej mapy
+        auto new_config = s#include <shared_mutex>
+#include <memory>
+#include <atomic>
+
+class RCUConfig {
+    // shared_ptr jest atomowy od C++20 (std::atomic<std::shared_ptr<T>>)
+    // Dla C++17 używamy shared_mutex:
+    mutable std::shared_mutex mutex_;
+    std::shared_ptr<const std::map<std::string, std::string>> config_;
+
+public:
+    RCUConfig()
+        : config_(std::make_shared<const std::map<std::string, std::string>>()) {}
+
+    // Odczyt — kopiujemy shared_ptr (szybkie, atomowe)
+    std::shared_ptr<const std::map<std::string, std::string>> read() const {
+        std::shared_lock lock(mutex_);
+        return config_;  // kopia shared_ptr — czytelnicy mogą trzymać długo
+    }
+
+    // Zapis — tworzymy NOWĄ kopię, podmieniamy wskaźnik
+    void update(const std::string& key, const std::string& value) {
+        std::unique_lock lock(mutex_);
+        // Kopia istniejącej mapy
+        auto new_config = #include <shared_mutex>
+#include <memory>
+#include <atomic>
+
+class RCUConfig {
+    // shared_ptr jest atomowy od C++20 (std::atomic<std::shared_ptr<T>>)
+    // Dla C++17 używamy shared_mutex:
+    mutable std::shared_mutex mutex_;
+    std::shared_ptr<const std::map<std::string, std::string>> config_;
+
+public:
+    RCUConfig()
+        : config_(std::make_shared<const std::map<std::string, std::string>>()) {}
+
+    // Odczyt — kopiujemy shared_ptr (szybkie, atomowe)
+    std::shared_ptr<const std::map<std::string, std::string>> read() const {
+        std::shared_lock lock(mutex_);
+        return config_;  // kopia shared_ptr — czytelnicy mogą trzymać długo
+    }
+
+    // Zapis — tworzymy NOWĄ kopię, podmieniamy wskaźnik
+    void update(const std::string& key, const std::string& value) {
+        std::unique_lock lock(mutex_);
+        // Kopia istniejącej mapy
         auto new_config = std::make_shared<std::map<std::string, std::string>>(*config_);
         (*new_config)[key] = value;
         config_ = new_config;  // podmiana wskaźnika (atomowa)
         // Starzy czytelnicy dalej trzymają starą wersję — to OK!
     }
 };
+Natomiast w c++20 można
 ```
 
-Natomiast w c++20 można
 ```cpp
 #include <atomic>
 #include <memory>
@@ -781,20 +861,20 @@ public:
 };
 ```
 
-
-
 ---
 
 ## 8. Porównanie podejść — tabela podsumowująca
 
-| Podejście | Fairness | Zagłodzenie | Przepustowość odczytów | Złożoność |
-|-----------|:--------:|:-----------:|:----------------------:|:---------:|
-| `std::mutex` (baseline) | N/A | N/A | ❌ Sekwencyjna | ⭐ |
-| Ręczne readers-pref. | Czytelnicy ✅ | Pisarze ☠️ | ✅✅✅ | ⭐⭐⭐ |
-| Ręczne writers-pref. | Pisarze ✅ | Czytelnicy ☠️ | ✅✅ | ⭐⭐⭐ |
-| Ręczne fair (FIFO) | ✅ Obie strony | ✅ Brak | ✅✅ | ⭐⭐⭐⭐⭐ |
-| `std::shared_mutex` | Zależy od impl. | Możliwe | ✅✅ | ⭐⭐ |
-| RCU-like pattern | ✅ | ✅ Brak | ✅✅✅✅ | ⭐⭐⭐ |
+
+| Podejście               | Fairness        | Zagłodzenie   | Przepustowość odczytów | Złożoność |
+| ----------------------- | --------------- | ------------- | ---------------------- | --------- |
+| `std::mutex` (baseline) | N/A             | N/A           | ❌ Sekwencyjna          | ⭐         |
+| Ręczne readers-pref.    | Czytelnicy ✅    | Pisarze ☠️    | ✅✅✅                    | ⭐⭐⭐       |
+| Ręczne writers-pref.    | Pisarze ✅       | Czytelnicy ☠️ | ✅✅                     | ⭐⭐⭐       |
+| Ręczne fair (FIFO)      | ✅ Obie strony   | ✅ Brak        | ✅✅                     | ⭐⭐⭐⭐⭐     |
+| `std::shared_mutex`     | Zależy od impl. | Możliwe       | ✅✅                     | ⭐⭐        |
+| RCU-like pattern        | ✅               | ✅ Brak        | ✅✅✅✅                   | ⭐⭐⭐       |
+
 
 ---
 
@@ -827,7 +907,11 @@ void writer(int id) {
 }
 
 void read_and_modify(int id) {
+    auto size{};
+    {
     std::shared_lock<std::shared_mutex> slock(rw);
+    
+
     if (data.size() > 10) {
         std::unique_lock<std::shared_mutex> ulock(rw);  // 🐛 #3?
         data.clear();
@@ -842,16 +926,13 @@ int main() {
 }
 ```
 
-<details>
-<summary>Odpowiedzi</summary>
+Odpowiedzi
 
 1. **Reader używa `unique_lock`** — powinien `shared_lock` (blokuje innych czytelników niepotrzebnie)
 2. **Writer używa `shared_lock`** — powinien `unique_lock` (data race! wielu "pisarzy" jednocześnie)
 3. **Deadlock w `read_and_modify`** — trzyma `shared_lock` i próbuje wziąć `unique_lock` na tym samym mutexie
 4. **Brak `join()`** — program kończy się z aktywnymi wątkami → `std::terminate()`
 5. **Brak `join()` na `t3`** — to samo, dla każdego wątku
-
-</details>
 
 ---
 
@@ -863,20 +944,23 @@ Zaimplementuj program testowy który:
 2. Każdy czytelnik wykonuje 10000 odczytów
 3. Każdy pisarz wykonuje 100 zapisów
 4. Mierzy dla każdego wątku:
-   - Łączny czas oczekiwania na lock
-   - Liczbę udanych operacji
-   - Maksymalny czas pojedynczego oczekiwania
+  - Łączny czas oczekiwania na lock
+  - Liczbę udanych operacji
+  - Maksymalny czas pojedynczego oczekiwania
 
 **Tabela wyników do wypełnienia:**
 
-| Konfiguracja | Avg wait czytelnik | Avg wait pisarz | Max wait pisarz |
-|-------------|-------------------|----------------|----------------|
-| 5R / 1W, `std::shared_mutex` | ___ ms | ___ ms | ___ ms |
-| 10R / 1W, `std::shared_mutex` | ___ ms | ___ ms | ___ ms |
-| 20R / 1W, `std::shared_mutex` | ___ ms | ___ ms | ___ ms |
-| 5R / 1W, `std::mutex` (baseline) | ___ ms | ___ ms | ___ ms |
+
+| Konfiguracja                     | Avg wait czytelnik | Avg wait pisarz | Max wait pisarz |
+| -------------------------------- | ------------------ | --------------- | --------------- |
+| 5R / 1W, `std::shared_mutex`     | ___ ms             | ___ ms          | ___ ms          |
+| 10R / 1W, `std::shared_mutex`    | ___ ms             | ___ ms          | ___ ms          |
+| 20R / 1W, `std::shared_mutex`    | ___ ms             | ___ ms          | ___ ms          |
+| 5R / 1W, `std::mutex` (baseline) | ___ ms             | ___ ms          | ___ ms          |
+
 
 **Pytania do odpowiedzi:**
+
 - Jak rośnie czas oczekiwania pisarza gdy zwiększamy liczbę czytelników?
 - Czy `std::shared_mutex` jest zawsze lepszy od `std::mutex`?
 - Czy zaobserwowałeś zagłodzenie? Przy jakiej konfiguracji?
@@ -1052,6 +1136,7 @@ public:
 ```
 
 **Wymagania:**
+
 - Użyj `std::shared_mutex`
 - `contains()` i `snapshot()` mogą działać równolegle
 - `insert()` i `remove()` wymagają wyłącznego dostępu
@@ -1070,6 +1155,7 @@ Zaimplementuj **trzy wersje** tej samej struktury (np. `ThreadSafeCache` z sekcj
 3. **Wersja C:** RCU-like (sekcja 7.2)
 
 **Benchmark:**
+
 - Wypełnij cache 10000 elementami
 - Uruchom N wątków robiących losowe operacje (95% get, 5% put)
 - Mierz operacje/sekundę
@@ -1077,15 +1163,18 @@ Zaimplementuj **trzy wersje** tej samej struktury (np. `ThreadSafeCache` z sekcj
 
 **Tabela wyników:**
 
+
 | Wątki | mutex (ops/s) | shared_mutex (ops/s) | RCU-like (ops/s) |
-|:-----:|:------------:|:-------------------:|:----------------:|
-| 1 | | | |
-| 2 | | | |
-| 4 | | | |
-| 8 | | | |
-| 16 | | | |
+| ----- | ------------- | -------------------- | ---------------- |
+| 1     |               |                      |                  |
+| 2     |               |                      |                  |
+| 4     |               |                      |                  |
+| 8     |               |                      |                  |
+| 16    |               |                      |                  |
+
 
 **Pytania:**
+
 - Przy ilu wątkach `shared_mutex` zaczyna wygrywać z `mutex`?
 - Czy RCU jest zawsze najszybszy? Jaka jest jego wada?
 - Co się stanie gdy zmienisz proporcję na 50% get / 50% put?
@@ -1106,7 +1195,7 @@ class ComputeCache {
     std::unordered_map<int, int> cache_;
 
 public:
-    // Zaimplementuj t�� funkcję:
+    // Zaimplementuj tę funkcję:
     int get_or_compute(int key, std::function<int(int)> compute_fn) {
         // TODO:
         // 1. shared_lock → sprawdź cache
@@ -1119,6 +1208,7 @@ public:
 ```
 
 **Test:**
+
 ```cpp
 ComputeCache cache;
 std::atomic<int> compute_count{0};
@@ -1171,9 +1261,10 @@ Pisarz i:    potrzebuje unique_lock na książkę[i]
 ```
 
 **Zadanie:**
+
 1. Zaimplementuj rozwiązanie bez deadlocka
 2. Czy `std::scoped_lock` działa z `std::shared_mutex` w trybie shared? (Nie!)
-   Jak to rozwiązać?
+  Jak to rozwiązać?
 3. Czy możliwe jest zagłodzenie? W jakim scenariuszu?
 
 ---
@@ -1182,8 +1273,8 @@ Pisarz i:    potrzebuje unique_lock na książkę[i]
 
 ### Kluczowe wnioski
 
-1. **`std::mutex` to czasem za dużo** — jeśli masz wielu czytelników, blokujesz ich niepotrzebnie
-2. **`std::shared_mutex`** rozwiązuje to: `shared_lock` (czytelnicy) vs `unique_lock` (pisarze)
+1. `**std::mutex` to czasem za dużo** — jeśli masz wielu czytelników, blokujesz ich niepotrzebnie
+2. `**std::shared_mutex`** rozwiązuje to: `shared_lock` (czytelnicy) vs `unique_lock` (pisarze)
 3. **Zagłodzenie jest realne** — i zależy od wariantu (readers-pref / writers-pref / fair)
 4. **Standard C++ nie gwarantuje fairness** — zachowanie `std::shared_mutex` jest implementation-defined
 5. **Upgrade shared→exclusive to deadlock** — zawsze zwalniaj, potem blokuj ponownie
@@ -1219,3 +1310,4 @@ Potrzebujesz synchronizacji?
 - A. Williams, *C++ Concurrency in Action*, 2nd ed., rozdział 3.3
 - Fedor Pikus, *C++ Concurrency in Action: Practical Multithreading* (CppCon talks)
 - P. McKenney, *Is Parallel Programming Hard?* — rozdziały o RCU
+
