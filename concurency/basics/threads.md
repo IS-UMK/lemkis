@@ -120,9 +120,6 @@ int main() {
 
 In C++, `std::thread::detach` is used to separate a thread from its thread handle, allowing it to run independently until its completion. Here's a practical example where detaching a thread is useful:
 
-### Example: Background Logging Service
-
-Imagine you're developing a web server that needs to log events in the background without blocking the main server thread. You can use a detached thread to handle logging independently.
 
 ### Code Example
 Imagine you're developing a web server that needs to log events in the background without blocking the main server thread. You can use a detached thread to handle logging independently.
@@ -176,7 +173,7 @@ However, keep in mind that using `detach` means you won't be able to wait for th
 
 - **Background Tasks**: Detached threads are useful for tasks like periodic cleanup, monitoring, or maintenance that should run independently of the main application flow.
 - **Asynchronous Operations**: In scenarios where asynchronous operations need to be performed without blocking the main thread, detaching threads can be beneficial.
-- **Long-Running Processes**: For processes that need to run indefinitely or for an extended period, detaching allows them to continue running even if the main program exits.
+- **Long-Running Background Tasks**: For tasks that need to run continuously in the background (like logging, monitoring, or event loops), detaching allows them to operate independently as long as the main program is still running. Note that once the main() function exits, all detached threads are forcefully terminated by the operating system.
 
 ### Caution
 

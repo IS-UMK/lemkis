@@ -1,0 +1,65 @@
+benchmark,producers,consumers,items,duration_ms
+vector_stack (mutex),1,1,100000,7
+vector_stack (cv),1,1,100000,11
+list_stack (mutex),1,1,100000,18
+list_stack (cv),1,1,100000,20
+two_stack_queue (mutex),1,1,100000,16
+two_stack_queue (cv),1,1,100000,12
+moodycamel::ConcurrentQueue,1,1,100000,7
+moodycamel::ReaderWriterQueue,1,1,100000,4
+vector_stack (mutex),1,2,100000,8
+vector_stack (cv),1,2,100000,40
+list_stack (mutex),1,2,100000,22
+list_stack (cv),1,2,100000,73
+two_stack_queue (mutex),1,2,100000,14
+two_stack_queue (cv),1,2,100000,71
+moodycamel::ConcurrentQueue,1,2,100000,12
+vector_stack (mutex),1,4,100000,21
+vector_stack (cv),1,4,100000,4292
+list_stack (mutex),1,4,100000,55
+list_stack (cv),1,4,100000,7511
+two_stack_queue (mutex),1,4,100000,24
+two_stack_queue (cv),1,4,100000,6984
+moodycamel::ConcurrentQueue,1,4,100000,13
+vector_stack (mutex),2,1,100000,7
+vector_stack (cv),2,1,100000,9
+list_stack (mutex),2,1,100000,16
+list_stack (cv),2,1,100000,16
+two_stack_queue (mutex),2,1,100000,7
+two_stack_queue (cv),2,1,100000,7
+moodycamel::ConcurrentQueue,2,1,100000,4
+vector_stack (mutex),2,2,100000,9
+vector_stack (cv),2,2,100000,9
+list_stack (mutex),2,2,100000,20
+list_stack (cv),2,2,100000,21
+two_stack_queue (mutex),2,2,100000,12
+two_stack_queue (cv),2,2,100000,15
+moodycamel::ConcurrentQueue,2,2,100000,14
+vector_stack (mutex),2,4,100000,13
+vector_stack (cv),2,4,100000,18
+list_stack (mutex),2,4,100000,43
+list_stack (cv),2,4,100000,885
+two_stack_queue (mutex),2,4,100000,18
+two_stack_queue (cv),2,4,100000,90
+moodycamel::ConcurrentQueue,2,4,100000,11
+vector_stack (mutex),4,1,100000,8
+vector_stack (cv),4,1,100000,10
+list_stack (mutex),4,1,100000,16
+list_stack (cv),4,1,100000,15
+two_stack_queue (mutex),4,1,100000,9
+two_stack_queue (cv),4,1,100000,9
+moodycamel::ConcurrentQueue,4,1,100000,5
+vector_stack (mutex),4,2,100000,12
+vector_stack (cv),4,2,100000,10
+list_stack (mutex),4,2,100000,24
+list_stack (cv),4,2,100000,26
+two_stack_queue (mutex),4,2,100000,11
+two_stack_queue (cv),4,2,100000,12
+moodycamel::ConcurrentQueue,4,2,100000,7
+vector_stack (mutex),4,4,100000,12
+vector_stack (cv),4,4,100000,33
+list_stack (mutex),4,4,100000,38
+list_stack (cv),4,4,100000,85
+two_stack_queue (mutex),4,4,100000,14
+two_stack_queue (cv),4,4,100000,48
+moodycamel::ConcurrentQueue,4,4,100000,13

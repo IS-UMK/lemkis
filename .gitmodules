@@ -4,3 +4,9 @@
 [submodule "external/mpi"]
 	path = external/mpi
 	url = https://github.com/acdemiralp/mpi.git
+[submodule "external/concurrentqueue"]
+	path = external/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git
+[submodule "external/readerwriterqueue"]
+	path = external/readerwriterqueue
+	url = https://github.com/cameron314/readerwriterqueue.git
