@@ -416,3 +416,100 @@ void set_flag(std::atomic<uint32_t>& flags, uint32_t flag_to_set) {
    * W2 wchodzi w kolejną iterację, wylicza `new_flags = 1 | 2 = 3` (czyli oba bity). Wykonuje CAS z sukcesem.
    * Końcowy stan `flags` to `3` (oba statusy nakładają się bezkolizyjnie), czego nie gwarantowałaby zwykła operacja asynchroniczna na typach nieatomowych.
 </details>
+
+
+
+---
+
+## DODATEK SPECJALNY: Model pamięci w C++ (Acquire / Release)
+
+Kiedy piszemy kod współbieżny, często wydaje nam się, że rozumiemy, w jakiej kolejności wykonują się instrukcje. Niestety, w świecie wielordzeniowych procesorów i agresywnie optymalizujących kompilatorów, **kod, który czytasz na ekranie, to iluzja**.
+
+### 1. Bolesne zderzenie z rzeczywistością (Reordering)
+
+Wyobraź sobie klasyczny scenariusz Producent-Konsument. Wątek 1 przygotowuje dane (np. duży obrazek), a potem podnosi flagę `ready`, żeby Wątek 2 mógł ten obrazek wyświetlić.
+
+```cpp
+int data = 0; // Zwykła, nieatomowa zmienna!
+std::atomic<bool> ready{false};
+
+// --- WĄTEK 1 (Producent) ---
+data = 42;          // Krok A: Przygotuj dane
+ready = true;       // Krok B: Daj znać, że gotowe
+
+// --- WĄTEK 2 (Konsument) ---
+if (ready == true) {    // Krok C: Czy gotowe?
+    print(data);        // Krok D: Wypisz dane
+}
+```
+
+**Pytanie za 100 punktów:** Czy Wątek 2 może wypisać na ekranie wartość `0`?
+**Przerażająca odpowiedź:** TAK.
+
+**Dlaczego?!**
+1. **Kompilator (Optymalizacja):** Kompilator C++ patrzy na Wątek 1 i myśli: *"Zmienna `data` i zmienna `ready` nie mają ze sobą żadnego matematycznego związku. Mogę zamienić je miejscami (najpierw Krok B, potem Krok A), żeby kod wykonał się o 1 nanosekundę szybciej!"*.
+2. **Procesor (Out-of-Order Execution):** Nawet jeśli kompilator tego nie zrobi, sam procesor (np. Intel, ARM) podczas wykonywania kodu może stwierdzić, że pamięć podręczna dla `ready` jest akurat wolna, więc zapisze `ready = true` ZANIM skończy zapisywać `data = 42`. 
+
+Efekt? Wątek 2 widzi `ready == true`, wchodzi do if'a i czyta `data`, zanim Wątek 1 zdążył tam wpisać `42`.
+
+### 2. Ratunek: Bariery Pamięci (Memory Fences / Barriers)
+
+Aby zapobiec temu chaosowi, wynaleziono **Bariery Pamięci**. 
+Bariera pamięci to taka "żelazna kurtyna" dla kompilatora i procesora. Instrukcja brzmi: *"Wszystko, co jest napisane nad barierą, MUSI zostać fizycznie zapisane w pamięci RAM, zanim wykonasz cokolwiek, co jest pod barierą"*.
+
+W C++ nie musimy stawiać tych barier ręcznie. Są one wbudowane w operacje na zmiennych `std::atomic` dzięki czemuś, co nazywamy **Semantyką Porządkowania (Memory Ordering)**. Najważniejsza para to `Acquire` i `Release`.
+
+---
+
+### 3. Intuicja: Kurier i Paczka (Acquire / Release)
+
+Zamiast myśleć o bajtach, wyobraź sobie **wysyłanie paczki kurierem**:
+* Zmienna `data` to zawartość paczki (książki, buty, cokolwiek).
+* Zmienna `ready` to SMS z systemu śledzenia przesyłek: "Paczka dostarczona".
+
+#### Krok 1: Wysłanie paczki -> `memory_order_release`
+Kiedy używasz flagi `Release` podczas zapisu (store), mówisz systemowi:
+> *"To jest moment wysłania paczki. Zaklej karton. Wszystkie zmienne, które modyfikowałem powyżej tej linijki, muszą być spakowane i gotowe. Żadnych optymalizacji i zamiany kolejności!"*
+
+#### Krok 2: Odbiór paczki -> `memory_order_acquire`
+Kiedy używasz flagi `Acquire` podczas odczytu (load), mówisz systemowi:
+> *"To jest moment odebrania paczki. Jeśli dostałem SMS-a (ready == true), to obiecaj mi, że po otwarciu kartonu zobaczę w środku dokładnie to, co nadawca włożył tam przed zaklejeniem."*
+
+To tworzy między wątkami magiczną więź zwaną **Synchronizes-With** (Synchronizuje-się-z). Wątek 2 ma matematyczną pewność, że widzi świat dokładnie takim, jakim zostawił go Wątek 1 w momencie wykonywania `Release`.
+
+### 4. Jak to zapisać w kodzie C++?
+
+Poprawmy nasz wcześniejszy kod, dodając semantykę Acquire/Release:
+
+```cpp
+int data = 0; 
+std::atomic<bool> ready{false};
+
+// --- WĄTEK 1 (Producent) ---
+data = 42; 
+// Zapisz 'true' z barierą RELEASE (Zaklej i wyślij paczkę)
+ready.store(true, std::memory_order_release); 
+
+
+// --- WĄTEK 2 (Konsument) ---
+// Odczytaj z barierą ACQUIRE (Sprawdź SMS i odbierz paczkę)
+if (ready.load(std::memory_order_acquire) == true) {
+    // MAMY PEWNOŚĆ! Skoro ready to true, to widzę wszystko,
+    // co Wątek 1 zrobił przed swoim .store(release).
+    print(data); // Na 100% wypisze 42! Nie ma mowy o 0.
+}
+```
+
+### 5. Dlaczego na co dzień tego nie piszemy? (Magia `seq_cst`)
+
+Możesz zapytać: *"Chwila, wcześniej używaliśmy w `head.load()` zwykłego przypisania bez tych dziwnych barier. Czy nasze programy były zepsute?"*
+
+Nie! Twórcy C++ wiedzieli, że model pamięci jest trudny. Dlatego, jeśli użyjesz domyślnego operatora przypisania `ready = true;` lub wywołasz funkcję bez parametrów `ready.store(true);`, kompilator domyślnie użyje najsilniejszej możliwej bariery: `std::memory_order_seq_cst` (Sequentially Consistent).
+
+**`seq_cst` to taki czołg zaporowy:**
+Zabrania on ABSOLUTNIE JAKIEGOKOLWIEK przestawiania instrukcji przed i po tej zmiennej. Gwarantuje, że wszystkie wątki na świecie widzą zmiany w dokładnie tej samej kolejności. 
+
+**Skoro `seq_cst` jest takie bezpieczne, to po co nam `acquire / release`?**
+Chodzi o **WYDAJNOŚĆ**. 
+`seq_cst` jest bardzo bezpieczne, ale zmusza procesor do synchronizacji wszystkich rdzeni (co kosztuje cenne cykle zegara i spowalnia program). 
+`acquire / release` to dogadanie się tylko między **dwoma konkretnymi wątkami** (nadawcą i odbiorcą paczki). Procesor ma o wiele więcej luzu na optymalizację reszty programu, a nasz kod działa najszybciej jak to fizycznie możliwe, zachowując poprawność logiczną przekazywanych danych.
