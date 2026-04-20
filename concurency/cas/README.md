@@ -128,6 +128,40 @@ Wyobraź sobie implementację stosu bez blokad (Lock-free stack) za pomocą list
 
 **Pytanie:** Wytłumacz teoretycznie, dlaczego struktura danych ulegnie w tym momencie korupcji. Z czego dokładnie wynika problem z perspektywy CAS?
 
+```cpp
+struct Node {
+    int data;
+    Node* next;
+};
+
+std::atomic<Node*> head;
+
+Node* pop() {
+    // 1. Odczytujemy aktualną głowę stosu (A)
+    Node* old_head = head.load(); 
+
+    while (old_head != nullptr) {
+        // 2. Zapisujemy sobie na "kartce" (w zmiennej lokalnej), 
+        // co ma być NOWĄ głową, jeśli CAS się powiedzie (B).
+        // To jest właśnie ten krytyczny moment!
+        Node* next_node = old_head->next; 
+
+        // ==========================================
+        // 💥 PUNKT WYWŁASZCZENIA: Wątek 1 zasypia tutaj
+        // ==========================================
+
+        // 3. Próbujemy atomowo podmienić head.
+        // Tłumaczenie na polski: 
+        // "Jeśli head to nadal old_head, zmień go na next_node".
+        if (head.compare_exchange_weak(old_head, next_node)) {
+            return old_head; // Sukces! Zdjęliśmy element.
+        }
+    }
+    return nullptr; // Stos był pusty
+}
+```
+
+
 <details>
 <summary><b>Kliknij, aby zobaczyć rozwiązanie i formalny dowód uszkodzenia (Korupcji)</b></summary>
 
