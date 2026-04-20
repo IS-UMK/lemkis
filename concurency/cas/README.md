@@ -199,3 +199,186 @@ Operacja współbieżna uznawana jest za linearyzowalną, jeśli można wskazać
 4. Zatem struktura zmienia się w jednym atomowym kroku ze stanu $[H_{stary}, ...]$ na $[N_{nowy}, H_{stary}, ...]$.
 5. Każdy inny wątek T2 próbujący w tym samym czasie zrobić `push`, którego CAS wykona się o nanosekundę później, zaliczy tzw. *failure* operacji CAS. Jego własny `expected` zostanie nadpisany nowym adresem $N_{nowy}$, co zmusi go w następnej iteracji do ustawienia wskaźnika swojego elementu na $N_{nowy}$. Żaden wstawiany element nie zostaje "nadpisany" ani zgubiony.
 </details>
+
+
+### Zadanie 5: Licznik z limitem (Capped Counter) (Poziom: Średni)
+Standardowa metoda `fetch_add` pozwala na atomowe dodawanie, ale nie potrafi zatrzymać się na określonym limicie. Wyobraź sobie system rezerwacji biletów (np. limit to 100 biletów). Wiele wątków próbuje inkrementować licznik, ale nie może on przekroczyć wartości `limit`.
+
+Napisz funkcję, która zwiększa licznik o 1 tylko, jeśli jest on mniejszy niż limit. Zwraca `true`, jeśli udało się zwiększyć, lub `false`, jeśli osiągnięto limit.
+
+```cpp
+bool increment_if_less_than(std::atomic<int>& counter, int limit) {
+    // TODO: Zaimplementuj używając CAS
+}
+```
+
+<details>
+<summary><b>Kliknij, aby zobaczyć rozwiązanie i formalny dowód poprawności</b></summary>
+
+**Rozwiązanie:**
+```cpp
+bool increment_if_less_than(std::atomic<int>& counter, int limit) {
+    int old_val = counter.load();
+    do {
+        if (old_val >= limit) {
+            return false; // Limit osiągnięty, przerywamy pętlę
+        }
+    } while (!counter.compare_exchange_weak(old_val, old_val + 1));
+    return true;
+}
+```
+
+**Dowód poprawności:**
+1. **Ograniczenie (Safety):** W każdym punkcie czasu $t$, wartość licznika $C(t) \le limit$. Zmiana stanu z $C$ na $C+1$ może zajść wyłącznie wtedy, gdy wykonana zostanie instrukcja CAS. Bezpośrednio przed wywołaniem CAS dokonywane jest sprawdzenie `old_val < limit`. Ponieważ CAS powodzi się tylko wtedy, gdy stan globalny jest dokładnie równy `old_val`, gwarantuje to, że nowa wartość $C+1 \le limit$. Żaden wątek nie zdoła podbić licznika powyżej limitu (np. z 100 na 101).
+2. **Brak utraconych biletów (No lost updates):** Linearyzowalność CAS zapewnia, że jeśli dwa wątki jednocześnie zobaczą `old_val = 99`, tylko jeden z nich z powodzeniem wykona CAS (ustawiając na 100). Drugi zanotuje porażkę (jego `old_val` zostanie zaktualizowane do 100), w kolejnej iteracji pętli warunek `old_val >= limit` (100 >= 100) będzie prawdziwy i wątek zwróci `false`.
+</details>
+
+---
+
+### Zadanie 6: Własny Spinlock (Wirująca blokada) (Poziom: Średni)
+Mutexy usypiają wątki, co jest wolne dla bardzo krótkich sekcji krytycznych. Zamiast tego możemy stworzyć `Spinlock` – blokadę, w której wątek aktywnie „kręci się” w pętli `while`, próbując założyć kłódkę przy pomocy CAS. 
+
+Zaimplementuj metody `lock` i `unlock` operujące na zmiennej `std::atomic<bool>`.
+
+```cpp
+class Spinlock {
+    std::atomic<bool> locked{false};
+public:
+    void lock() {
+        // TODO: Zablokuj (kręć się w pętli, dopóki locked == true, użyj CAS)
+    }
+
+    void unlock() {
+        // TODO: Odblokuj
+    }
+};
+```
+
+<details>
+<summary><b>Kliknij, aby zobaczyć rozwiązanie i formalny dowód poprawności</b></summary>
+
+**Rozwiązanie:**
+```cpp
+class Spinlock {
+    std::atomic<bool> locked{false};
+public:
+    void lock() {
+        bool expected = false;
+        // Pętla obraca się dopóki CAS nie zdoła zmienić false na true.
+        // Pamiętaj: compare_exchange_weak modyfikuje `expected` na wartość z pamięci 
+        // przy niepowodzeniu, więc musimy w każdej iteracji resetować expected = false!
+        while (!locked.compare_exchange_weak(expected, true)) {
+            expected = false; 
+            // Opcjonalnie w prawdziwym kodzie: _mm_pause() (x86) lub std::this_thread::yield()
+        }
+    }
+
+    void unlock() {
+        locked.store(false);
+    }
+};
+```
+
+**Dowód poprawności (Wzajemne wykluczanie - Mutual Exclusion):**
+1. Aby wątek T1 mógł opuścić metodę `lock()` i wejść do sekcji krytycznej, musi pomyślnie wykonać instrukcję CAS z wartości `false` na `true`. W tym momencie punktu linearyzacji zmienna globalna `locked` przyjmuje wartość `true`.
+2. Każdy kolejny wątek T2, który spróbuje wykonać `lock()`, wykona CAS próbujący zmienić `false` na `true`. Jednak wartość w pamięci to już `true`. Operacja CAS z `expected=false` zwróci błąd, a T2 pozostanie w pętli `while`.
+3. Jedyną metodą zmiany stanu z powrotem na `false` jest wywołanie `unlock()`. Wykona je wątek T1, który aktualnie jest w sekcji krytycznej.
+4. Wynika z tego, że w dowolnym momencie czasu co najwyżej jeden wątek może znajdować się pomiędzy powrotem z metody `lock()` a wejściem do `unlock()`.
+</details>
+
+---
+
+### Zadanie 7: Leniwa Inicjalizacja Bez Blokad (Lazy Initialization) (Poziom: Trudny)
+Bardzo popularny wzorzec w projektowaniu (Singleton). Mamy ciężki w inicjalizacji obiekt (np. połączenie z bazą danych lub duży cache), do którego dostęp trzymany jest w zmiennej `std::atomic<Cache*> global_cache{nullptr}`. 
+Chcemy, by obiekt został utworzony dopiero wtedy, gdy po raz pierwszy zajdzie taka potrzeba. Wiele wątków może jednocześnie zauważyć `nullptr` i spróbować go stworzyć. Zapewnij, że globalny wskaźnik ustawi się poprawnie bez utraty (wycieku) pamięci.
+
+```cpp
+struct Cache { /* Ciężki obiekt */ };
+std::atomic<Cache*> global_cache{nullptr};
+
+Cache* get_or_init_cache() {
+    // TODO: Zwróć global_cache. Jeśli to nullptr, utwórz go w sposób lock-free.
+}
+```
+
+<details>
+<summary><b>Kliknij, aby zobaczyć rozwiązanie i formalny dowód</b></summary>
+
+**Rozwiązanie:**
+```cpp
+Cache* get_or_init_cache() {
+    Cache* current = global_cache.load();
+    if (current != nullptr) {
+        return current; // Szybka ścieżka (fast path)
+    }
+
+    // Wielu wątkom mogło się wydawać, że jest nullptr.
+    // Tworzymy naszą lokalną instancję.
+    Cache* new_cache = new Cache();
+    
+    // Próbujemy wstawić naszą instancję jako globalną.
+    // (Używamy wersji strong, by uniknąć spurious failures po alokacji pamięci)
+    Cache* expected = nullptr;
+    if (global_cache.compare_exchange_strong(expected, new_cache)) {
+        // Sukces! My pierwsi wstawiliśmy obiekt.
+        return new_cache;
+    } else {
+        // Porażka. Ktoś inny nas uprzedził i wsadził swój obiekt.
+        // Musimy zniszczyć naszą niepotrzebną już kopię, by uniknąć wycieku.
+        delete new_cache; 
+        
+        // Zwracamy to, co wgrał ten "ktoś inny" (zmienna expected zaktualizowała się
+        // automatycznie na adres obiektu, który wygrał wyścig).
+        return expected;
+    }
+}
+```
+
+**Dowód poprawności:**
+1. **Bezpieczeństwo inicjalizacji:** `global_cache` początkowo to `nullptr`. Instrukcja CAS powiedzie się tylko pod warunkiem, że w momencie jej wykonania globalny wskaźnik to wciąż `nullptr`. W związku z tym, dokładnie **jeden** wątek zmieni wartość z `nullptr` na swój wskaźnik. Nie ma możliwości, by globalny wskaźnik został nadpisany dwukrotnie.
+2. **Brak wycieków pamięci (Memory Safety):** Wątki "przegrane" w wyścigu otrzymają z CAS wartość `false`. Wejdą w blok `else`, w którym niszczą lokalnie zaalokowaną instancję `delete new_cache`. Zatem wszystkie nieużyte kopie zostaną bezpiecznie usunięte z pamięci sterty.
+3. **Prawidłowy zwrot:** Wątki przegrane, w wyniku działania `compare_exchange_strong`, uzyskują w zmiennej `expected` aktualną zawartość pamięci, czyli wskaźnik instancji, która wygrała wyścig. Dzięki temu każdy wątek prawidłowo otrzymuje ten sam adres i współdzieli jeden obiekt globalny.
+</details>
+
+---
+
+### Zadanie 8: Atomowa Maska Bitowa (Poziom: Średni)
+Często w grach lub systemach wbudowanych obiekt ma zmienną określającą jego stany jako zestaw flag bitowych (np. bit 0: IN_COMBAT, bit 1: POISONED, bit 2: STUNNED). Dwa wątki mogą chcieć równocześnie nadać postaci różne statusy (jeden nadaje POISONED, drugi STUNNED).
+Zwykłe `flags |= NEW_FLAG` nie jest atomowe i może zgubić status. Napisz atomową wersję funkcji `set_flag(std::atomic<uint32_t>& flags, uint32_t flag_to_set)`.
+
+```cpp
+void set_flag(std::atomic<uint32_t>& flags, uint32_t flag_to_set) {
+    // TODO: Zaimplementuj używając CAS loop
+}
+```
+
+<details>
+<summary><b>Kliknij, aby zobaczyć rozwiązanie i formalny dowód</b></summary>
+
+**Rozwiązanie:**
+*(Notka: Biblioteka standardowa posiada `fetch_or`, ale ćwiczymy ręczny CAS, który bywa niezbędny przy bardzo złożonych manipulacjach wieloma bitami naraz, np. włącz bit A ale tylko jeśli wyłączony jest bit B).*
+
+```cpp
+void set_flag(std::atomic<uint32_t>& flags, uint32_t flag_to_set) {
+    uint32_t old_flags = flags.load();
+    uint32_t new_flags;
+    do {
+        new_flags = old_flags | flag_to_set;
+        // Jeśli flaga już tam jest, nie musimy robić drogiego zapisu
+        if (old_flags == new_flags) {
+            break;
+        }
+    } while (!flags.compare_exchange_weak(old_flags, new_flags));
+}
+```
+
+**Dowód poprawności:**
+1. Operacja odczytu, modyfikacji (nałożenia maski poprzez sumę logiczną `|`) oraz zapisu jest zamknięta w pętli uwarunkowanej sprzętowym CAS. Oznacza to brak tzw. *Lost Updates*.
+2. Jeśli Wątek 1 (W1) ustawia bit 0 (`flag_to_set = 1`), a Wątek 2 (W2) ustawia bit 1 (`flag_to_set = 2`) i działają w tym samym momencie na `old_flags = 0`:
+   * W1 wylicza `new_flags = 1`.
+   * W2 wylicza `new_flags = 2`.
+   * Jeśli W1 pierwszy zaaplikuje CAS, stan globalny to `1`.
+   * W2 spróbuje CAS (`old=0`, `new=2`). CAS zwróci błąd, a do zmiennej W2 `old_flags` zostanie załadowane `1` (wynik pracy W1).
+   * W2 wchodzi w kolejną iterację, wylicza `new_flags = 1 | 2 = 3` (czyli oba bity). Wykonuje CAS z sukcesem.
+   * Końcowy stan `flags` to `3` (oba statusy nakładają się bezkolizyjnie), czego nie gwarantowałaby zwykła operacja asynchroniczna na typach nieatomowych.
+</details>
