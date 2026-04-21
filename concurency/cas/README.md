@@ -431,7 +431,7 @@ Wyobraź sobie klasyczny scenariusz Producent-Konsument. Wątek 1 przygotowuje d
 
 ```cpp
 int data = 0; // Zwykła, nieatomowa zmienna!
-std::atomic<bool> ready{false};
+bool ready{false};
 
 // --- WĄTEK 1 (Producent) ---
 data = 42;          // Krok A: Przygotuj dane
