@@ -1,0 +1,91 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\lstset{
+	language=C++,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue}\bfseries,
+	commentstyle=\color{green!50!black},
+	stringstyle=\color{red!70!black},
+	numbers=left,
+	numberstyle=\tiny,
+	stepnumber=1,
+	numbersep=6pt,
+	frame=single,
+	breaklines=true,
+	showstringspaces=false
+}
+
+\begin{document}
+	
+	\begin{center}
+		{\Large \textbf{Kolokwium z programowania współbieżnego}}\\[2mm]
+		{\large Zadania główne i bonusowe}
+	\end{center}
+	
+	
+	\section*{Zadanie 1}
+	{Co to są \emph{własne sprawy} i \emph{sekcja krytyczna}?} (1 pkt)\\
+	{Jakie są typowe założenia dotyczące zachowania \emph{własnych spraw}?} (1 pkt)\\
+	{Czy podany program jest bezpieczny i/lub żywotny?} Jeśli nie, podaj kontrprzykład (przeplot). Jeśli tak, podaj formalny dowód. (8 pkt)
+	
+	\begin{lstlisting}[language=C++]
+#include <iostream>
+#include <thread>
+#include <atomic>
+
+std::atomic<int> who_waits{1};
+
+void process(int id) {
+  while (true) {
+    // wlasne sprawy
+    while (who_waits == id) {} //protokol wstepny
+    // sekcja krytyczna
+    who_waits = id; // protokol koncowy
+  }
+}
+
+int main() {
+  std::jthread t1(process, 0);
+  std::jthread t2(process, 1);
+  return 0;
+}
+	\end{lstlisting}
+	
+	\paragraph{Uwaga.}
+	Przy podawaniu definicji proszę być precyzyjnym. Na przykład pojęcia takie jak \emph{jednoczesny dostęp} itp. wymagają formalnego zdefiniowania przed ich użyciem, jeśli są stosowane w kontekście wątków lub procesów.
+	
+	\section*{Zadanie 2}
+	{Problem ucztujących filozofów (Dining philosophers) dla $n \in \mathbb{N}$ filozofów. Co to jest graf przydziału zasobów
+		(Resource Allocation Graph, RAG)? Jak w takim grafie definiuje się deadlock? Co to jest graf wait-for? Mając graf wait-for, jak definiuje się cykliczne oczekiwanie?}
+	(2 pkt)
+	
+	{ W terminach RAG sformułuj i udowodnij twierdzenie Coffmana o warunkach koniecznych deadlocka.  (6 pkt) Jak można wykorzystać to twierdzenie do rozwiązania problemu dining philosophers? Podaj implementację takiego rozwiązania w C++.}
+	(2 pkt)
+	
+	
+	\textbf{Wersja awaryjna} na \textbf{4pkt} (bez grafu RAG) zamiast 10pkt. Podaj warunki Coffmana i je udowodnij dla 5 ucztujących filozofów. Jak można wykorzystać to twierdzenie do rozwiązania problemu dining philosophers? Podaj implementację takiego rozwiązania w C++.
+	\section*{Zadania bonusowe}
+	Za każde poprawnie rozwiązane zadanie można zdobyć dodatkowe 1 lub 2 pkt.
+	
+	\begin{enumerate}[label=\alph*)]
+		\item Co to jest \emph{livelock}? Podaj przykład współbieżnego programu w C++, który obrazuje livelock. Wykaż, że livelock rzeczywiście zachodzi w Twoim przykładzie. (1pkt)
+		
+		\item Co to jest wzorzec \emph{compare-and-swap}? Jak użyć go do zaimplementowania w C++ funkcji \texttt{max} działającej na wielu wątkach? Wyjaśnij krok po kroku kluczowe przeploty, które mogą wystąpić w tej implementacji. (1pkt)
+		
+		\item Co to jest prawo Amdahla? Wyprowadź ten wzór krok po kroku i wyjaśnij intuicyjnie znaczenie występujących w nim wyrażeń. Podaj przykłady zastosowania tego wzoru: kiedy warto, a kiedy nie warto zrównoleglić program. (1pkt)
+		
+		\item Co to jest \emph{thread pool}? Jaka jest motywacja używania tej struktury? Co to są \texttt{std::future} i \texttt{std::promise}? Zaimplementuj za ich pomocą w C++ strukturę \texttt{ThreadPool}. (2pkt)
+		
+		\item Co to jest \emph{ring buffer} (bufor kołowy)? Kiedy i w jakim celu się go używa? Zaimplementuj w C++ thread-safe strukturę \texttt{RingBuffer} z użyciem \texttt{std::mutex} oraz \texttt{std::condition\_variable} (konstruktor oraz metody \texttt{push} i \texttt{pop}). Podaj przykład programu C++ używającego \texttt{RingBuffer} (ilustrującego jego użyteczność). (2pkt)
+	\end{enumerate}
+	
+\end{document}
