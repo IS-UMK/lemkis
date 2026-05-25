@@ -1372,7 +1372,7 @@ ZAAWANSOWANE:
 
 PUŁAPKI:
   ✗ Deadlock: oba procesy czekają na Recv → używaj Sendrecv
-  ✗ Type mismatch: wysyłam INT, odbieram DOUBLE → crash
+  ✗ Type mismatch: wysyłam INT, odbieram DOUBLE → undefined behavior
   ✗ Brak Finalize → wycieki zasobów
   ✗ Niezbalansowane kolektywy → hang
   ✗ Dane przed Wait po Irecv → race condition
