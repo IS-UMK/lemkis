@@ -1,0 +1,7 @@
+/home/lenov/projekt/build/CMakeFiles/cafe_modules.dir
+/home/lenov/projekt/build/CMakeFiles/edit_cache.dir
+/home/lenov/projekt/build/CMakeFiles/rebuild_cache.dir
+/home/lenov/projekt/build/CMakeFiles/list_install_components.dir
+/home/lenov/projekt/build/CMakeFiles/install.dir
+/home/lenov/projekt/build/CMakeFiles/install/local.dir
+/home/lenov/projekt/build/CMakeFiles/install/strip.dir
