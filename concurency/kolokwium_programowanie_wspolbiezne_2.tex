@@ -86,7 +86,7 @@ void filozof(int id, std::mutex& lewy, std::mutex& prawy) {
             lewy.unlock();
         } else {
             lewy.unlock();
-            // natychmiast probuje ponownie
+            // natychmiast próbuje ponownie
         }
     }
 }
@@ -208,7 +208,7 @@ int counter = 0;
 for (int i = 0; i < 100'000; ++i) {
     pool.submit([&counter] { counter++; });
 }
-// po zakonczeniu wszystkich taskow:
+// po zakończeniu wszystkich tasków:
 std::cout << counter << "\n";
 \end{lstlisting}
 \pkt{2}
