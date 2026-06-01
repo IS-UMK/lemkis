@@ -1,0 +1,378 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{tikz}
+\geometry{margin=2cm}
+
+\lstset{
+	language=C++,
+	basicstyle=\ttfamily\footnotesize,
+	keywordstyle=\color{blue}\bfseries,
+	commentstyle=\color{green!50!black},
+	stringstyle=\color{red!70!black},
+	numbers=left,
+	numberstyle=\tiny,
+	stepnumber=1,
+	numbersep=6pt,
+	frame=single,
+	breaklines=true,
+	showstringspaces=false,
+	tabsize=4,
+	morekeywords={std,thread,mutex,atomic,jthread,shared_mutex,condition_variable,unique_lock,shared_lock,scoped_lock,future,promise,packaged_task}
+}
+
+\newcommand{\pkt}[1]{\hfill\textbf{(#1 pkt)}}
+
+\begin{document}
+
+\begin{center}
+	{\Large \textbf{Kolokwium z Programowania Współbieżnego w C++}}\\[3mm]
+	{\large Semestr letni 2025/2026}\\[2mm]
+	\rule{\textwidth}{0.4pt}\\[2mm]
+	{\small Czas: 120 minut \quad|\quad Część I: na ocenę 3 \quad|\quad Część II: zadanie 1 na ocenę 4, zadanie 2 na ocenę 5}\\[1mm]
+	{\small \textbf{Uwaga:} Przy każdym pytaniu wymagane jest \underline{pełne uzasadnienie} — samo podanie odpowiedzi bez wyprowadzenia/dowodu = 0 pkt.}
+\end{center}
+
+\vspace{5mm}
+
+%==============================================================================
+\section*{CZĘŚĆ I --- Teoria i analiza kodu (na ocenę 3)}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 1 --- Prawo Amdahla i decyzje projektowe \pkt{6}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Wyprowadź prawo Amdahla \textbf{od zera}: zaczynając od definicji czasu wykonania programu sekwencyjnego $T_1$, zdefiniuj frakcję sekwencyjną $f$ i frakcję równoległą $(1-f)$, a następnie wyprowadź wzór na przyspieszenie $S(N)$ przy $N$ procesorach. Wyjaśnij intuicyjnie znaczenie każdego składnika. \pkt{2}
+
+\item Oblicz maksymalne teoretyczne przyspieszenie programu, w którym 5\% kodu jest inherentnie sekwencyjne, przy użyciu: (i)~8 rdzeni, (ii)~64 rdzeni, (iii)~$N \to \infty$. Co wynika z porównania tych wyników? \pkt{2}
+
+\item Masz program przetwarzający 10\,000 obrazów. Wczytanie jednego obrazu trwa 5ms (I/O, sekwencyjne), przetworzenie 50ms (CPU). Korzystając z prawa Amdahla, oblicz czy warto zrównoleglić ten program na 8 rdzeniach. Następnie zaproponuj architekturę (pipeline? thread pool?) i uzasadnij, dlaczego Amdahl nie oddaje pełnego obrazu w tym przypadku --- odnieś się do prawa Gustafsona. \pkt{2}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 2 --- Deadlock: teoria i dowód \pkt{8}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Podaj definicję \textbf{deadlocka}. Sformułuj cztery warunki Coffmana (konieczne i łącznie wystarczające dla zasobów jednoinstancyjnych). Dla każdego warunku podaj jednozdaniowy przykład z życia codziennego. \pkt{2}
+
+\item Co to jest \textbf{graf wait-for}? Narysuj graf wait-for dla 5 ucztujących filozofów w sytuacji deadlocka (każdy trzyma lewy widelec, czeka na prawy). Wskaż cykl. \pkt{1}
+
+\item Udowodnij (metodą nie wprost), że \textbf{hierarchia zasobów} (blokowanie mutexów w kolejności rosnących numerów) eliminuje deadlock. Wskazówka: załóż istnienie cyklu $T_1 \to T_2 \to \ldots \to T_k \to T_1$ w grafie wait-for i wyprowadź sprzeczność z monotoniczną kolejnością blokowania. \pkt{3}
+
+\item Podaj implementację w C++ rozwiązania problemu ucztujących filozofów wykorzystującą hierarchię zasobów. Wyjaśnij, który warunek Coffmana jest łamany. \pkt{2}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 3 --- Livelock i zagłodzenie \pkt{4}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Zdefiniuj \textbf{livelock}. Czym różni się od deadlocka pod względem: (i)~zużycia CPU, (ii)~możliwości wykrycia, (iii)~postępu programu? \pkt{1}
+
+\item Rozważ poniższy kod filozofa z~\texttt{try\_lock}:
+\begin{lstlisting}
+void filozof(int id, std::mutex& lewy, std::mutex& prawy) {
+    while (true) {
+        lewy.lock();
+        if (prawy.try_lock()) {
+            // je
+            prawy.unlock();
+            lewy.unlock();
+        } else {
+            lewy.unlock();
+            // natychmiast probuje ponownie
+        }
+    }
+}
+\end{lstlisting}
+Opisz \textbf{konkretny scenariusz} (przeploty 5 filozofów), w którym zachodzi livelock. Wykaż, że żaden filozof nie je, mimo że żaden nie jest zablokowany na stałe. \pkt{2}
+
+\item Dlaczego \textbf{losowy backoff} rozwiązuje problem livelocking, a \textbf{stały} backoff (np.\ zawsze 5ms) nie musi? \pkt{1}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 4 --- Condition variable: spurious i lost wakeup \pkt{5}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Co to jest \textbf{spurious wakeup}? Dlaczego system operacyjny może obudzić wątek bez wywołania \texttt{notify}? Jaki wzorzec kodu chroni przed spurious wakeup? \pkt{1}
+
+\item Co to jest \textbf{lost wakeup}? Podaj minimalny przykład kodu (producent-konsument), w którym lost wakeup powoduje, że konsument śpi w~nieskończoność, mimo że dane są dostępne. Napraw kod. \pkt{2}
+
+\item Dlaczego \texttt{condition\_variable} wymaga \texttt{std::unique\_lock}, a nie \texttt{std::lock\_guard}? Odpowiedz odwołując się do mechanizmu atomowego zwalniania mutexu i usypiania. \pkt{1}
+
+\item W poniższym kodzie wskaż błąd i wyjaśnij konsekwencje:
+\begin{lstlisting}
+std::mutex mtx;
+std::condition_variable cv;
+bool ready = false;
+
+// Producent:
+ready = true;
+cv.notify_one();
+
+// Konsument:
+std::unique_lock<std::mutex> lock(mtx);
+cv.wait(lock);  // bez predykatu!
+use_data();
+\end{lstlisting}
+\pkt{1}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 5 --- Ring Buffer (bufor kołowy) \pkt{5}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Kiedy i po co stosuje się ring buffer w programowaniu współbieżnym? Podaj co najmniej dwa scenariusze zastosowania i wyjaśnij, jaką przewagę daje nad zwykłą kolejką \texttt{std::queue}. \pkt{1}
+
+\item Wyjaśnij pojęcie \textbf{backpressure}. Co się dzieje z producentem, gdy bufor jest pełny? Co się stanie, jeśli zamiast bounded buffer użyjemy nieograniczonej kolejki przy producencie 100$\times$ szybszym od konsumenta? \pkt{1}
+
+\item Zaimplementuj w C++ thread-safe \texttt{BoundedBuffer<T>} z użyciem \texttt{std::mutex} i~dwóch \texttt{std::condition\_variable} (jedna dla producenta, jedna dla konsumenta). Zaimplementuj: konstruktor, \texttt{push(T)}, \texttt{pop()} $\to$ \texttt{T}. Wyjaśnij, dlaczego potrzebujesz dwóch CV zamiast jednej. \pkt{3}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 6 --- Readers-Writers: warianty i zagłodzenie \pkt{6}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Opisz problem czytelników i pisarzy. Jakie są trzy warianty tego problemu (readers-preference, writers-preference, fair/FIFO)? Dla każdego wariantu wskaż, kto może zostać zagłodzony. \pkt{2}
+
+\item Rozważ implementację z preferencją czytelników:
+\begin{lstlisting}
+void read_lock() {
+    std::unique_lock lock(mtx_);
+    cv_.wait(lock, [this] { return !writer_active_; });
+    ++active_readers_;
+}
+void read_unlock() {
+    std::unique_lock lock(mtx_);
+    --active_readers_;
+    if (active_readers_ == 0) cv_.notify_all();
+}
+\end{lstlisting}
+Podaj \textbf{dokładny scenariusz} (sekwencję zdarzeń), w którym pisarz jest zagłodzony na zawsze. \pkt{2}
+
+\item Jak jednolinijkowa modyfikacja predykatu w \texttt{read\_lock()} może dać priorytet pisarzom? Napisz tę linijkę i wyjaśnij działanie. Czy Twoje rozwiązanie może teraz zagłodzić czytelników? \pkt{1}
+
+\item Co to jest \texttt{std::shared\_mutex}? Jak użyć \texttt{std::shared\_lock} i \texttt{std::unique\_lock} do implementacji czytelników-pisarzy bez ręcznego zarządzania zmiennymi warunku? \pkt{1}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 7 --- Thread Pool: motywacja i mechanizmy \pkt{6}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Co to jest thread pool i jaka jest motywacja jego stosowania? Co się stanie, jeśli serwer tworzy nowy wątek dla każdego z 100\,000 żądań? Podaj konkretne koszty: pamięć stosu, context switch, koszt tworzenia wątku. \pkt{2}
+
+\item Wyjaśnij rolę \texttt{std::packaged\_task} i \texttt{std::future} w implementacji metody \texttt{submit()} zwracającej wynik. Dlaczego \texttt{packaged\_task} opakowujemy w \texttt{std::shared\_ptr}? Dlaczego \texttt{get\_future()} musi być wywołane \textbf{przed} wrzuceniem taska do kolejki? \pkt{2}
+
+\item Co się stanie z wyjątkiem rzuconym wewnątrz zadania w thread pool:
+\begin{itemize}
+\item w wersji \textbf{bez} \texttt{future} (zwykłe \texttt{std::function<void()>})?
+\item w wersji \textbf{z} \texttt{packaged\_task} i \texttt{future}?
+\end{itemize}
+Podaj kod naprawczy dla pierwszego przypadku. \pkt{2}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 8 --- Graceful shutdown i poison pill \pkt{4}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Opisz dwa podejścia do \textbf{graceful shutdown} w systemie producent-konsument: (i)~flaga \texttt{shutdown\_} z \texttt{notify\_all()}, (ii)~poison pill. Kiedy stosujemy które? \pkt{1}
+
+\item W systemie z 3 producentami i 5 konsumentami, ile wartości poison pill musi wstawić każdy producent? Dlaczego konsument po odebraniu poison pill robi \texttt{push(poison\_pill)} przed zakończeniem? \pkt{1}
+
+\item Rozważ poniższy destruktor thread poola:
+\begin{lstlisting}
+~ThreadPool() {
+    shutdown_ = true;  // NIE atomic!
+    for (auto& t : workers_) t.join();
+}
+\end{lstlisting}
+Wskaż \textbf{dwa} błędy i wyjaśnij, jak je naprawić. \pkt{2}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 9 --- Data races i analiza kodu \pkt{6}}
+
+Dla każdego z poniższych fragmentów kodu odpowiedz: czy jest poprawny? Jeśli tak --- udowodnij (opisz synchronizację). Jeśli nie --- znajdź błąd, wyjaśnij konsekwencje i podaj naprawę.
+
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Współdzielony licznik:}
+\begin{lstlisting}
+ThreadPool pool(4);
+int counter = 0;
+for (int i = 0; i < 100'000; ++i) {
+    pool.submit([&counter] { counter++; });
+}
+// po zakonczeniu wszystkich taskow:
+std::cout << counter << "\n";
+\end{lstlisting}
+\pkt{2}
+
+\item \textbf{Lambda z referencją do zmiennej pętli:}
+\begin{lstlisting}
+for (int i = 0; i < 10; ++i) {
+    pool.submit([&i] {
+        std::cout << "Zadanie " << i << "\n";
+    });
+}
+\end{lstlisting}
+\pkt{2}
+
+\item \textbf{Upgrade locka:}
+\begin{lstlisting}
+void maybe_reset(std::shared_mutex& rw, int& data) {
+    std::shared_lock<std::shared_mutex> slock(rw);
+    if (data < 0) {
+        std::unique_lock<std::shared_mutex> ulock(rw);
+        data = 0;
+    }
+}
+\end{lstlisting}
+\pkt{2}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 10 --- False sharing i wydajność \pkt{4}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Co to jest \textbf{false sharing}? Wyjaśnij mechanizm na poziomie linii cache. \pkt{1}
+
+\item Rozważ kod:
+\begin{lstlisting}
+struct Counter { std::atomic<int> count; };
+Counter counters[8]; // 8 x 4B -- mieszcza sie w jednej linii cache!
+
+// 8 watkow: watek i inkrementuje counters[i] milion razy
+\end{lstlisting}
+Wersja 1-wątkowa: 50ms. Wersja 8-wątkowa: 400ms (8$\times$ \textbf{wolniej}!). Wyjaśnij dlaczego. \pkt{1}
+
+\item Napraw powyższy kod używając \texttt{alignas}. Wyjaśnij, dlaczego wyrównanie do 64B rozwiązuje problem. \pkt{1}
+
+\item Podaj regułę: kiedy warto podejrzewać false sharing w programie współbieżnym? (Jaki objaw obserwujemy i jak diagnozować?) \pkt{1}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 11 --- Kolejność destrukcji i czas życia \pkt{3}}
+
+Rozważ:
+\begin{lstlisting}
+class DataProcessor {
+    ThreadPool pool_;
+    std::shared_ptr<std::vector<int>> data_;
+public:
+    DataProcessor()
+        : pool_(4)
+        , data_(std::make_shared<std::vector<int>>(1'000'000, 42)) {}
+
+    void process() {
+        pool_.submit([this] {
+            long long sum = 0;
+            for (int x : *data_) sum += x;
+            std::cout << "Suma = " << sum << "\n";
+        });
+    }
+};
+
+int main() {
+    DataProcessor dp;
+    dp.process();
+}  // <-- co sie tu dzieje?
+\end{lstlisting}
+
+\begin{enumerate}[label=(\alph*)]
+\item W jakiej kolejności C++ niszczy składowe klasy? Który member ginie pierwszy: \texttt{pool\_} czy \texttt{data\_}? \pkt{1}
+\item Wyjaśnij, dlaczego ten program może crashować. Opisz dokładny scenariusz. \pkt{1}
+\item Podaj \textbf{dwa} sposoby naprawy (zmiana kolejności deklaracji; przechwycenie \texttt{shared\_ptr} w lambdzie). \pkt{1}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie 12 --- Compare-and-swap i memory ordering \pkt{3}}
+
+\begin{enumerate}[label=(\alph*)]
+\item Co to jest wzorzec \textbf{compare-and-swap} (CAS)? Wyjaśnij semantykę \texttt{compare\_exchange\_weak} --- dlaczego \texttt{weak} może „fałszywie" zawieść i kiedy to akceptowalne? \pkt{1}
+
+\item Zaimplementuj w C++ lock-free funkcję \texttt{concurrent\_max}: wiele wątków jednocześnie wywołuje \texttt{concurrent\_max(global, local\_value)}, a po zakończeniu \texttt{global} zawiera maksimum wszystkich wartości. Użyj pętli CAS. \pkt{1}
+
+\item Wyjaśnij różnicę między \texttt{memory\_order\_relaxed}, \texttt{memory\_order\_acquire/release} i \texttt{memory\_order\_seq\_cst}. Kiedy wystarczy \texttt{relaxed}? \pkt{1}
+\end{enumerate}
+
+\vspace{5mm}
+\begin{center}
+\rule{\textwidth}{0.8pt}
+\end{center}
+\vspace{3mm}
+
+%==============================================================================
+\section*{CZĘŚĆ II --- Zadania implementacyjne}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie na ocenę 4 --- Pipeline z różnymi prędkościami etapów \pkt{10}}
+
+Mamy pipeline 3-etapowy przetwarzający strumień danych:
+\begin{center}
+\texttt{Generator (2ms/elem)} $\longrightarrow$ \texttt{Transformer (20ms/elem)} $\longrightarrow$ \texttt{Writer (2ms/elem)}
+\end{center}
+Pomiędzy etapami komunikacja odbywa się przez \texttt{BoundedBuffer<T>} o rozmiarze $B$.
+
+\begin{enumerate}[label=(\alph*)]
+\item Jaki jest \textbf{bottleneck} tego pipeline'u? Jaka jest teoretyczna maksymalna przepustowość (elementów/sekundę)? \pkt{1}
+
+\item Zaproponuj rozwiązanie: uruchom \textbf{10 równoległych instancji} etapu Transformer na wspólnym thread pool. Napisz kompletną implementację w C++ obejmującą:
+\begin{itemize}
+	\item \texttt{BoundedBuffer<T>} (jeśli zaimplementowałeś w Części I, odnieś się do tamtej implementacji)
+	\item Thread pool lub ręczne zarządzanie wątkami
+	\item Generator wrzucający dane do bufora 1
+	\item 10 Transformerów pobierających z bufora 1 i wrzucających do bufora 2
+	\item Writer pobierający z bufora 2
+	\item Graceful shutdown po przetworzeniu $N$ elementów
+\end{itemize}
+\pkt{6}
+
+\item Twoje rozwiązanie z (b) prawdopodobnie \textbf{nie zachowuje kolejności} elementów (Transformer 3 może skończyć przed Transformerem 1). Opisz, jak zmodyfikować architekturę, aby przywrócić kolejność wyjściową. Podaj pseudokod lub opis algorytmu (nie wymaga pełnej implementacji). \pkt{2}
+
+\item Jaki rozmiar $B$ buforów jest optymalny? Rozważ skrajne przypadki $B=1$ i $B=10000$ i opisz trade-offy (latencja vs throughput vs pamięć). \pkt{1}
+\end{enumerate}
+
+\vspace{5mm}
+
+%------------------------------------------------------------------------------
+\subsection*{Zadanie na ocenę 5 --- Wielowątkowy merge sort z Thread Pool \pkt{10}}
+
+Zaimplementuj w C++ algorytm \texttt{parallel\_merge\_sort}, który sortuje tablicę \texttt{std::vector<int>} wykorzystując thread pool o~$N$ wątkach.
+
+\begin{enumerate}[label=(\alph*)]
+\item Rozważ najpierw \textbf{naiwny} schemat, w którym obie połówki zlecamy na pool:
+\begin{lstlisting}
+void parallel_merge_sort(ThreadPool& pool, std::span<int> data) {
+    if (data.size() <= 1) return;
+    auto mid = data.size() / 2;
+    auto left = data.subspan(0, mid);
+    auto right = data.subspan(mid);
+    auto f1 = pool.submit([&]{ parallel_merge_sort(pool, left); });
+    auto f2 = pool.submit([&]{ parallel_merge_sort(pool, right); });
+    f1.get();
+    f2.get();
+    merge(left, right, data);
+}
+\end{lstlisting}
+Wykaż, że ten kod \textbf{prowadzi do deadlocka}. Przy jakiej minimalnej głębokości rekursji (dla puli $N=4$) wszystkie wątki zostaną zablokowane? \pkt{2}
+
+\item Napisz \textbf{poprawną} wersję, w której jedną połówkę sortujemy w bieżącym wątku, a tylko drugą zlecamy na pool. Wykaż, że ta wersja jest deadlock-free niezależnie od głębokości rekursji. \pkt{3}
+
+\item Dodaj \textbf{próg granulacji}: poniżej pewnego rozmiaru tablicy (np.\ 1024 elementy) nie zlecaj podzadania na pool, lecz sortuj sekwencyjnie (\texttt{std::sort}). Uzasadnij, dlaczego to jest istotne dla wydajności (odnieś się do kosztu tworzenia/zlecania zadania vs zysk z równoległości). \pkt{2}
+
+\item Napisz \textbf{kompletny, kompilowalny} program demonstrujący Twoje rozwiązanie: thread pool (możesz użyć uproszczonej wersji), \texttt{parallel\_merge\_sort}, funkcja \texttt{merge}, test na losowej tablicy 1\,000\,000 elementów z weryfikacją poprawności (\texttt{std::is\_sorted}). \pkt{3}
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+	{\small \textit{Powodzenia!}}
+\end{center}
+
+\end{document}
